@@ -1,0 +1,271 @@
+### Jaya Abadi — contoh REST Client (VS Code) / IntelliJ HTTP client
+### Jalankan server dulu: npm run dev (folder server/)
+@baseUrl = http://localhost:4000/api
+
+### 0. Health check (tanpa login)
+GET {{baseUrl}}/health
+
+### 1. Login — respons berisi Set-Cookie "token" + meta.token
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@jayaabadi.co.id",
+  "password": "Admin123!"
+}
+
+### Salin nilai token dari field meta.token di respons login ke variabel di bawah
+@token = GANTI_DENGAN_TOKEN
+
+### 2. Profil saya (butuh token)
+GET {{baseUrl}}/auth/me
+Cookie: token={{token}}
+Authorization: Bearer {{token}}
+
+### 3. Logout — menghapus cookie
+POST {{baseUrl}}/auth/logout
+
+### 4. Ganti password sendiri (butuh token)
+PUT {{baseUrl}}/auth/change-password
+Cookie: token={{token}}
+Content-Type: application/json
+
+{
+  "currentPassword": "Admin123!",
+  "newPassword": "PasswordBaru123"
+}
+
+### 5. Login dengan kredensial salah → 401
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@jayaabadi.co.id",
+  "password": "salah123"
+}
+
+### 6. Validasi gagal: bukan email → 400 + daftar errors
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "bukan-email",
+  "password": ""
+}
+
+### ===== USERS (khusus SUPER_ADMIN) =====
+
+### 7. Daftar user + paginasi + pencarian
+GET {{baseUrl}}/users?page=1&limit=10&search=admin
+Cookie: token={{token}}
+
+### 8. Buat user baru → 201
+POST {{baseUrl}}/users
+Cookie: token={{token}}
+Content-Type: application/json
+
+{
+  "name": "Budi Editor",
+  "email": "budi@jayaabadi.co.id",
+  "password": "Password123",
+  "role": "EDITOR"
+}
+
+### 9. Update user — ganti nama + role (ganti :id dengan id user)
+PUT {{baseUrl}}/users/:id
+Cookie: token={{token}}
+Content-Type: application/json
+
+{
+  "name": "Budi Editor Senior",
+  "role": "ADMIN"
+}
+
+### 10. Aktifkan / nonaktifkan user (toggle)
+PATCH {{baseUrl}}/users/:id/toggle-status
+Cookie: token={{token}}
+
+### 11. Hapus user (akses ditolak 400 jika id = diri sendiri)
+DELETE {{baseUrl}}/users/:id
+Cookie: token={{token}}
+
+### 12. Akses users tanpa login → 401
+GET {{baseUrl}}/users
+
+### 13. Akses users dengan role bukan SUPER_ADMIN → 403
+### (login dulu sebagai user ber-role EDITOR/ADMIN, contoh budi)
+# POST {{baseUrl}}/auth/login  { "email": "budi@jayaabadi.co.id", "password": "Password123" }
+GET {{baseUrl}}/users
+Cookie: token=TokenMilikEditor
+
+### ===== MEDIA (butuh login) =====
+
+### 14. Upload 1+ file — field "files" (JPG/PNG/WebP, maks 5 MB per file).
+### Ganti path setelah `<` dengan file sungguhan di komputer Anda.
+POST {{baseUrl}}/media/upload
+Cookie: token={{token}}
+Content-Type: multipart/form-data; boundary=BoundaryForm
+
+--BoundaryForm
+Content-Disposition: form-data; name="files"; filename="contoh.png"
+Content-Type: image/png
+
+< ./uploads/.gitkeep
+--BoundaryForm--
+Content-Disposition: form-data; name="files"; filename="contoh.png"
+Content-Type: image/png
+
+< ./path/ke/file.png
+--BoundaryForm--
+
+### 15. Daftar media + paginasi + pencarian nama file
+GET {{baseUrl}}/media?page=1&limit=10&search=contoh
+Cookie: token={{token}}
+
+### 16. Hapus media (record + file fisik) — ganti :id dengan id media
+DELETE {{baseUrl}}/media/:id
+Cookie: token={{token}}
+
+### 17. Upload tanpa login → 401
+POST {{baseUrl}}/media/upload
+
+### Dashboard — statistik admin (butuh token)
+GET {{baseUrl}}/admin/dashboard
+Cookie: token={{token}}
+Authorization: Bearer {{token}}
+
+### Proyek — daftar (filter & paginasi opsional)
+GET {{baseUrl}}/admin/projects?page=1&limit=10&status=ONGOING
+Cookie: token={{token}}
+
+### Proyek — detail
+GET {{baseUrl}}/admin/projects/GANTI_ID
+Cookie: token={{token}}
+
+### Proyek — buat
+POST {{baseUrl}}/admin/projects
+Cookie: token={{token}}
+Content-Type: application/json
+
+{
+  "title": "Pembangunan Jembatan Desa Sukamaju",
+  "summary": "Jembatan beton bentang 40 meter penghubung dua dusun.",
+  "description": "Pembangunan jembatan beton bertulang dengan fondasi bore pile. Durasi pengerjaan 8 bulan termasuk pendekian tanah.",
+  "location": "Kab. Bandung",
+  "clientName": "Pemerintah Desa Sukamaju",
+  "year": 2026,
+  "value": "Rp 4,5 M",
+  "status": "ONGOING",
+  "categoryId": "GANTI_ID_KATEGORI",
+  "coverImage": "/uploads/contoh.jpg",
+  "isPublished": true,
+  "images": []
+}
+
+### Proyek — update (partial)
+PUT {{baseUrl}}/admin/projects/GANTI_ID
+Cookie: token={{token}}
+Content-Type: application/json
+
+{ "status": "COMPLETED" }
+
+### Proyek — toggle publish / featured
+PATCH {{baseUrl}}/admin/projects/GANTI_ID/publish
+Cookie: token={{token}}
+
+PATCH {{baseUrl}}/admin/projects/GANTI_ID/featured
+Cookie: token={{token}}
+
+### Proyek — hapus
+DELETE {{baseUrl}}/admin/projects/GANTI_ID
+Cookie: token={{token}}
+
+### Layanan — daftar
+GET {{baseUrl}}/admin/services
+Cookie: token={{token}}
+
+### Layanan — buat
+POST {{baseUrl}}/admin/services
+Cookie: token={{token}}
+Content-Type: application/json
+
+{
+  "title": "Renovasi Rumah",
+  "shortDesc": "Renovasi menyeluruh atau parsial hunian Anda.",
+  "description": "Layanan renovasi mencakup perbaikan struktur, pengecatan, pergantian atap, hingga penataan ulang ruangan sesuai kebutuhan klien.",
+  "icon": "Hammer",
+  "image": null,
+  "isPublished": true
+}
+
+### Layanan — update
+PUT {{baseUrl}}/admin/services/GANTI_ID
+Cookie: token={{token}}
+Content-Type: application/json
+
+{ "shortDesc": "Deskripsi singkat baru." }
+
+### Layanan — reorder (urutan id hasil tombol naik/turun)
+PATCH {{baseUrl}}/admin/services/reorder
+Cookie: token={{token}}
+Content-Type: application/json
+
+{ "ids": ["ID_B", "ID_A", "ID_C"] }
+
+### Layanan — hapus
+DELETE {{baseUrl}}/admin/services/GANTI_ID
+Cookie: token={{token}}
+
+### Hero slide — buat (maks 5 aktif)
+POST {{baseUrl}}/admin/hero-slides
+Cookie: token={{token}}
+Content-Type: application/json
+
+{ "title": "Bangun Bersama Jaya Abadi", "subtitle": "Kontraktor terpercaya sejak 1998", "image": "/uploads/hero.jpg", "ctaLabel": "Hubungi Kami", "ctaUrl": "/kontak", "isActive": true }
+
+### Hero slide — update / hapus
+PUT {{baseUrl}}/admin/hero-slides/GANTI_ID
+Cookie: token={{token}}
+Content-Type: application/json
+
+{ "isActive": false }
+
+DELETE {{baseUrl}}/admin/hero-slides/GANTI_ID
+Cookie: token={{token}}
+
+### Pesan publik — form kontak (honeypot 'website' harus kosong)
+POST {{baseUrl}}/public/messages
+Content-Type: application/json
+
+{ "name": "Budi", "email": "budi@example.com", "phone": "081234567890", "subject": "Tanya Renovasi", "body": "Saya ingin tanya estimasi renovasi rumah 2 lantai.", "website": "" }
+
+### Pesan admin — daftar / belum dibaca / detail / tandai / hapus
+GET {{baseUrl}}/admin/messages?unread=true&page=1
+Cookie: token={{token}}
+
+GET {{baseUrl}}/admin/messages/unread-count
+Cookie: token={{token}}
+
+GET {{baseUrl}}/admin/messages/GANTI_ID
+Cookie: token={{token}}
+
+PATCH {{baseUrl}}/admin/messages/GANTI_ID/read
+Cookie: token={{token}}
+Content-Type: application/json
+
+{ "isRead": false }
+
+DELETE {{baseUrl}}/admin/messages/GANTI_ID
+Cookie: token={{token}}
+
+### Settings — admin & publik
+GET {{baseUrl}}/admin/settings
+Cookie: token={{token}}
+
+PUT {{baseUrl}}/admin/settings
+Cookie: token={{token}}
+Content-Type: application/json
+
+{ "company_name": "Jaya Abadi", "company_tagline": "Membangun kepercayaan", "company_whatsapp": "6281234567890" }
+
+GET {{baseUrl}}/public/settings
