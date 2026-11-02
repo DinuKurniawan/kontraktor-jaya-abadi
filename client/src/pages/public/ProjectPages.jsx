@@ -453,6 +453,9 @@ function ProjectInterestForm({ project }) {
       <a href={waUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-[#25D366]/40 bg-[#25D366]/10 px-5 py-2.5 text-sm font-bold text-[#128C4A] transition hover:bg-[#25D366]/20">
         <MessageCircle size={16} /> Chat via WhatsApp
       </a>
+      <a href={`/kontak?proyek=${encodeURIComponent(project.title)}${project.service?.slug ? `&layanan=${encodeURIComponent(project.service.slug)}` : ""}`} className="mt-2 inline-flex w-full items-center justify-center rounded-full border border-ink/10 px-5 py-2.5 text-xs font-bold text-ink-soft transition hover:border-brand hover:text-brand">
+        Isi formulir konsultasi lengkap
+      </a>
     </div>
   );
 }

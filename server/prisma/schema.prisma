@@ -36,6 +36,43 @@ enum ProjectStatus {
   @@map("project_status")
 }
 
+enum BudgetRange {
+  KURANG_100JT
+  RANGE_100_500JT @map("100_500JT")
+  RANGE_500JT_1M  @map("500JT_1M")
+  RANGE_1M_5M     @map("1M_5M")
+  LEBIH_5M
+  BELUM_TAHU
+
+  @@map("budget_range")
+}
+
+enum PreferredContact {
+  WHATSAPP
+  TELEPON
+  EMAIL
+
+  @@map("preferred_contact")
+}
+
+enum PreferredTime {
+  PAGI
+  SIANG
+  SORE
+  BEBAS
+
+  @@map("preferred_time")
+}
+
+enum MessageStatus {
+  BARU
+  DIPROSES
+  SELESAI
+  SPAM
+
+  @@map("message_status")
+}
+
 // User CMS (superadmin, admin, editor)
 model User {
   id        String   @id @default(cuid())
@@ -90,31 +127,31 @@ model Project {
   updatedAt   DateTime      @updatedAt
 
   // Spesifikasi
-  area          Int? // m²
-  durationMonths Int?
-  floors        Int?
-  startDate     DateTime?
-  endDate       DateTime?
-  architect     String?
-  videoUrl      String?
+  area            Int? // m²
+  durationMonths  Int?
+  floors          Int?
+  startDate       DateTime?
+  endDate         DateTime?
+  architect       String?
+  videoUrl        String?
   // Cerita proyek
-  challenge     String? @db.Text
-  solution      String? @db.Text
-  result        String? @db.Text
-  highlights    Json? // array string
-  tags          Json? // array string
+  challenge       String?   @db.Text
+  solution        String?   @db.Text
+  result          String?   @db.Text
+  highlights      Json? // array string
+  tags            Json? // array string
   // Lokasi & statistik
-  latitude      Float?
-  longitude     Float?
-  viewCount     Int     @default(0)
+  latitude        Float?
+  longitude       Float?
+  viewCount       Int       @default(0)
   // SEO
   metaTitle       String?
   metaDescription String?
 
-  category Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  service  Service?        @relation(fields: [serviceId], references: [id], onDelete: SetNull)
-  serviceId String?
-  images   ProjectImage[]
+  category     Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  service      Service?       @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  serviceId    String?
+  images       ProjectImage[]
   beforeAfters BeforeAfter[]
 
   @@index([status])
@@ -141,25 +178,25 @@ model ProjectImage {
 
 // Layanan jasa (konstruksi, renovasi, interior, pengawasan)
 model Service {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  shortDesc   String
-  description String   @db.Text
-  icon        String
-  image       String?
+  id              String   @id @default(cuid())
+  title           String
+  slug            String   @unique
+  shortDesc       String
+  description     String   @db.Text
+  icon            String
+  image           String?
   // Konten halaman detail layanan
   heroImage       String?
-  longDescription String? @db.Text
+  longDescription String?  @db.Text
   startingPrice   Int? // Rupiah, opsional
   brochureUrl     String?
   metaTitle       String?
   metaDescription String?
-  isFeatured      Boolean @default(false)
-  sortOrder   Int      @default(0)
-  isPublished Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  isFeatured      Boolean  @default(false)
+  sortOrder       Int      @default(0)
+  isPublished     Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   scopes       ServiceScope[]
   packages     ServicePackage[]
@@ -167,6 +204,7 @@ model Service {
   faqs         Faq[]
   processSteps ProcessStep[]
   testimonials Testimonial[]
+  messages     Message[]
 
   @@index([sortOrder])
   @@map("services")
@@ -189,17 +227,17 @@ model ServiceScope {
 
 // Paket harga per layanan
 model ServicePackage {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   serviceId   String
   name        String
-  description String   @db.Text
+  description String  @db.Text
   priceFrom   Int // Rupiah
-  priceUnit   String   @default("per m²")
+  priceUnit   String  @default("per m²")
   features    Json // array of string
-  isPopular   Boolean  @default(false)
-  ctaLabel    String   @default("Konsultasi Sekarang")
-  sortOrder   Int      @default(0)
-  isPublished Boolean  @default(true)
+  isPopular   Boolean @default(false)
+  ctaLabel    String  @default("Konsultasi Sekarang")
+  sortOrder   Int     @default(0)
+  isPublished Boolean @default(true)
 
   service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 
@@ -209,23 +247,23 @@ model ServicePackage {
 
 // Artikel / berita
 model Post {
-  id          String    @id @default(cuid())
-  title       String
-  slug        String    @unique
-  excerpt     String
-  content     String    @db.Text
-  coverImage  String
-  authorId    String
-  categoryId  String?
-  readTime    Int       @default(5) // estimasi waktu baca (menit)
-  isPublished Boolean   @default(false)
-  isFeatured  Boolean   @default(false)
-  viewCount   Int       @default(0)
+  id              String    @id @default(cuid())
+  title           String
+  slug            String    @unique
+  excerpt         String
+  content         String    @db.Text
+  coverImage      String
+  authorId        String
+  categoryId      String?
+  readTime        Int       @default(5) // estimasi waktu baca (menit)
+  isPublished     Boolean   @default(false)
+  isFeatured      Boolean   @default(false)
+  viewCount       Int       @default(0)
   metaTitle       String?
   metaDescription String?
-  publishedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  publishedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   author   User      @relation("PostAuthor", fields: [authorId], references: [id], onDelete: Cascade)
   category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
@@ -275,7 +313,7 @@ model Testimonial {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  service  Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  service   Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
   serviceId String?
 
   @@index([isPublished])
@@ -284,7 +322,7 @@ model Testimonial {
 
 // Profil tim / manajemen
 model TeamMember {
-  id          String   @id @default(cuid())
+  id          String         @id @default(cuid())
   name        String
   position    String
   photo       String?
@@ -293,10 +331,10 @@ model TeamMember {
   email       String?
   linkedin    String?
   instagram   String?
-  sortOrder   Int      @default(0)
-  isPublished Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  sortOrder   Int            @default(0)
+  isPublished Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
   @@index([sortOrder])
   @@map("team_members")
@@ -329,11 +367,11 @@ model Milestone {
 
 // Nilai-nilai perusahaan
 model CoreValue {
-  id          String @id @default(cuid())
+  id          String  @id @default(cuid())
   title       String
-  description String @db.Text
+  description String  @db.Text
   icon        String
-  sortOrder   Int    @default(0)
+  sortOrder   Int     @default(0)
   isPublished Boolean @default(true)
 
   @@index([sortOrder])
@@ -349,13 +387,13 @@ enum GalleryCategory {
 }
 
 model GalleryItem {
-  id        String         @id @default(cuid())
-  image     String
-  caption   String?
-  category  GalleryCategory
-  sortOrder Int            @default(0)
-  isPublished Boolean      @default(true)
-  createdAt DateTime       @default(now())
+  id          String          @id @default(cuid())
+  image       String
+  caption     String?
+  category    GalleryCategory
+  sortOrder   Int             @default(0)
+  isPublished Boolean         @default(true)
+  createdAt   DateTime        @default(now())
 
   @@index([sortOrder])
   @@map("gallery_items")
@@ -380,18 +418,58 @@ model HeroSlide {
 
 // Pesan dari form kontak
 model Message {
-  id        String   @id @default(cuid())
-  name      String
-  email     String
-  phone     String
-  subject   String
-  body      String   @db.Text
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id               String           @id @default(cuid())
+  name             String
+  email            String
+  phone            String
+  subject          String
+  body             String           @db.Text
+  serviceId        String?
+  budgetRange      BudgetRange?
+  projectLocation  String?
+  projectArea      Int?
+  startEstimate    String?
+  preferredContact PreferredContact @default(WHATSAPP)
+  preferredTime    PreferredTime    @default(BEBAS)
+  attachments      Json             @default("[]")
+  status           MessageStatus    @default(BARU)
+  adminNote        String?          @db.Text
+  ticketCode       String           @unique
+  source           String?
+  isRead           Boolean          @default(false)
+  createdAt        DateTime         @default(now())
+
+  service Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
 
   @@index([isRead])
   @@index([createdAt])
+  @@index([status, createdAt])
+  @@index([serviceId])
   @@map("messages")
+}
+
+// Cabang kantor yang ditampilkan di halaman kontak publik
+model Branch {
+  id           String   @id @default(cuid())
+  name         String
+  address      String
+  city         String
+  phone        String
+  whatsapp     String
+  email        String
+  latitude     Float
+  longitude    Float
+  mapEmbedUrl  String
+  openingHours Json
+  photo        String?
+  isMain       Boolean  @default(false)
+  sortOrder    Int      @default(0)
+  isPublished  Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([isPublished, isMain, sortOrder])
+  @@map("branches")
 }
 
 // Pengaturan situs (key-value): profil perusahaan, kontak, visi misi, statistik
@@ -432,13 +510,13 @@ model Certificate {
 
 // Tanya jawab umum
 model Faq {
-  serviceId String?
-  service   Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
-  id          String  @id @default(cuid())
+  serviceId   String?
+  service     Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  id          String   @id @default(cuid())
   question    String
-  answer      String  @db.Text
-  sortOrder   Int     @default(0)
-  isPublished Boolean @default(true)
+  answer      String   @db.Text
+  sortOrder   Int      @default(0)
+  isPublished Boolean  @default(true)
 
   @@map("faqs")
 }
@@ -466,14 +544,14 @@ model Feature {
 
 // Langkah alur kerja
 model ProcessStep {
-  serviceId String?
-  service   Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
-  id          String  @id @default(cuid())
+  serviceId   String?
+  service     Service? @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  id          String   @id @default(cuid())
   title       String
-  description String  @db.Text
+  description String   @db.Text
   icon        String?
-  sortOrder   Int     @default(0)
-  isPublished Boolean @default(true)
+  sortOrder   Int      @default(0)
+  isPublished Boolean  @default(true)
 
   @@map("process_steps")
 }

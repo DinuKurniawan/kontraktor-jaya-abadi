@@ -765,6 +765,7 @@ async function main() {
     company_email: "halo@jayaabadi.co.id",
     company_whatsapp: "6281234567890",
     work_hours: "Senin–Jumat 08.00–17.00, Sabtu 08.00–14.00",
+    contact_response_time: "15 menit",
     about_text:
       "Jaya Abadi adalah perusahaan kontraktor yang berdiri sejak 2006, bergerak di bidang konstruksi bangunan, renovasi, interior, dan pengawasan proyek. Lebih dari 200 proyek telah kami rampungkan untuk klien perumahan, hotel, perkantoran, dan pemerintahan dengan standar mutu serta ketepatan waktu.",
     about_vision:
@@ -797,7 +798,54 @@ async function main() {
   }
   console.log("✅ SiteSetting:", Object.keys(settings).length);
 
-  // 10. Mitra (8) — idempotent via cek nama
+  // 10. Cabang kantor (2) — idempotent via cek nama
+  const standardHours = [
+    { hari: "Senin", buka: "08:00", tutup: "17:00", libur: false },
+    { hari: "Selasa", buka: "08:00", tutup: "17:00", libur: false },
+    { hari: "Rabu", buka: "08:00", tutup: "17:00", libur: false },
+    { hari: "Kamis", buka: "08:00", tutup: "17:00", libur: false },
+    { hari: "Jumat", buka: "08:00", tutup: "17:00", libur: false },
+    { hari: "Sabtu", buka: "08:00", tutup: "14:00", libur: false },
+    { hari: "Minggu", buka: "", tutup: "", libur: true },
+  ];
+  const branches = [
+    {
+      name: "Kantor Pusat Tangerang Selatan",
+      address: "Jl. Raya Merdeka No. 88",
+      city: "Tangerang Selatan",
+      phone: "(021) 555-0123",
+      whatsapp: "6281234567890",
+      email: "halo@jayaabadi.co.id",
+      latitude: -6.3016,
+      longitude: 106.7042,
+      mapEmbedUrl: "https://www.google.com/maps?q=-6.3016,106.7042&output=embed",
+      openingHours: standardHours,
+      photo: IMG("ja-branch-tangerang", 1000, 700),
+      isMain: true,
+      sortOrder: 0,
+    },
+    {
+      name: "Cabang Bandung",
+      address: "Jl. Buah Batu No. 120",
+      city: "Bandung",
+      phone: "(022) 700-4455",
+      whatsapp: "6281234567890",
+      email: "bandung@jayaabadi.co.id",
+      latitude: -6.9475,
+      longitude: 107.6323,
+      mapEmbedUrl: "https://www.google.com/maps?q=-6.9475,107.6323&output=embed",
+      openingHours: standardHours,
+      photo: IMG("ja-branch-bandung", 1000, 700),
+      isMain: false,
+      sortOrder: 1,
+    },
+  ];
+  for (const branch of branches) {
+    await upsertBy("branch", { name: branch.name }, { ...branch, isPublished: true });
+  }
+  console.log("✅ Cabang:", branches.length);
+
+  // 11. Mitra (8) — idempotent via cek nama
   const partners = [
     ["PT Bangun Perkasa", true], ["PT Sinar Beton", true], ["PT Karya Utama", true],
     ["CV Tropikindo", true], ["PT Adhi Material", true], ["PT Graha Estetika", false],

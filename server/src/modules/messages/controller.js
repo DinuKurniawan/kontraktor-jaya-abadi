@@ -31,12 +31,31 @@ export const unreadCount = asyncHandler(async (_req, res) => {
   sendSuccess(res, { data: { count: await messageService.unreadCount() } });
 });
 
+export const updateAdminFields = asyncHandler(async (req, res) => {
+  sendSuccess(res, { data: await messageService.updateAdminFields(req.params.id, req.body) });
+});
+
+export const exportCsv = asyncHandler(async (req, res) => {
+  const rows = await messageService.exportMessages(req.query);
+  const columns = ["ticketCode", "name", "email", "phone", "subject", "status", "budgetRange", "service", "projectLocation", "projectArea", "preferredContact", "preferredTime", "attachments", "source", "isRead", "createdAt"];
+  const escape = (value) => `"${String(value ?? "").replaceAll("\"", "\"\"")}"`;
+  const lines = rows.map((row) => [row.ticketCode, row.name, row.email, row.phone, row.subject, row.status, row.budgetRange, row.service?.title, row.projectLocation, row.projectArea, row.preferredContact, row.preferredTime, Array.isArray(row.attachments) ? row.attachments.join(" | ") : row.attachments, row.source, row.isRead ? "ya" : "belum", row.createdAt?.toISOString()].map(escape).join(","));
+  res.status(200).type("text/csv").set("Content-Disposition", "attachment; filename=pesan-jaya-abadi.csv").send(`\uFEFF${columns.map(escape).join(",")}\r\n${lines.join("\r\n")}`);
+});
+
 // ===== Publik =====
 
 // POST /api/public/messages — form kontak (honeypot "website" harus kosong)
 export const publicCreate = asyncHandler(async (req, res) => {
   // Honeypot terisi = bot → balas sukses palsu agar bot tidak belajar
-  if (req.body?.website) return sendSuccess(res, { data: { message: "Pesan terkirim" }, status: 201 });
-  await messageService.createMessage(req.body);
-  sendSuccess(res, { data: { message: "Pesan terkirim" }, status: 201 });
+  if (req.body?.website) return sendSuccess(res, { data: { message: "Pesan terkirim", ticketCode: null }, status: 201 });
+  const message = await messageService.createMessage(req.body);
+  sendSuccess(res, { data: { message: "Pesan terkirim", ticketCode: message.ticketCode }, status: 201 });
+});
+
+// POST /api/public/messages/attachments — file kontak publik, tanpa record Media admin
+export const publicAttachments = asyncHandler(async (req, res) => {
+  const attachments = (req.files ?? []).map((file) => `/uploads/messages/${file.filename}`);
+  if (!attachments.length) return sendSuccess(res, { data: { attachments: [] }, status: 201 });
+  sendSuccess(res, { data: { attachments }, status: 201 });
 });

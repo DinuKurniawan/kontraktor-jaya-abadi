@@ -1,56 +1,39 @@
-// Kontak — info dari settings, embed Google Maps, form pesan (Zod + honeypot)
-import { useForm } from "react-hook-form";
-import { useSearchParams } from "react-router-dom";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { CheckCircle2, Clock, Loader2, Mail, MapPin, MessageCircle, Phone, Send } from "lucide-react";
+// Kontak — kanal cepat, info cabang, dan konsultasi tiga langkah.
+import { useQuery } from "@tanstack/react-query";
+import { Clock, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import api from "../../lib/axios.js";
 import Container from "../../components/public/Container.jsx";
-import PageBanner from "../../components/public/PageBanner.jsx";
+import ContactBanner from "../../components/public/contact/ContactBanner.jsx";
+import ConsultationForm from "../../components/public/contact/ConsultationForm.jsx";
+import ContactFaq from "../../components/public/contact/ContactFaq.jsx";
+import ContactCta, { getContactCtaImage } from "../../components/public/contact/ContactCta.jsx";
+import OfficeMap from "../../components/public/contact/OfficeMap.jsx";
+import QuickChannels from "../../components/public/contact/QuickChannels.jsx";
+import WhatNext from "../../components/public/contact/WhatNext.jsx";
+import Reveal from "../../components/public/services/Reveal.jsx";
 import Seo from "../../components/public/Seo.jsx";
-import { toast } from "../../components/ui/Toast.jsx";
+import Skeleton from "../../components/ui/Skeleton.jsx";
 
-const schema = z.object({
-  name: z.string().min(2, "Nama minimal 2 karakter").max(100),
-  email: z.string().email("Format email tidak valid").max(150),
-  phone: z.string().min(6, "Nomor telepon minimal 6 karakter").max(20),
-  subject: z.string().min(3, "Subjek minimal 3 karakter").max(150),
-  body: z.string().min(10, "Pesan minimal 10 karakter").max(2000),
-  website: z.string().max(300).optional(), // honeypot — tersembunyi dari pengguna
-});
+function ContactSectionSkeleton() {
+  return <section className="py-10 sm:py-12" aria-busy="true" aria-label="Memuat kanal kontak"><Container><div className="mb-5"><Skeleton className="h-3 w-28" /><Skeleton className="mt-3 h-8 w-56" /></div><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{[0, 1, 2, 3].map((item) => <Skeleton key={item} className="h-40 w-full" rounded="rounded-2xl" />)}</div></Container></section>;
+}
+
+function ContactInfoSkeleton() {
+  return <div className="space-y-4" aria-busy="true" aria-label="Memuat informasi kontak">{[0, 1, 2, 3, 4].map((item) => <div key={item} className="rounded-2xl bg-white p-4 shadow-soft"><div className="flex gap-4"><Skeleton className="h-11 w-11 shrink-0" rounded="rounded-xl" /><div className="min-w-0 flex-1"><Skeleton className="h-3 w-20" /><Skeleton className="mt-3 h-4 w-40" /></div></div></div>)}</div>;
+}
 
 export default function ContactPage() {
-  const [sp] = useSearchParams();
-  const layananSlug = sp.get("layanan") ?? "";
-  const { data: services } = useQuery({
-    queryKey: ["public-services"],
-    queryFn: async () => (await api.get("/public/services")).data.data,
-  });
-  const layananTitle = services?.find((x) => x.slug === layananSlug)?.title ?? layananSlug;
-  const { data: s } = useQuery({
+  const { data: s, isLoading: settingsLoading } = useQuery({
     queryKey: ["public-settings"],
     queryFn: async () => (await api.get("/public/settings")).data.data,
   });
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(schema),
-    defaultValues: { name: "", email: "", phone: "", subject: layananTitle ? `Konsultasi ${layananTitle}` : "", body: "", website: "" },
+  const { data: branches, isLoading: branchesLoading } = useQuery({
+    queryKey: ["public-branches"],
+    queryFn: async () => (await api.get("/public/branches")).data.data,
   });
-
-  const mutation = useMutation({
-    mutationFn: (payload) => api.post("/public/messages", payload),
-    onSuccess: () => {
-      toast.success("Pesan terkirim! Kami akan membalas segera.");
-      reset();
-    },
-    onError: (err) => toast.error(err.response?.data?.message ?? "Gagal mengirim pesan — coba lagi nanti"),
-  });
+  const mainBranch = branches?.find((branch) => branch.isMain) ?? branches?.[0];
+  const configuredResponseTime = s?.contact_response_time ?? s?.average_response_time ?? s?.response_time_minutes ?? "15 menit";
+  const responseTime = /^\d+$/.test(String(configuredResponseTime)) ? `${configuredResponseTime} menit` : String(configuredResponseTime);
 
   const waNumber = (s?.company_whatsapp ?? "").replace(/\D/g, "");
   const infoItems = [
@@ -60,108 +43,34 @@ export default function ContactPage() {
     [MessageCircle, "WhatsApp", s?.company_whatsapp, waNumber ? `https://wa.me/${waNumber}` : null],
     [Clock, "Jam Kerja", s?.company_work_hours, null],
   ].filter(([, , value]) => value);
-
-  const inputCls = (err) =>
-    `w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition focus:border-brand ${err ? "border-danger" : "border-ink/10"}`;
+  const contactDataLoading = settingsLoading || branchesLoading;
 
   return (
     <>
-      <Seo path="/kontak" title="Kontak" description="Hubungi Jaya Abadi — telepon, WhatsApp, email, dan lokasi kantor." />
-      <PageBanner
-        title={<>Hubungi <span className="text-brand">Kami</span></>}
-        crumbs={[{ label: "Kontak" }]}
-        description="Diskusikan proyek Anda — kami balas cepat di jam kerja."
-      />
+      <Seo path="/kontak" title="Kontak Jaya Abadi" description="Hubungi Jaya Abadi untuk konsultasi konstruksi, renovasi, interior, dan pengawasan proyek di Jabodetabek." image={getContactCtaImage(s, mainBranch)} />
+      <Reveal><ContactBanner branch={mainBranch} /></Reveal>
+      <Reveal delay={60}>{contactDataLoading ? <ContactSectionSkeleton /> : <QuickChannels branch={mainBranch} settings={s} responseTime={responseTime} />}</Reveal>
 
-      <Container className="grid gap-10 py-14 lg:grid-cols-5">
+      <Reveal delay={120}>
+        <Container className="grid min-w-0 gap-10 py-14 lg:items-stretch lg:grid-cols-5">
         {/* Info kontak */}
-        <aside className="space-y-4 lg:col-span-2">
-          {infoItems.map(([Icon, label, value, href]) => (
-            <div key={label} className="flex gap-4 rounded-2xl bg-white p-4 shadow-soft">
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand-dark">
-                <Icon size={19} />
-              </span>
-              <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-wide text-ink-light">{label}</p>
-                {href ? (
-                  <a href={href} target={href.startsWith("http") ? "_blank" : undefined} rel="noreferrer" className="break-words text-sm font-semibold text-ink transition hover:text-brand">
-                    {value}
-                  </a>
-                ) : (
-                  <p className="break-words text-sm font-semibold text-ink">{value}</p>
-                )}
-              </div>
-            </div>
+        <aside className="space-y-4 lg:col-span-2 lg:flex lg:h-full lg:flex-col">
+          {contactDataLoading ? <ContactInfoSkeleton /> : infoItems.map(([Icon, label, value, href]) => (
+            <div key={label} className="flex gap-4 rounded-2xl bg-white p-4 shadow-soft"><span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand-dark"><Icon size={19} /></span><div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-wide text-ink-light">{label}</p>{href ? <a href={href} target={href.startsWith("http") ? "_blank" : undefined} rel="noreferrer" className="break-words text-sm font-semibold text-ink transition hover:text-brand">{value}</a> : <p className="break-words text-sm font-semibold text-ink">{value}</p>}</div></div>
           ))}
 
-          {/* Maps */}
-          {s?.maps_embed && (
-            <div className="overflow-hidden rounded-2xl shadow-soft">
-              <iframe
-                src={s.maps_embed}
-                title="Lokasi kantor Jaya Abadi"
-                loading="lazy"
-                className="h-64 w-full border-0"
-                referrerPolicy="no-referrer-when-downgrade"
-                allowFullScreen
-              />
-            </div>
-          )}
         </aside>
 
-        {/* Form */}
-        <div className="lg:col-span-3">
-          <form onSubmit={handleSubmit((v) => mutation.mutate(v))} className="rounded-2xl bg-white p-6 shadow-soft sm:p-8" noValidate>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <label htmlFor="ct-name" className="mb-1.5 block text-sm font-semibold text-ink">Nama</label>
-                <input id="ct-name" {...register("name")} className={inputCls(errors.name)} placeholder="Nama lengkap" />
-                {errors.name && <p className="mt-1 text-xs text-danger">{errors.name.message}</p>}
-              </div>
-              <div>
-                <label htmlFor="ct-email" className="mb-1.5 block text-sm font-semibold text-ink">Email</label>
-                <input id="ct-email" type="email" {...register("email")} className={inputCls(errors.email)} placeholder="nama@email.com" />
-                {errors.email && <p className="mt-1 text-xs text-danger">{errors.email.message}</p>}
-              </div>
-              <div>
-                <label htmlFor="ct-phone" className="mb-1.5 block text-sm font-semibold text-ink">Telepon</label>
-                <input id="ct-phone" type="tel" {...register("phone")} className={inputCls(errors.phone)} placeholder="0812…" />
-                {errors.phone && <p className="mt-1 text-xs text-danger">{errors.phone.message}</p>}
-              </div>
-              <div>
-                <label htmlFor="ct-subject" className="mb-1.5 block text-sm font-semibold text-ink">Subjek</label>
-                <input id="ct-subject" {...register("subject")} className={inputCls(errors.subject)} placeholder="Renovasi rumah 2 lantai" />
-                {errors.subject && <p className="mt-1 text-xs text-danger">{errors.subject.message}</p>}
-              </div>
-              <div className="sm:col-span-2">
-                <label htmlFor="ct-body" className="mb-1.5 block text-sm font-semibold text-ink">Pesan</label>
-                <textarea id="ct-body" rows={5} {...register("body")} className={inputCls(errors.body)} placeholder="Ceritakan kebutuhan proyek Anda…" />
-                {errors.body && <p className="mt-1 text-xs text-danger">{errors.body.message}</p>}
-              </div>
-            </div>
-
-            {/* Honeypot — disembunyikan dari manusia, isi = bot */}
-            <div className="absolute -left-[9999px]" aria-hidden="true">
-              <label htmlFor="ct-website">Website</label>
-              <input id="ct-website" tabIndex={-1} autoComplete="off" {...register("website")} />
-            </div>
-
-            <div className="mt-6 flex items-center justify-between gap-4">
-              <p className="inline-flex items-center gap-1.5 text-xs text-ink-light">
-                <CheckCircle2 size={14} className="text-brand" /> Data Anda aman & tidak dibagikan.
-              </p>
-              <button
-                type="submit"
-                disabled={mutation.isPending}
-                className="inline-flex items-center gap-2 rounded-full bg-brand px-7 py-3 font-jakarta text-sm font-semibold text-white shadow-[0_10px_24px_rgba(242,107,58,0.30)] transition hover:bg-brand-dark disabled:opacity-60"
-              >
-                {mutation.isPending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-                Kirim Pesan
-              </button>
-            </div>
-          </form>
+        {/* Konsultasi tiga langkah */}
+        <div className="min-w-0 lg:col-span-3 lg:h-full">
+          <ConsultationForm settings={s} branch={mainBranch} />
         </div>
-      </Container>
+        </Container>
+      </Reveal>
+      <Reveal delay={180}><OfficeMap branches={branches} /></Reveal>
+      <Reveal delay={240}><WhatNext settings={s} /></Reveal>
+      <Reveal delay={300}><ContactFaq settings={s} branch={mainBranch} /></Reveal>
+      <Reveal delay={360}><ContactCta settings={s} branch={mainBranch} branches={branches} /></Reveal>
     </>
   );
 }

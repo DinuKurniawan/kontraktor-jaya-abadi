@@ -138,6 +138,9 @@ export default function PricingPackages({ services }) {
                 <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-brand text-white"><Check size={22} /></span>
                 <h3 className="mt-4 font-jakarta text-lg font-bold text-ink">Permintaan terkirim!</h3>
                 <p className="mt-1.5 text-sm text-ink-soft">Tim kami akan menghubungi WhatsApp Anda maksimal 1×24 jam kerja.</p>
+                <a href={`/kontak?layanan=${encodeURIComponent(active.slug)}&paket=${encodeURIComponent(form.pkg.name)}`} className="mt-4 inline-flex text-sm font-bold text-brand hover:underline">
+                  Isi formulir konsultasi lengkap →
+                </a>
                 <button type="button" onClick={() => setForm(null)} className="mt-5 rounded-full bg-ink px-6 py-2.5 text-sm font-bold text-cream transition hover:bg-ink/80">Mengerti</button>
               </div>
             ) : (

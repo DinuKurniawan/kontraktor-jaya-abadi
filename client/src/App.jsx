@@ -48,6 +48,7 @@ const Gallery = L(() => import("./pages/admin/Gallery.jsx"));
 const Subscribers = L(() => import("./pages/admin/Subscribers.jsx"));
 const HeroSlides = L(() => import("./pages/admin/HeroSlides.jsx"));
 const Messages = L(() => import("./pages/admin/Messages.jsx"));
+const Branches = L(() => import("./pages/admin/Branches.jsx"));
 const Media = L(() => import("./pages/admin/Media.jsx"));
 const Settings = L(() => import("./pages/admin/Settings.jsx"));
 const Users = L(() => import("./pages/admin/Users.jsx"));
@@ -122,6 +123,7 @@ export default function App() {
           <Route path="subscribers" element={<Subscribers />} />
           <Route path="hero-slider" element={<HeroSlides />} />
           <Route path="pesan" element={<Messages />} />
+          <Route path="branches" element={<Branches />} />
           <Route path="media" element={<Media />} />
           <Route path="pengaturan" element={<Settings />} />
           <Route path="akun" element={<ChangePassword />} />

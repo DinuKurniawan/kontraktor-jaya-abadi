@@ -28,6 +28,7 @@ import subscribersRoutes, { publicRouter as subscribersPublicRouter } from "./mo
 import milestonesRoutes, { publicRouter as milestonesPublicRouter } from "./modules/milestones/route.js";
 import coreValuesRoutes, { publicRouter as coreValuesPublicRouter } from "./modules/core-values/route.js";
 import galleryRoutes, { publicRouter as galleryPublicRouter } from "./modules/gallery/route.js";
+import branchesRoutes, { publicRouter as branchesPublicRouter } from "./modules/branches/route.js";
 import publicRoutes from "./modules/public-router.js";
 import { sitemap, robots } from "./modules/seo.js";
 import dashboardRoutes from "./modules/dashboard/route.js";
@@ -111,6 +112,8 @@ api.use("/public", subscribersPublicRouter); // POST /subscribe — sebelum catc
 api.use("/public/milestones", milestonesPublicRouter);
 api.use("/public/core-values", coreValuesPublicRouter);
 api.use("/public/gallery", galleryPublicRouter);
+api.use("/public/branches", branchesPublicRouter);
+api.use("/admin/branches", branchesRoutes);
 api.use("/public/service-packages", servicePackagesPublicRouter);
 api.use("/admin/messages", messagesRoutes);
 api.use("/admin/settings", settingsRoutes);

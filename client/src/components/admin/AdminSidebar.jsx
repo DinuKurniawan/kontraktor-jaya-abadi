@@ -15,6 +15,7 @@ import {
   ListOrdered,
   LogOut,
   Mail,
+  MapPin,
   MessageSquareQuote,
   Newspaper,
   Scale,
@@ -41,6 +42,7 @@ const NAV_ITEMS = [
   { to: "/admin/testimoni", label: "Testimoni", icon: MessageSquareQuote },
   { to: "/admin/tim", label: "Tim", icon: Users2 },
   { to: "/admin/pesan", label: "Pesan", icon: Mail, unread: true },
+  { to: "/admin/branches", label: "Cabang", icon: MapPin },
   { to: "/admin/subscribers", label: "Pelanggan", icon: Users2, unread: false },
   { to: "/admin/media", label: "Media", icon: ImageIcon },
   // Grup "Konten Beranda"
@@ -70,7 +72,7 @@ export default function AdminSidebar({ open, onClose }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // Jumlah pesan belum dibaca — badge hidup, di-refresh tiap 30 detik
+  // Jumlah pesan berstatus BARU — badge hidup, di-refresh tiap 30 detik
   const { data: unreadData } = useQuery({
     queryKey: ["unread-count"],
     queryFn: async () => (await api.get("/admin/messages/unread-count")).data.data,
