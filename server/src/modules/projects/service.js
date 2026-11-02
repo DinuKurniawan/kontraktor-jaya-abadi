@@ -75,3 +75,17 @@ async function toggleFlag(id, field) {
 
 export const togglePublish = (id) => toggleFlag(id, "isPublished");
 export const toggleFeatured = (id) => toggleFlag(id, "isFeatured");
+
+// Aksi massal: publish / unpublish / delete banyak
+export async function bulkAction({ action, ids }) {
+  if (!Array.isArray(ids) || ids.length === 0) throw new ApiError(400, "Pilih minimal satu proyek");
+  if (action === "delete") {
+    const res = await prisma.project.deleteMany({ where: { id: { in: ids } } });
+    return { message: `${res.count} proyek dihapus`, count: res.count };
+  }
+  if (action === "publish" || action === "unpublish") {
+    const res = await prisma.project.updateMany({ where: { id: { in: ids } }, data: { isPublished: action === "publish" } });
+    return { message: `${res.count} proyek di${action === "publish" ? "publikasikan" : "tarik (draft)"}`, count: res.count };
+  }
+  throw new ApiError(400, "Aksi tidak dikenal");
+}

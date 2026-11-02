@@ -98,6 +98,7 @@ Semua modul di bawah memakai REST API `/api/admin/*` (wajib login). Backend saat
 | Data fetching | TanStack Query | 5.105 | Cache + invalidasi otomatis di CMS |
 | Form | react-hook-form + Zod | 7.91 / 4.6 | Validasi schema yang sama dengan server |
 | Routing | react-router-dom | 7.18 | SPA routing + lazy loading |
+| Peta | Leaflet | 1.9 | Pemilih titik proyek + geocoding Nominatim tanpa API key |
 | SEO | react-helmet-async | 3.0 | Meta/JSON-LD per halaman |
 | Backend | Express | 5.3 | REST API minimalis, ESM |
 | ORM | Prisma | 6.19 | Type-safe query + migrasi |
@@ -218,7 +219,7 @@ erDiagram
 | --- | --- |
 | `User` (enum `Role`: SUPER_ADMIN/ADMIN/EDITOR) | Akun CMS |
 | `Category` (enum `CategoryType`: PROJECT/POST) | Kategori proyek & artikel |
-| `Project` + `ProjectImage` | Portofolio + galeri gambar |
+| `Project` + `ProjectImage` | Portofolio + galeri; spesifikasi (luas, lantai, durasi, tanggal, arsitek, layanan), cerita (tantangan/solusi/hasil, sorotan & tag JSON), koordinat peta, `viewCount`, meta SEO |
 | `Service` | Layanan utama + harga mulai + brosur + meta SEO |
 | `ServiceScope` / `ServicePackage` | Ruang lingkup + paket harga per layanan |
 | `Post` | Artikel/blog |
@@ -335,7 +336,10 @@ Paginasi (`paginate` util): `?page=1&limit=10&search=kata` — `limit` maksimal 
 | GET | `/api/health` | Health check |
 | GET | `/api/public/services` · `/services/:slug` | Daftar layanan / detail lengkap (scopes, packages, faqs, processSteps, projects, testimonials, prev/next) |
 | GET | `/api/public/service-packages?serviceId=` | Paket harga per layanan |
-| GET | `/api/public/projects` · `/projects/:slug` | Proyek (filter `?category=&status=&service=&search=&page=&limit=&featured=true&exclude=`) |
+| GET | `/api/public/projects` | Daftar proyek terbit — filter `?category=<slug>&status=&service=<slug>&year=2024&sort=terbaru\|terlama\|judul-az\|terpopuler&search=&page=&limit=12&featured=true&exclude=<slug>`; respons menyertakan `facets` (kategori, status, daftar tahun) |
+| GET | `/api/public/projects/stats` | Ringkasan: `total`, `completed`, `ongoing`, `totalArea` (m²), `cities` |
+| GET | `/api/public/projects/map` | Titik peta proyek terbit (id, slug, judul, koordinat, cover, kategori) |
+| GET | `/api/public/projects/:slug` | Detail proyek (spesifikasi, cerita, sorotan, tag, galeri, video, SEO) + `related`, `prev`, `next`; menaikkan `viewCount` |
 | GET | `/api/public/posts` · `/posts/:slug` | Artikel (filter `category`, `search`) |
 | GET | `/api/public/testimonials?serviceId=&limit=` | Testimoni terbit |
 | GET | `/api/public/faqs?serviceId=` | FAQ terbit |
@@ -353,7 +357,7 @@ Paginasi (`paginate` util): `?page=1&limit=10&search=kata` — `limit` maksimal 
 | GET | `/api/auth/me` | ✅ | login | Profil sesi |
 | PUT | `/api/auth/change-password` | ✅ | login | Ganti password sendiri |
 | GET | `/api/admin/dashboard` | ✅ | login | Statistik ringkas |
-| CRUD | `/api/admin/projects` (+ `PATCH /:id/publish`, `PATCH /:id/featured`) | ✅ | login | Kelola proyek |
+| CRUD | `/api/admin/projects` (+ `PATCH /:id/publish`, `PATCH /:id/featured`, `PATCH /bulk`) | ✅ | login | Kelola proyek; `bulk` = `{ action: "publish"\|"unpublish"\|"delete", ids: [] }` (maks 50) |
 | CRUD | `/api/admin/services` (+ `PATCH /reorder`) | ✅ | login | Kelola layanan |
 | CRUD | `/api/admin/service-scopes` (+ `/reorder`) · `/api/admin/service-packages` (+ `/reorder`) | ✅ | login | Scope & paket layanan |
 | CRUD | `/api/admin/posts` (+ `PATCH /:id/publish`) | ✅ | login | Artikel |
@@ -404,7 +408,7 @@ JWT 7 hari di cookie `token` (`httpOnly`, `sameSite=lax`, `secure` saat `NODE_EN
 
 ## 🧭 Panduan Penggunaan CMS
 
-1. **Tambah proyek** (`/admin/proyek/baru`): isi nama, kategori, layanan, lokasi, tahun, status, ringkasan, deskripsi, unggah cover + gambar (via Media lalu pilih URL) → **Simpan**, lalu **Publish** dari daftar.
+1. **Tambah proyek** (`/admin/proyek/baru`): form bertab — **Info Utama** (judul, ringkasan, deskripsi, klien, kategori, status), **Spesifikasi** (luas, lantai, durasi, tanggal mulai/selesai, arsitek, layanan terkait), **Cerita Proyek** (tantangan, solusi, hasil, poin sorotan dinamis, tag), **Lokasi** (klik peta Leaflet / cari alamat untuk lat-lng), **Media** (cover, galeri yang bisa diurutkan, URL video + pratinjau), **SEO** (meta title/description + pratinjau Google) → **Simpan**. Dari daftar, centang beberapa proyek untuk **publish / jadikan draf / hapus massal**; kolom **Dilihat** menampilkan jumlah kunjungan detail.
 2. **Kelola galeri** (`/admin/galeri`): unggah foto, pilih kategori galeri, susun urutan dengan tombol ▲▼ (reorder tersimpan langsung).
 3. **Atur pengaturan situs** (`/admin/pengaturan`): telepon, WhatsApp, email, alamat, embed maps, jam kerja, angka statistik, URL brosur — berlaku keduanya di semua halaman publik.
 4. **Baca pesan masuk** (`/admin/pesan`): daftar pesan dari form kontak & modal paket, tandai dibaca (`PATCH /:id/read`), badge unread muncul di dashboard/sidebar.

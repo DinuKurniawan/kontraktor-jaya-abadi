@@ -36,13 +36,21 @@ async function main() {
   const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
   const admin = await prisma.user.upsert({
     where: { email: ADMIN_EMAIL },
-    update: { name: "Super Admin", role: "SUPER_ADMIN", isActive: true },
+    update: {
+      name: "Super Admin",
+      role: "SUPER_ADMIN",
+      isActive: true,
+      position: "Direktur Utama",
+      photo: IMG("ja-author-super-admin", 400, 400),
+    },
     create: {
       name: "Super Admin",
       email: ADMIN_EMAIL,
       password: passwordHash,
       role: "SUPER_ADMIN",
       isActive: true,
+      position: "Direktur Utama",
+      photo: IMG("ja-author-super-admin", 400, 400),
     },
   });
   console.log("✅ User:", admin.email);
@@ -69,7 +77,29 @@ async function main() {
   }
   console.log("✅ Kategori:", categories.length);
 
-  // 3. Layanan (upsert by slug)
+  // 3. Tag artikel (upsert by slug)
+  const tags = [
+    ["Panduan Konstruksi", "panduan-konstruksi"],
+    ["Manajemen Proyek", "manajemen-proyek"],
+    ["Desain Interior", "desain-interior"],
+    ["Renovasi", "renovasi"],
+    ["Material", "material"],
+    ["Keberlanjutan", "keberlanjutan"],
+    ["Berita Jaya Abadi", "berita-jaya-abadi"],
+    ["Inspirasi Hunian", "inspirasi-hunian"],
+  ];
+  const tagId = {};
+  for (const [name, slug] of tags) {
+    const tag = await prisma.tag.upsert({
+      where: { slug },
+      update: { name },
+      create: { name, slug },
+    });
+    tagId[slug] = tag.id;
+  }
+  console.log("✅ Tag artikel:", tags.length);
+
+  // 4. Layanan (upsert by slug)
   const services = [
     {
       title: "Konstruksi Bangunan",
@@ -130,6 +160,20 @@ async function main() {
       status: "ONGOING",
       coverImage: IMG("ja-proyek-jaya-tower"),
       isFeatured: true,
+      area: 12500,
+      durationMonths: 20,
+      floors: 8,
+      startDate: new Date("2025-03-01"),
+      endDate: null,
+      architect: "Studio Arsitek Nusantara",
+      videoUrl: "https://www.youtube.com/watch?v=jaya-tower",
+      challenge: "Lahan sempit di kawasan padat TB Simatupang dengan akses mobil biffo terbatas dan jam kerja ketat dari pengelola kawasan.",
+      solution: "Metode top-down untuk basement, pengecoran malam hari di luar jam kawasan, dan Just-in-Time material agar lahan kerja tetap lega.",
+      result: "Progres 60% tepat jadwal tanpa satu pun teguran keselamatan dari pengelola kawasan.",
+      highlights: ["Fasad low-e hemat energi", "Metode top-down basement", "BMS terpadu", "Target green building"],
+      tags: ["highrise", "perkantoran", "green-building"],
+      latitude: -6.2915,
+      longitude: 106.8004,
     },
     {
       title: "Perumahan Citra Residence",
@@ -145,6 +189,20 @@ async function main() {
       status: "COMPLETED",
       coverImage: IMG("ja-proyek-citra-residence"),
       isFeatured: false,
+      area: 8400,
+      durationMonths: 14,
+      floors: 2,
+      startDate: new Date("2023-06-01"),
+      endDate: new Date("2024-08-15"),
+      architect: "Biro Desain Habitate",
+      videoUrl: null,
+      challenge: "Lahan berkontur dan rawan genangan; 48 unit harus serah terima sebelum Lebaran dengan budget tetap.",
+      solution: "Terracing kontur, kolam retensi komunal, dan penjadwalan paralel per blok 8 unit dengan QC bertahap.",
+      result: "48 unit serah terima 3 minggu lebih awal; klaim retensi 0 di masa pemeliharaan.",
+      highlights: ["Bebas genangan", "Serah terima lebih awal", "Material lokal low-maintenance"],
+      tags: ["cluster", "hunian", "bogor"],
+      latitude: -6.595,
+      longitude: 106.8166,
     },
     {
       title: "Renovasi Hotel Anggrek",
@@ -160,6 +218,20 @@ async function main() {
       status: "COMPLETED",
       coverImage: IMG("ja-proyek-hotel-anggrek"),
       isFeatured: true,
+      area: 6500,
+      durationMonths: 8,
+      floors: 6,
+      startDate: new Date("2024-01-10"),
+      endDate: new Date("2024-09-20"),
+      architect: null,
+      videoUrl: "https://www.youtube.com/watch?v=hotel-anggrek",
+      challenge: "Hotel tetap beroperasi: 120 kamar harus tetap bisa dijual selama renovasi berlangsung.",
+      solution: "Rotasi per lantai (maks 2 lantai aktif dikerjakan), barrier akustik, dan jadwal bising di luar jam tidur tamu.",
+      result: "Occupancy hanya turun 9% selama 8 bulan; hotel membuka kembali lantai executive lebih cepat dari rencana.",
+      highlights: ["Zero full-closure", "Rotasi per lantai", "Instalasi air & listrik baru"],
+      tags: ["renovasi", "hospitality", "bandung"],
+      latitude: -6.9147,
+      longitude: 107.6098,
     },
     {
       title: "Kantor Ruang Bersama Kolektif",
@@ -175,6 +247,20 @@ async function main() {
       status: "ONGOING",
       coverImage: IMG("ja-proyek-kolektif"),
       isFeatured: false,
+      area: 800,
+      durationMonths: 4,
+      floors: 1,
+      startDate: new Date("2026-02-01"),
+      endDate: null,
+      architect: null,
+      videoUrl: null,
+      challenge: "Bangunan eksisting bersejarah dengan kolom struktural yang tidak boleh disentuh, sementara brief menuntut layout terbuka 120 meja.",
+      solution: "Furniture custom mengalir mengikuti grid kolom dan partisi akustik yang memanfaatkan posisi kolom sebagai pemisah alami ruang.",
+      result: "Layout terbuka tercapai tanpa satu pun modifikasi struktur.",
+      highlights: ["Furniture kayu daur ulang", "Partisi akustik", "Lighting otomatis"],
+      tags: ["interior", "coworking", "adaptive-reuse"],
+      latitude: -6.1995,
+      longitude: 106.8243,
     },
     {
       title: "Jembatan Desa Sukamaju",
@@ -190,6 +276,20 @@ async function main() {
       status: "PLANNING",
       coverImage: IMG("ja-proyek-jembatan"),
       isFeatured: false,
+      area: null,
+      durationMonths: 6,
+      floors: null,
+      startDate: new Date("2026-05-01"),
+      endDate: null,
+      architect: null,
+      videoUrl: null,
+      challenge: "Akses vinjek hanya lewat jalan desa sempit; bentang 45 m membutuhkan alat berat yang tidak muat lewat.",
+      solution: "Perakitan girder di lokasi dengan mobile crane ringan dan penjadwalan pengangkutan material pagi hari saat jalan sepi.",
+      result: "Perencanaan detail engineering disetujui Dinas Bina Marga Kabupaten.",
+      highlights: ["Bentang 45 m", "Lampu tenaga surya", "Pilar ganda anti-rembes"],
+      tags: ["infrastruktur", "jembatan", "desa"],
+      latitude: -6.9214,
+      longitude: 106.9271,
     },
     {
       title: "Gedung Sekolah Harapan Bangsa",
@@ -205,6 +305,20 @@ async function main() {
       status: "PLANNING",
       coverImage: IMG("ja-proyek-sekolah"),
       isFeatured: false,
+      area: 5600,
+      durationMonths: 12,
+      floors: 3,
+      startDate: new Date("2026-07-01"),
+      endDate: null,
+      architect: "Biro Desain Habitate",
+      videoUrl: null,
+      challenge: "Jadwal harus bergantian dengan tahun ajaran: pembangunan tidak boleh mengganggu kelas aktif di gedung lama berdampingan.",
+      solution: "Sekat area kerja dengan hoarding tertinggi 4 m, rute alat berat terpisah dari rute siswa, dan pengecoran getar di luar jam ujian.",
+      result: "Tender DED + konstruksi dimenangkan dengan skedulasi aman untuk 1.200 siswa.",
+      highlights: ["Struktur tahan gempa", "24 ruang kelas", "Asrama guru terpadu"],
+      tags: ["pendidikan", "gedung", "tangerang"],
+      latitude: -6.1783,
+      longitude: 106.6319,
     },
   ];
   for (const p of projects) {
@@ -472,15 +586,19 @@ async function main() {
   }
   console.log("✅ Hero slide:", heroSlides.length);
 
-  // 8. Artikel (upsert by slug)
+  // 9. Artikel (upsert by slug) — 12 artikel, 3 unggulan
   const posts = [
     {
       title: "5 Tips Memilih Kontraktor yang Tepat",
       slug: "5-tips-memilih-kontraktor-yang-tepat",
       category: "tips-konstruksi",
       excerpt: "Banyak keluhan proyek bisa dicegah. Pastikan lima hal ini sebelum menandatangani kontrak kerja.",
-      content:
-        "Banyak keluhan tentang proyek bermuara pada pemilihan kontraktor yang tergesa-gesa. Pertama, cek legalitas dan izin usaha agar tidak ribet saat masalah muncul di tengah jalan. Kedua, minta portofolio dan datangi proyek yang masih berjalan — hasil akhir saja tidak cukup.\n\nKetiga, pastikan kontrak kerja memuat ruang lingkup jelas, termin pembayaran, dan masa pemeliharaan. Keempat, nilai komunikasi: kontraktor yang baik melaporkan progres secara reguler tanpa diminta. Terakhir, jangan langsung tergiur harga termurah — pertimbangkan juga kualitas material, tenaga kerja, dan reputasi pengawasan lapangan.",
+      content: "Banyak keluhan tentang proyek bermuara pada pemilihan kontraktor yang tergesa-gesa. Cek legalitas, portofolio, ruang lingkup kerja, komunikasi, dan kualitas material sebelum menandatangani kontrak. Kontraktor yang baik melaporkan progres secara reguler dan terbuka terhadap pertanyaan klien.",
+      tags: ["panduan-konstruksi", "manajemen-proyek"],
+      isFeatured: true,
+      viewCount: 284,
+      metaTitle: "5 Tips Memilih Kontraktor yang Tepat — Jaya Abadi",
+      metaDescription: "Panduan praktis memilih kontraktor terpercaya dengan kontrak jelas, progres transparan, dan mutu terukur.",
       readTime: 4,
     },
     {
@@ -488,8 +606,12 @@ async function main() {
       slug: "jaya-abadi-menang-tender-jembatan-sukamaju",
       category: "berita",
       excerpt: "Tim kami dipercaya Pemkab Sukabumi untuk membangun jembatan beton 45 meter.",
-      content:
-        "Setelah masa pra-kualifikasi yang ketat, Jaya Abadi resmi menang tender pembangunan jembatan beton bertulang di Desa Sukamaju, Sukabumi. Jembatan bentang 45 meter ini menggantikan jembatan kayu darurat yang tiga kali terkena banjir.\n\nPengerjaan dijadwalkan lima bulan, mencakup pilar ganda, penguatan jalan pendekat, dan lampu tenaga surya. Proyek ini menjadi lanjutan dari lima proyek infrastruktur publik yang kami kerjakan bersama pemerintah daerah.",
+      content: "Setelah masa pra-kualifikasi yang ketat, Jaya Abadi resmi menang tender pembangunan jembatan beton bertulang di Desa Sukamaju, Sukabumi. Pengerjaan mencakup pilar ganda, penguatan jalan pendekat, dan lampu tenaga surya untuk akses publik yang lebih aman.",
+      tags: ["berita-jaya-abadi", "manajemen-proyek", "keberlanjutan"],
+      isFeatured: true,
+      viewCount: 412,
+      metaTitle: "Jaya Abadi Menang Tender Jembatan Sukamaju",
+      metaDescription: "Kabar terbaru proyek jembatan beton 45 meter Jaya Abadi di Desa Sukamaju, Sukabumi.",
       readTime: 3,
     },
     {
@@ -497,13 +619,125 @@ async function main() {
       slug: "kilas-balik-perumahan-citra-residence",
       category: "proyek",
       excerpt: "48 unit rumah dua lantai di Bogor rampung tepat waktu berkat perencanaan material yang matang.",
-      content:
-        "Proyek Citra Residence dimulai Februari 2024 dan selesai pada Desember 2024 — tepat waktu tanpa keterlambatan berarti. Kuncinya ada pada perencanaan material yang dipesan bergelombang sesuai progres, sehingga tidak ada penumpukan maupun penundaan karena menunggu kiriman.\n\nSeluruh serah terima kunci kepada pembeli berjalan lancar karena setiap unit sudah melewati 47 poin inspeksi mutu internal, mulai dari kopling instalasi listrik hingga uji mampu saluran air.",
+      content: "Proyek Citra Residence dimulai Februari 2024 dan selesai pada Desember 2024. Kuncinya ada pada perencanaan material yang dipesan bergelombang sesuai progres, sehingga tidak ada penumpukan maupun penundaan karena menunggu kiriman.",
+      tags: ["inspirasi-hunian", "material", "manajemen-proyek"],
+      isFeatured: true,
+      viewCount: 367,
+      metaTitle: "Kilas Balik Citra Residence — Jaya Abadi",
+      metaDescription: "Cerita penyelesaian 48 unit rumah Citra Residence di Bogor dengan perencanaan material yang matang.",
+      readTime: 3,
+    },
+    {
+      title: "RAB Konstruksi Transparan: Komponen yang Wajib Dicek",
+      slug: "rab-konstruksi-transparan-komponen-wajib-dicek",
+      category: "tips-konstruksi",
+      excerpt: "Pahami komponen RAB agar anggaran pembangunan mudah dipantau sejak awal.",
+      content: "Rencana Anggaran Biaya yang baik memisahkan pekerjaan persiapan, struktur, arsitektur, utilitas, dan pekerjaan akhir. Mintalah satuan, volume, harga material, upah, serta asumsi perubahan agar setiap angka dapat ditinjau bersama.",
+      tags: ["panduan-konstruksi", "material", "manajemen-proyek"],
+      viewCount: 198,
+      metaTitle: "Cara Membaca RAB Konstruksi dengan Transparan",
+      metaDescription: "Pelajari komponen RAB konstruksi supaya anggaran proyek dapat dipantau dan dibahas dengan jelas.",
+      readTime: 4,
+    },
+    {
+      title: "Memilih Material Lantai untuk Area dengan Aktivitas Tinggi",
+      slug: "memilih-material-lantai-area-aktivitas-tinggi",
+      category: "tips-konstruksi",
+      excerpt: "Perbandingan pertimbangan daya tahan, perawatan, dan tampilan untuk lantai komersial.",
+      content: "Area dengan lalu lintas tinggi membutuhkan material yang tahan abrasi, mudah dirawat, dan aman saat basah. Keramik homogen, vinyl komersial, dan batu alam memiliki karakter berbeda sehingga pilihan harus mengikuti pola aktivitas ruang.",
+      tags: ["material", "desain-interior"],
+      viewCount: 156,
+      metaTitle: "Panduan Memilih Material Lantai Komersial",
+      metaDescription: "Pertimbangan memilih material lantai yang awet, aman, dan mudah dirawat untuk area aktivitas tinggi.",
+      readTime: 4,
+    },
+    {
+      title: "Tren Interior Kantor yang Mendukung Kolaborasi",
+      slug: "tren-interior-kantor-mendukung-kolaborasi",
+      category: "proyek",
+      excerpt: "Ruang kerja fleksibel membantu tim berkolaborasi tanpa mengorbankan fokus dan kenyamanan.",
+      content: "Interior kantor modern menggabungkan ruang terbuka, bilik fokus, ruang rapat kecil, dan area informal. Perencanaan akustik, pencahayaan, serta jalur sirkulasi menjadi kunci agar ruang fleksibel tetap nyaman digunakan sepanjang hari.",
+      tags: ["desain-interior", "keberlanjutan"],
+      viewCount: 241,
+      metaTitle: "Tren Interior Kantor untuk Kolaborasi Tim",
+      metaDescription: "Inspirasi penataan interior kantor fleksibel yang seimbang antara kolaborasi, fokus, dan kenyamanan.",
+      readTime: 4,
+    },
+    {
+      title: "Renovasi Rumah Bertahap Tanpa Mengganggu Aktivitas Keluarga",
+      slug: "renovasi-rumah-bertahap-tanpa-mengganggu-keluarga",
+      category: "proyek",
+      excerpt: "Strategi membagi pekerjaan renovasi rumah agar keluarga tetap dapat beraktivitas nyaman.",
+      content: "Renovasi rumah yang dihuni perlu dibagi menjadi zona dan tahapan kerja. Mulailah dari area servis, siapkan jalur sementara untuk listrik dan air, lalu sepakati jam kerja serta prosedur kebersihan dengan tim pelaksana.",
+      tags: ["renovasi", "inspirasi-hunian", "manajemen-proyek"],
+      viewCount: 329,
+      metaTitle: "Tips Renovasi Rumah Bertahap untuk Keluarga",
+      metaDescription: "Cara merencanakan renovasi rumah bertahap agar pekerjaan rapi dan aktivitas keluarga tetap berjalan.",
+      readTime: 3,
+    },
+    {
+      title: "Mengapa Pengawasan Proyek Menjaga Anggaran Tetap Terkendali",
+      slug: "mengapa-pengawasan-proyek-menjaga-anggaran",
+      category: "berita",
+      excerpt: "Pengawasan rutin membantu menemukan deviasi mutu, jadwal, dan biaya sebelum terlambat.",
+      content: "Pengawasan bukan sekadar memeriksa hasil akhir. Inspeksi material, pencatatan volume, dan laporan progres berkala membuat keputusan koreksi dapat diambil lebih cepat dan mengurangi pekerjaan ulang yang membebani anggaran.",
+      tags: ["manajemen-proyek", "berita-jaya-abadi"],
+      viewCount: 275,
+      metaTitle: "Peran Pengawasan dalam Mengendalikan Anggaran Proyek",
+      metaDescription: "Alasan pengawasan proyek penting untuk menjaga mutu, jadwal, dan anggaran konstruksi tetap terkendali.",
+      readTime: 3,
+    },
+    {
+      title: "Membangun Rumah Hemat Energi dari Tahap Desain",
+      slug: "membangun-rumah-hemat-energi-tahap-desain",
+      category: "proyek",
+      excerpt: "Strategi desain pasif dan material tepat dapat menekan konsumsi energi rumah.",
+      content: "Rumah hemat energi dimulai dari orientasi bangunan, bukaan silang, pelindung matahari, dan pemilihan material selubung. Sistem lampu dan sanitasi yang efisien kemudian melengkapi strategi pasif tersebut.",
+      tags: ["keberlanjutan", "inspirasi-hunian", "material"],
+      viewCount: 221,
+      metaTitle: "Panduan Desain Rumah Hemat Energi",
+      metaDescription: "Langkah desain pasif dan pemilihan material untuk membangun rumah yang lebih hemat energi.",
+      readTime: 4,
+    },
+    {
+      title: "Checklist Serah Terima Bangunan untuk Pemilik",
+      slug: "checklist-serah-terima-bangunan-pemilik",
+      category: "tips-konstruksi",
+      excerpt: "Gunakan checklist sederhana untuk memeriksa bangunan sebelum serah terima.",
+      content: "Pemeriksaan serah terima mencakup struktur terlihat, finishing, pintu dan jendela, instalasi listrik, sanitasi, kebocoran, serta dokumen garansi. Catat setiap temuan dengan lokasi dan foto agar tindak lanjut mudah dilacak.",
+      tags: ["panduan-konstruksi", "manajemen-proyek"],
+      viewCount: 174,
+      metaTitle: "Checklist Serah Terima Bangunan",
+      metaDescription: "Daftar pemeriksaan penting sebelum pemilik menerima bangunan dari kontraktor.",
+      readTime: 3,
+    },
+    {
+      title: "Mengenal Tahapan Renovasi Fasad dan Atap",
+      slug: "mengenal-tahapan-renovasi-fasad-dan-atap",
+      category: "proyek",
+      excerpt: "Kenali urutan pemeriksaan dan pekerjaan agar renovasi fasad serta atap lebih aman.",
+      content: "Renovasi fasad dan atap dimulai dari audit kondisi, pengamanan area, pembongkaran terukur, perbaikan struktur, dan pemasangan lapisan pelindung. Urutan ini mencegah kerusakan baru akibat air dan cuaca selama pekerjaan.",
+      tags: ["renovasi", "material", "inspirasi-hunian"],
+      viewCount: 143,
+      metaTitle: "Tahapan Renovasi Fasad dan Atap Rumah",
+      metaDescription: "Urutan aman renovasi fasad dan atap mulai dari audit kondisi hingga lapisan pelindung.",
+      readTime: 4,
+    },
+    {
+      title: "Jaya Abadi Perkuat Standar Mutu melalui Laporan Mingguan",
+      slug: "jaya-abadi-perkuat-standar-mutu-laporan-mingguan",
+      category: "berita",
+      excerpt: "Laporan progres mingguan membuat klien dapat mengikuti mutu dan kemajuan pekerjaan secara terbuka.",
+      content: "Laporan mingguan Jaya Abadi merangkum pekerjaan selesai, rencana pekan berikutnya, kendala, dokumentasi lapangan, dan status anggaran. Format yang konsisten membantu tim dan klien mengambil keputusan berdasarkan data.",
+      tags: ["berita-jaya-abadi", "manajemen-proyek"],
+      viewCount: 188,
+      metaTitle: "Standar Mutu Jaya Abadi dan Laporan Progres Mingguan",
+      metaDescription: "Bagaimana laporan progres mingguan membantu menjaga mutu dan transparansi proyek Jaya Abadi.",
       readTime: 3,
     },
   ];
   for (const p of posts) {
-    const { category, ...data } = p;
+    const { category, tags: postTags, ...data } = p;
     const payload = {
       ...data,
       authorId: admin.id,
@@ -512,11 +746,14 @@ async function main() {
       isPublished: true,
       publishedAt: new Date(),
     };
-    await prisma.post.upsert({
+    const post = await prisma.post.upsert({
       where: { slug: p.slug },
       update: payload,
       create: payload,
     });
+    await prisma.postTag.deleteMany({ where: { postId: post.id } });
+    const tagRows = postTags.map((slug) => tagId[slug]).filter(Boolean).map((id) => ({ postId: post.id, tagId: id }));
+    if (tagRows.length) await prisma.postTag.createMany({ data: tagRows, skipDuplicates: true });
   }
   console.log("✅ Artikel:", posts.length);
 

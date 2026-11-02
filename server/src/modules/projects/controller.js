@@ -21,6 +21,12 @@ export const create = asyncHandler(async (req, res) => {
   sendSuccess(res, { data: project, status: 201 });
 });
 
+// PATCH /api/admin/projects/bulk — { action: publish|unpublish|delete, ids: [] }
+export const bulk = asyncHandler(async (req, res) => {
+  const result = await projectService.bulkAction(req.body);
+  sendSuccess(res, { data: result });
+});
+
 // PUT /api/admin/projects/:id
 export const update = asyncHandler(async (req, res) => {
   const project = await projectService.updateProject(req.params.id, req.body);

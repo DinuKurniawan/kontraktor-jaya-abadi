@@ -1,12 +1,12 @@
 // Kartu proyek — foto rounded-2xl dengan overlay lokasi, judul di bawah
 import { MapPin } from "lucide-react";
 
-export default function ProjectCard({ title, location, image, category, year, badge, onClick }) {
+export default function ProjectCard({ title, location, image, category, year, badge, onClick, clampTitle = false }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="group block w-full text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
+      className="group flex h-full w-full flex-col text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
     >
       <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-cream-deep">
         {image ? (
@@ -30,7 +30,7 @@ export default function ProjectCard({ title, location, image, category, year, ba
           </div>
         )}
       </div>
-      <h3 className="mt-4 font-jakarta text-lg font-bold leading-snug text-ink transition-colors group-hover:text-brand">
+      <h3 className={`mt-4 font-jakarta text-lg font-bold leading-snug text-ink transition-colors group-hover:text-brand ${clampTitle ? "line-clamp-2 min-h-[3.1rem]" : ""}`}>
         {title}
       </h3>
     </button>

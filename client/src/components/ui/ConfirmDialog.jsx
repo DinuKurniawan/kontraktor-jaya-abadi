@@ -9,6 +9,7 @@ export default function ConfirmDialog({
   title = "Konfirmasi",
   message = "Apakah Anda yakin?",
   confirmLabel = "Hapus",
+  confirmVariant = "danger",
   loading = false,
 }) {
   return (
@@ -22,7 +23,7 @@ export default function ConfirmDialog({
           <Button variant="outline" onClick={onClose} disabled={loading}>
             Batal
           </Button>
-          <Button variant="danger" loading={loading} onClick={onConfirm}>
+          <Button variant={confirmVariant} loading={loading} onClick={onConfirm}>
             {confirmLabel}
           </Button>
         </>

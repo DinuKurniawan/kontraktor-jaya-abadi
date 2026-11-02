@@ -32,3 +32,8 @@ export const remove = asyncHandler(async (req, res) => {
 export const publish = asyncHandler(async (req, res) => {
   sendSuccess(res, { data: await postService.togglePublish(req.params.id) });
 });
+
+// PATCH /api/admin/posts/bulk — aksi massal artikel terpilih
+export const bulk = asyncHandler(async (req, res) => {
+  sendSuccess(res, { data: await postService.bulkAction(req.body.ids, req.body.action) });
+});

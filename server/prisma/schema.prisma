@@ -44,6 +44,8 @@ model User {
   password  String
   role      Role     @default(EDITOR)
   isActive  Boolean  @default(true)
+  position  String?
+  photo     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -86,6 +88,28 @@ model Project {
   categoryId  String?
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+
+  // Spesifikasi
+  area          Int? // m²
+  durationMonths Int?
+  floors        Int?
+  startDate     DateTime?
+  endDate       DateTime?
+  architect     String?
+  videoUrl      String?
+  // Cerita proyek
+  challenge     String? @db.Text
+  solution      String? @db.Text
+  result        String? @db.Text
+  highlights    Json? // array string
+  tags          Json? // array string
+  // Lokasi & statistik
+  latitude      Float?
+  longitude     Float?
+  viewCount     Int     @default(0)
+  // SEO
+  metaTitle       String?
+  metaDescription String?
 
   category Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   service  Service?        @relation(fields: [serviceId], references: [id], onDelete: SetNull)
@@ -195,17 +219,47 @@ model Post {
   categoryId  String?
   readTime    Int       @default(5) // estimasi waktu baca (menit)
   isPublished Boolean   @default(false)
+  isFeatured  Boolean   @default(false)
+  viewCount   Int       @default(0)
+  metaTitle       String?
+  metaDescription String?
   publishedAt DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   author   User      @relation("PostAuthor", fields: [authorId], references: [id], onDelete: Cascade)
   category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  tags     PostTag[]
 
   @@index([authorId])
   @@index([categoryId])
   @@index([isPublished, publishedAt])
+  @@index([isPublished, isFeatured])
+  @@index([viewCount])
   @@map("posts")
+}
+
+// Tag artikel — satu artikel dapat memiliki banyak tag dan sebaliknya
+model Tag {
+  id    String    @id @default(cuid())
+  name  String
+  slug  String    @unique
+  posts PostTag[]
+
+  @@map("tags")
+}
+
+// Relasi many-to-many artikel dan tag
+model PostTag {
+  postId String
+  tagId  String
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@index([tagId])
+  @@map("post_tags")
 }
 
 // Testimoni klien

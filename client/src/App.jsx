@@ -16,8 +16,8 @@ const ServicesPage = L(() => import("./pages/public/ServicePages.jsx").then((m) 
 const ServiceDetailPage = L(() => import("./pages/public/ServicePages.jsx").then((m) => ({ default: m.ServiceDetailPage })));
 const ProjectsPage = L(() => import("./pages/public/ProjectPages.jsx").then((m) => ({ default: m.ProjectsPage })));
 const ProjectDetailPage = L(() => import("./pages/public/ProjectPages.jsx").then((m) => ({ default: m.ProjectDetailPage })));
-const ArticlesPage = L(() => import("./pages/public/ArticlePages.jsx").then((m) => ({ default: m.ArticlesPage })));
-const ArticleDetailPage = L(() => import("./pages/public/ArticlePages.jsx").then((m) => ({ default: m.ArticleDetailPage })));
+const ArticlesPage = L(() => import("./pages/public/BlogPage.jsx"));
+const ArticleDetailPage = L(() => import("./pages/public/BlogDetailPage.jsx"));
 const ContactPage = L(() => import("./pages/public/ContactPage.jsx"));
 const NotFound = L(() => import("./pages/public/PublicPlaceholder.jsx").then((m) => ({ default: m.NotFound })));
 
@@ -32,6 +32,7 @@ const ServicePackagesAdmin = L(() => import("./pages/admin/ServicePackages.jsx")
 const Categories = L(() => import("./pages/admin/Categories.jsx"));
 const Posts = L(() => import("./pages/admin/Posts.jsx"));
 const PostForm = L(() => import("./pages/admin/PostForm.jsx"));
+const Tags = L(() => import("./pages/admin/Tags.jsx"));
 const Testimonials = L(() => import("./pages/admin/Testimonials.jsx"));
 const Team = L(() => import("./pages/admin/Team.jsx"));
 const Partners = L(() => import("./pages/admin/Partners.jsx"));
@@ -100,8 +101,12 @@ export default function App() {
           <Route path="layanan/:id/paket" element={<ServicePackagesAdmin />} />
           <Route path="kategori" element={<Categories />} />
           <Route path="artikel" element={<Posts />} />
+          <Route path="tags" element={<Tags />} />
           <Route path="artikel/baru" element={<PostForm />} />
           <Route path="artikel/:id/edit" element={<PostForm />} />
+          <Route path="posts" element={<Posts />} />
+          <Route path="posts/baru" element={<PostForm />} />
+          <Route path="posts/:id/edit" element={<PostForm />} />
           <Route path="testimoni" element={<Testimonials />} />
           <Route path="tim" element={<Team />} />
           <Route path="partners" element={<Partners />} />

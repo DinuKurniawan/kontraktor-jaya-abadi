@@ -8,10 +8,20 @@ export const createSchema = z.object({
   coverImage: z.string().min(1, "Cover wajib diunggah"),
   categoryId: z.string().min(1).optional().nullable(),
   isPublished: z.boolean().optional(),
+  isFeatured: z.boolean().optional(),
+  metaTitle: z.string().max(150).optional().nullable(),
+  metaDescription: z.string().max(300).optional().nullable(),
+  publishedAt: z.coerce.date().optional().nullable(),
+  tagIds: z.array(z.string().min(1)).max(20).optional(),
   // readTime dihitung otomatis server; publishedAt diatur saat terbit
 });
 
 export const updateSchema = createSchema.partial();
+
+export const bulkSchema = z.object({
+  ids: z.array(z.string().min(1)).min(1).max(100),
+  action: z.enum(["PUBLISH", "DRAFT", "FEATURE", "UNFEATURE", "DELETE"]),
+});
 
 // ?status=DRAFT|PUBLISHED (opsional)
 export const listQuerySchema = z.object({

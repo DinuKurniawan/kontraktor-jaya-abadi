@@ -1,0 +1,16 @@
+-- AlterTable
+ALTER TABLE "projects" ADD COLUMN     "architect" TEXT,
+ADD COLUMN     "area" INTEGER,
+ADD COLUMN     "challenge" TEXT,
+ADD COLUMN     "durationMonths" INTEGER,
+ADD COLUMN     "endDate" TIMESTAMP(3),
+ADD COLUMN     "floors" INTEGER,
+ADD COLUMN     "highlights" JSONB,
+ADD COLUMN     "latitude" DOUBLE PRECISION,
+ADD COLUMN     "longitude" DOUBLE PRECISION,
+ADD COLUMN     "result" TEXT,
+ADD COLUMN     "solution" TEXT,
+ADD COLUMN     "startDate" TIMESTAMP(3),
+ADD COLUMN     "tags" JSONB,
+ADD COLUMN     "videoUrl" TEXT,
+ADD COLUMN     "viewCount" INTEGER NOT NULL DEFAULT 0;

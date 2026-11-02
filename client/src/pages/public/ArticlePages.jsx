@@ -1,38 +1,63 @@
 // Artikel — daftar (besar + grid, filter kategori, search, paginasi)
 // dan detail (meta, konten, bagikan, terkait)
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Check, Link2, Search } from "lucide-react";
+import { CalendarDays, Clock3, Eye } from "lucide-react";
 import api from "../../lib/axios.js";
 import Container from "../../components/public/Container.jsx";
 import PageBanner from "../../components/public/PageBanner.jsx";
+import BlogBanner from "../../components/public/blog/BlogBanner.jsx";
+import BlogFilterBar from "../../components/public/blog/BlogFilterBar.jsx";
+import FeaturedPostsHero from "../../components/public/blog/FeaturedPostsHero.jsx";
+import BlogSidebar from "../../components/public/blog/BlogSidebar.jsx";
+import EmptyState from "../../components/public/blog/EmptyState.jsx";
+import PostCardV2 from "../../components/public/blog/PostCardV2.jsx";
+import AuthorBox from "../../components/public/blog/AuthorBox.jsx";
+import ArticleNewsletter from "../../components/public/blog/ArticleNewsletter.jsx";
+import { ArticleNavigation, ArticleToc, prepareArticleContent, ReadingProgress, RelatedCarousel, ShareButtons } from "../../components/public/blog/ArticleDetailParts.jsx";
 import PillButton from "../../components/public/PillButton.jsx";
-import ArticleCard from "../../components/public/ArticleCard.jsx";
-import Pagination from "../../components/ui/Pagination.jsx";
+import Pagination from "../../components/public/Pagination.jsx";
 import Seo from "../../components/public/Seo.jsx";
+import Reveal from "../../components/public/Reveal.jsx";
+import Skeleton from "../../components/ui/Skeleton.jsx";
 import { toast } from "../../components/ui/Toast.jsx";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
 const fmt = (d) => d && new Date(d).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+const initials = (name = "Jaya Abadi") => name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "JA";
 
 export function ArticlesPage() {
   const [params, setParams] = useSearchParams();
   const search = params.get("q") ?? "";
   const category = params.get("kategori") ?? "";
-  const [page, setPage] = useState(1);
+  const tag = params.get("tag") ?? "";
+  const sortValue = params.get("urutan") ?? "terbaru";
+  const sort = ["terbaru", "terpopuler", "terlama"].includes(sortValue) ? sortValue : "terbaru";
+  const page = Math.max(1, Number.parseInt(params.get("halaman"), 10) || 1);
 
   const setParam = (key) => (value) => {
-    const next = new URLSearchParams(params);
+    const next = new URLSearchParams(window.location.search);
     value ? next.set(key, value) : next.delete(key);
+    next.delete("halaman");
     setParams(next, { replace: true });
-    setPage(1);
+  };
+
+  const setPage = (value) => {
+    const next = new URLSearchParams(window.location.search);
+    if (value > 1) next.set("halaman", String(value));
+    else next.delete("halaman");
+    setParams(next, { replace: true });
+  };
+
+  const resetFilters = () => {
+    setParams({}, { replace: true });
   };
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["public-posts", { page, search, category }],
-    queryFn: async () => (await api.get("/public/posts", { params: { page, limit: 7, search: search || undefined, category: category || undefined } })).data,
+    queryKey: ["public-posts", { page, search, category, tag, sort }],
+    queryFn: async () => (await api.get("/public/posts", { params: { page, limit: 9, search: search || undefined, category: category || undefined, tag: tag || undefined, sort } })).data,
   });
 
   const { data: cats } = useQuery({
@@ -40,91 +65,83 @@ export function ArticlesPage() {
     queryFn: async () => (await api.get("/public/categories", { params: { type: "POST", limit: 20 } })).data.data,
   });
 
+  const { data: tags } = useQuery({
+    queryKey: ["public-tags"],
+    queryFn: async () => (await api.get("/public/tags")).data.data,
+  });
+
+  const { data: globalFacetCategories = [] } = useQuery({
+    queryKey: ["public-post-category-facets"],
+    queryFn: async () => (await api.get("/public/posts", { params: { page: 1, limit: 1 } })).data.facets?.categories ?? [],
+    staleTime: 60 * 1000,
+  });
+
   const rows = data?.data ?? [];
-  const [first, ...rest] = rows;
+  const facetCategories = data?.facets?.categories ?? [];
+  const facetBySlug = Object.fromEntries(facetCategories.map((item) => [item.slug, item]));
+  const categories = [
+    ...(cats ?? []).map((item) => ({ ...item, count: facetBySlug[item.slug]?.count ?? 0 })),
+    ...facetCategories.filter((item) => !(cats ?? []).some((categoryItem) => categoryItem.slug === item.slug)),
+  ];
+  const globalFacetBySlug = Object.fromEntries(globalFacetCategories.map((item) => [item.slug, item]));
+  const popularCategories = [
+    ...(cats ?? []).map((item) => ({ ...item, count: globalFacetBySlug[item.slug]?.count ?? 0 })),
+    ...globalFacetCategories.filter((item) => !(cats ?? []).some((categoryItem) => categoryItem.slug === item.slug)),
+  ];
 
   return (
     <>
       <Seo path="/artikel" title="Artikel" description="Tips, panduan, dan kabar terbaru seputar konstruksi." />
-      <PageBanner
-        title={<>Artikel & <span className="text-brand">Wawasan</span></>}
-        crumbs={[{ label: "Artikel" }]}
-        description="Tips, panduan, dan kabar terbaru seputar konstruksi."
-      />
+      <Reveal><BlogBanner
+        total={data?.meta?.total}
+        value={search}
+        onChange={setParam("q")}
+        suggestions={[...(cats ?? []).map((categoryItem) => categoryItem.name), ...(tags ?? []).map((tag) => tag.name)]}
+      /></Reveal>
+      {page === 1 && !search && !category && !tag && sort === "terbaru" && <Reveal><FeaturedPostsHero /></Reveal>}
       <Container className="py-14">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <div className="relative max-w-md flex-1">
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => setParam("q")(e.target.value)}
-              placeholder="Cari artikel…"
-              aria-label="Cari artikel"
-              className="w-full rounded-full border border-ink/10 bg-white py-2.5 pl-11 pr-4 text-sm outline-none focus:border-brand"
-            />
-            <Search size={15} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-ink-light" />
-          </div>
-          <div className="flex flex-wrap gap-2" role="group" aria-label="Filter kategori artikel">
-            <button
-              type="button"
-              onClick={() => setParam("kategori")("")}
-              aria-pressed={category === ""}
-              className={`rounded-full px-4 py-2 text-xs font-semibold transition ${category === "" ? "bg-ink text-cream" : "bg-white text-ink-soft hover:text-brand"}`}
-            >
-              Semua
-            </button>
-            {(cats ?? []).map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                onClick={() => setParam("kategori")(c.slug)}
-                aria-pressed={category === c.slug}
-                className={`rounded-full px-4 py-2 text-xs font-semibold transition ${category === c.slug ? "bg-ink text-cream" : "bg-white text-ink-soft hover:text-brand"}`}
-              >
-                {c.name}
-              </button>
-            ))}
-          </div>
+        <Reveal>
+          <BlogFilterBar
+            categories={categories}
+            tags={tags ?? []}
+            search={search}
+            activeSearch={search}
+            category={category}
+            tag={tag}
+            sort={sort}
+            total={data?.meta?.total ?? 0}
+            onSearchChange={setParam("q")}
+            onCategoryChange={setParam("kategori")}
+            onTagChange={setParam("tag")}
+            onSortChange={setParam("urutan")}
+            onReset={resetFilters}
+          />
+        </Reveal>
+
+        <div className="mt-10 grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_18rem]">
+          <Reveal as="main" className="min-w-0">
+            {isLoading ? (
+              <div className="grid gap-6 sm:grid-cols-2">
+                {Array.from({ length: 6 }, (_, index) => <div key={index} className="overflow-hidden rounded-2xl bg-white p-3 shadow-soft"><Skeleton className="aspect-video w-full bg-cream-deep" rounded="rounded-xl" /><div className="mt-4 space-y-3"><Skeleton className="h-3 w-1/3 bg-cream-deep" /><Skeleton className="h-5 w-full bg-cream-deep" /><Skeleton className="h-4 w-4/5 bg-cream-deep" /></div></div>)}
+              </div>
+            ) : isError ? (
+              <p className="rounded-2xl border border-danger/20 bg-danger/5 px-5 py-10 text-center text-sm text-danger">Gagal memuat artikel. Coba muat ulang halaman.</p>
+            ) : rows.length === 0 ? (
+              <EmptyState categories={popularCategories} onCategoryChange={setParam("kategori")} onReset={resetFilters} />
+            ) : (
+              <div className="grid items-stretch gap-6 sm:grid-cols-2">
+                {rows.map((post) => <PostCardV2 key={post.id} post={post} highlightQuery={search} />)}
+              </div>
+            )}
+
+            {data && Number(data.meta?.total ?? 0) > 9 && data.meta.totalPages > 1 && (
+              <div className="mt-10 flex justify-center">
+                <Pagination page={data.meta.page} totalPages={data.meta.totalPages} onChange={setPage} label="Paginasi artikel" />
+              </div>
+            )}
+          </Reveal>
+          <Reveal as="div" delay={120}><BlogSidebar categories={popularCategories} tags={tags ?? []} activeTag={tag} onTagChange={setParam("tag")} /></Reveal>
         </div>
-
-        {isLoading ? (
-          <div className="mt-10 grid gap-6 lg:grid-cols-2">
-            <div className="aspect-[4/3] animate-pulse rounded-2xl bg-cream-deep" />
-            <div className="space-y-4">{[0, 1, 2].map((i) => <div key={i} className="h-24 animate-pulse rounded-2xl bg-cream-deep" />)}</div>
-          </div>
-        ) : isError ? (
-          <p className="mt-10 text-center text-sm text-danger">Gagal memuat artikel. Coba muat ulang halaman.</p>
-        ) : rows.length === 0 ? (
-          <p className="mt-10 text-center text-sm text-ink-light">Tidak ada artikel yang cocok.</p>
-        ) : (
-          <div className="mt-10 grid gap-8 lg:grid-cols-2">
-            {/* Artikel pertama besar */}
-            <Link to={`/artikel/${first.slug}`} className="block rounded-2xl bg-white p-3 shadow-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
-              <ArticleCard
-                title={first.title}
-                category={first.category?.name}
-                date={fmt(first.publishedAt)}
-                readTime={first.readTime}
-                image={img(first.coverImage)}
-              />
-              <p className="mt-2 line-clamp-2 pl-1 text-sm text-ink-soft">{first.excerpt}</p>
-            </Link>
-            {/* Sisanya grid kecil */}
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-              {rest.map((p) => (
-                <Link key={p.id} to={`/artikel/${p.slug}`} className="rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
-                  <ArticleCard title={p.title} category={p.category?.name} date={fmt(p.publishedAt)} readTime={p.readTime} image={img(p.coverImage)} />
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {data && data.meta.totalPages > 1 && (
-          <div className="mt-10 flex justify-center">
-            <Pagination page={data.meta.page} totalPages={data.meta.totalPages} onChange={setPage} />
-          </div>
-        )}
       </Container>
     </>
   );
@@ -140,6 +157,10 @@ export function ArticleDetailPage() {
     queryFn: async () => (await api.get(`/public/posts/${slug}`)).data.data,
     retry: false,
   });
+
+  const preparedContent = useMemo(() => prepareArticleContent(post?.content), [post?.content]);
+  const url = typeof window !== "undefined" ? window.location.href : "";
+  const authorName = post?.author?.name ?? "Jaya Abadi";
 
   if (isError) {
     const is404 = error?.response?.status === 404;
@@ -171,10 +192,6 @@ export function ArticleDetailPage() {
     );
   }
 
-  const url = window.location.href;
-  const shareText = encodeURIComponent(post.title);
-  const shareWa = `https://wa.me/?text=${shareText}%20${encodeURIComponent(url)}`;
-  const shareFb = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
   const copyLink = async () => {
     try {
       await navigator.clipboard.writeText(url);
@@ -188,60 +205,63 @@ export function ArticleDetailPage() {
 
   return (
     <>
+      <ReadingProgress />
       <Seo
         path={`/artikel/${slug}`}
         title={post.title}
         description={post.excerpt}
         type="article"
         image={img(post.coverImage) || undefined}
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: post.title,
+          description: post.excerpt,
+          image: post.coverImage ? [img(post.coverImage)] : undefined,
+          datePublished: post.publishedAt,
+          dateModified: post.updatedAt || post.publishedAt,
+          author: { "@type": "Person", name: authorName },
+          publisher: { "@type": "Organization", name: "Jaya Abadi" },
+          keywords: (post.tags ?? []).map((tag) => tag.name).join(", "),
+          mainEntityOfPage: { "@type": "WebPage", "@id": url },
+        }}
       />
-      <Container className="max-w-3xl pt-12">
-        {post.category?.name && (
-          <Link to={`/artikel?kategori=${post.category.slug}`} className="text-xs font-bold uppercase tracking-wide text-brand hover:underline">
-            {post.category.name}
-          </Link>
-        )}
-        <h1 className="mt-2 font-jakarta text-3xl font-extrabold leading-tight text-ink sm:text-4xl">{post.title}</h1>
-        <p className="mt-3 text-sm text-ink-light">
-          {fmt(post.publishedAt)}  ·  {post.readTime} mnt baca  ·  Oleh {post.author?.name ?? "Jaya Abadi"}
-        </p>
-
-        {/* Tombol bagikan */}
-        <div className="mt-5 flex items-center gap-2">
-          <a href={shareWa} target="_blank" rel="noreferrer" aria-label="Bagikan ke WhatsApp" className="rounded-full bg-[#25D366]/12 px-4 py-2 text-xs font-semibold text-[#128C4A] transition hover:bg-[#25D366]/25">
-            WhatsApp
-          </a>
-          <a href={shareFb} target="_blank" rel="noreferrer" aria-label="Bagikan ke Facebook" className="rounded-full bg-[#1877F2]/12 px-4 py-2 text-xs font-semibold text-[#1877F2] transition hover:bg-[#1877F2]/25">
-            Facebook
-          </a>
-          <button type="button" onClick={copyLink} aria-label="Salin tautan artikel" className="inline-flex items-center gap-1.5 rounded-full bg-cream-deep px-4 py-2 text-xs font-semibold text-ink transition hover:bg-ink hover:text-cream">
-            {copied ? <Check size={13} /> : <Link2 size={13} />} {copied ? "Tersalin" : "Salin Link"}
-          </button>
-        </div>
-
-        <img src={img(post.coverImage)} alt={post.title} className="mt-7 aspect-[16/9] w-full rounded-2xl object-cover shadow-soft-lg" />
-      </Container>
-
-      {/* Konten — HTML dari editor admin, dirender dengan tipografi nyaman */}
-      <Container className="max-w-3xl py-10">
-        <article className="prose-jaya" dangerouslySetInnerHTML={{ __html: post.content }} />
-      </Container>
-
-      {/* Terkait */}
-      {(post.related ?? []).length > 0 && (
-        <section className="bg-cream-deep py-14">
-          <Container>
-            <h2 className="mb-7 font-jakarta text-2xl font-extrabold text-ink">Artikel <span className="text-brand">Terkait</span></h2>
-            <div className="grid gap-6 sm:grid-cols-3">
-              {post.related.map((p) => (
-                <Link key={p.id} to={`/artikel/${p.slug}`} className="rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand">
-                  <ArticleCard title={p.title} category={p.category?.name} date={fmt(p.publishedAt)} readTime={p.readTime} image={img(p.coverImage)} />
-                </Link>
-              ))}
+      <Container className="max-w-6xl pt-12">
+        <header className="max-w-4xl">
+          {post.category?.name && <Link to={`/artikel?kategori=${post.category.slug}`} className="text-xs font-bold uppercase tracking-[0.16em] text-brand hover:underline">{post.category.name}</Link>}
+          <h1 className="mt-3 font-jakarta text-3xl font-extrabold leading-tight text-ink sm:text-5xl">{post.title}</h1>
+          <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-4">
+            <div className="flex items-center gap-2.5">
+              {post.author?.photo ? <img src={img(post.author.photo)} alt="" width={40} height={40} className="h-10 w-10 rounded-full object-cover" /> : <span aria-hidden className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-soft text-xs font-extrabold text-brand">{initials(authorName)}</span>}
+              <div><p className="text-sm font-bold text-ink">{authorName}</p><p className="text-xs text-ink-light">{post.author?.position || "Jaya Abadi"}</p></div>
             </div>
-          </Container>
-        </section>
-      )}
+            <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-ink-light">
+              <span className="inline-flex items-center gap-1.5"><CalendarDays size={14} /> Terbit {fmt(post.publishedAt)}</span>
+              <span className="inline-flex items-center gap-1.5"><CalendarDays size={14} /> Diperbarui {fmt(post.updatedAt || post.publishedAt)}</span>
+              <span className="inline-flex items-center gap-1.5"><Clock3 size={14} /> {post.readTime || 1} mnt baca</span>
+              <span className="inline-flex items-center gap-1.5"><Eye size={14} /> {post.viewCount ?? 0} dilihat</span>
+            </div>
+          </div>
+        </header>
+
+        <div className="mt-8 overflow-hidden rounded-3xl bg-cream-deep shadow-soft-lg">
+          {post.coverImage && <img src={img(post.coverImage)} alt={post.title} className="aspect-[16/7] w-full object-cover" />}
+        </div>
+        <div className="mt-6"><ShareButtons url={url} title={post.title} copied={copied} onCopy={copyLink} /></div>
+
+        <div className="mt-10 grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_16rem]">
+          <main className="min-w-0">
+            <article className="prose-jaya text-[1rem] sm:text-[1.05rem]" dangerouslySetInnerHTML={{ __html: preparedContent.html }} />
+            {(post.tags ?? []).length > 0 && <div className="mt-8 flex flex-wrap items-center gap-2 border-t border-ink/10 pt-5" aria-label="Tag artikel"><span className="mr-1 text-xs font-bold text-ink-light">Tag:</span>{post.tags.map((tag) => <Link key={tag.id ?? tag.slug} to={`/artikel?tag=${tag.slug}`} className="rounded-full bg-cream-deep px-3 py-1.5 text-xs font-semibold text-ink-soft transition hover:bg-brand-soft hover:text-brand">#{tag.name}</Link>)}</div>}
+            <AuthorBox author={post.author} />
+            <ArticleNavigation previous={post.previous} next={post.next} />
+            <ArticleNewsletter />
+          </main>
+          <ArticleToc headings={preparedContent.headings} />
+        </div>
+      </Container>
+
+      <div className="mt-14"><RelatedCarousel posts={post.related ?? []} /></div>
     </>
   );
 }
