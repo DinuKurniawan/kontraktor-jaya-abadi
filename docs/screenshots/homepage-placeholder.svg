@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Placeholder tangkapan layar Jaya Abadi</title>
+  <desc id="desc">Tangkapan layar utama belum tersedia.</desc>
+  <rect width="1280" height="720" fill="#f7efe3"/>
+  <rect x="72" y="72" width="1136" height="576" rx="28" fill="#fffaf4" stroke="#e7a45b" stroke-width="4"/>
+  <path d="M144 520h992" stroke="#e7a45b" stroke-width="8" stroke-linecap="round" opacity=".45"/>
+  <path d="M210 430l130-150 100 92 130-178 190 236 106-116 154 116" fill="none" stroke="#d97732" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="640" y="220" text-anchor="middle" fill="#713f12" font-family="Arial, sans-serif" font-size="42" font-weight="700">Jaya Abadi</text>
+  <text x="640" y="275" text-anchor="middle" fill="#92400e" font-family="Arial, sans-serif" font-size="26">Placeholder tangkapan layar utama</text>
+  <text x="640" y="590" text-anchor="middle" fill="#a16207" font-family="Arial, sans-serif" font-size="22">Ganti dengan screenshot homepage aktual</text>
+</svg>
