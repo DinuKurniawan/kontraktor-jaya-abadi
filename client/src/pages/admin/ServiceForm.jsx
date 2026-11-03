@@ -27,6 +27,7 @@ const serviceSchema = z.object({
   description: z.string().min(20, "Deskripsi lengkap minimal 20 karakter"),
   icon: z.string().min(1, "Pilih ikon"),
   sortOrder: z.coerce.number().int().min(0, "Urutan minimal 0"),
+  categoryId: z.string().optional(),
 });
 
 function slugify(text = "") {

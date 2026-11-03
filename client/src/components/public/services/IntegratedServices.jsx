@@ -4,7 +4,7 @@
  * satu kalimat + tautan ke layanan terkait (jika ada). Mobile: vertikal.
  * Di bawahnya 3 lencana manfaat.
  */
-import { ChevronDown, FileText, Hammer, HardHat, Link2, PenTool, ShieldCheck, Wallet } from "lucide-react";
+import { ChevronDown, ChevronRight, FileText, Hammer, HardHat, Link2, PenTool, ShieldCheck, Wallet } from "lucide-react";
 import Container from "../Container.jsx";
 
 const NODES = [
@@ -53,7 +53,10 @@ export default function IntegratedServices({ services }) {
                   <p className="mt-1 max-w-[15rem] text-sm leading-relaxed text-ink-soft">{text}</p>
                 </div>
                 {i < NODES.length - 1 && (
-                  <ChevronDown aria-hidden size={16} className="absolute -bottom-6 left-[1.6rem] hidden border-transparent md:hidden lg:block" />
+                  <>
+                    <ChevronDown aria-hidden size={16} className="absolute -bottom-6 left-[1.6rem] md:hidden" />
+                    <ChevronRight aria-hidden size={18} className="absolute right-0 top-7 z-10 hidden translate-x-1/2 -translate-y-1/2 bg-white text-brand md:block" />
+                  </>
                 )}
               </li>
             );

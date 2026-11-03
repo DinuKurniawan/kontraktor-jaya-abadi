@@ -77,6 +77,7 @@ export default function ServiceGrid({ services: initialServices, isLoading: init
   const showChips = !facetsLoading && categories.length > 1;
 
   const odd = rows.length % 2 === 1;
+  const hasActiveFilter = Boolean(activeCategory || debouncedQ.trim());
 
   return (
     <div>
@@ -139,7 +140,8 @@ export default function ServiceGrid({ services: initialServices, isLoading: init
           const Icon = SERVICE_ICONS[s.icon] ?? Wrench;
           const isLast = i === rows.length - 1;
           // Ganjil → kartu terakhir melebar penuh baris pada konteks 2 & 4 kolom
-          const stretch = odd && isLast ? "sm:col-span-2 xl:col-span-4" : "";
+           // Saat filter aktif, pertahankan ukuran kartu normal seperti tampilan Semua.
+           const stretch = !hasActiveFilter && odd && isLast ? "sm:col-span-2 xl:col-span-4" : "";
           const featured = s.isFeatured ? "sm:col-span-2 xl:col-span-2" : "";
           return (
             <Link key={s.id} to={`/layanan/${s.slug}`}
@@ -147,10 +149,10 @@ export default function ServiceGrid({ services: initialServices, isLoading: init
               {s.isFeatured && (
                 <span className="absolute right-3 top-3 z-10 rounded-full bg-brand px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-soft">Paling Dicari</span>
               )}
-              <div className="relative overflow-hidden bg-cream-deep">
-                <AspectImage src={img(s.image || s.heroImage)} alt={s.title} ratio="4/3" className="w-full transition duration-500 group-hover:scale-105" />
-                {/* Ikon bundar menimpa batas gambar */}
-                <span className="absolute -bottom-6 left-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand text-white shadow-soft-lg ring-4 ring-white">
+               <div className="relative bg-cream-deep">
+                 <AspectImage src={img(s.image || s.heroImage)} alt={s.title} ratio="4/3" className="min-h-[220px] w-full transition duration-500 group-hover:scale-105 sm:min-h-[240px]" />
+                 {/* Ikon bundar menimpa batas gambar */}
+                 <span className="absolute -bottom-6 left-5 z-10 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand text-white shadow-soft-lg ring-4 ring-white">
                   <Icon size={22} />
                 </span>
               </div>
