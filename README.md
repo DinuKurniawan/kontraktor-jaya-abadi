@@ -21,23 +21,24 @@ Tangkapan layar belum disimpan di repositori. Daftar gambar yang disarankan ada 
 - [Skema Database](#9-skema-database)
 - [Prasyarat](#10-prasyarat)
 - [Instalasi dan Menjalankan Lokal](#11-instalasi-dan-menjalankan-lokal)
-- [Variabel Lingkungan](#12-variabel-lingkungan)
-- [Script NPM](#13-script-npm)
-- [Peta Route](#14-peta-route)
-- [Dokumentasi API](#15-dokumentasi-api)
-- [Autentikasi dan Otorisasi](#16-autentikasi-dan-otorisasi)
-- [Upload, Media dan Lampiran](#17-upload-media-dan-lampiran)
-- [Panduan Penggunaan CMS](#18-panduan-penggunaan-cms)
-- [Konten Awal Seed](#19-konten-awal-seed)
-- [Pengujian dan Kualitas](#20-pengujian-dan-kualitas)
-- [SEO dan Performa](#21-seo-dan-performa)
-- [Deployment](#22-deployment)
-- [Keamanan](#23-keamanan)
-- [Pemecahan Masalah](#24-pemecahan-masalah)
-- [Roadmap](#25-roadmap)
-- [Kontribusi](#26-kontribusi)
-- [Changelog Ringkas](#27-changelog-ringkas)
-- [Lisensi dan Kontak](#28-lisensi-dan-kontak)
+- [Migrasi Database](#12-migrasi-database)
+- [Variabel Lingkungan](#13-variabel-lingkungan)
+- [Script NPM](#14-script-npm)
+- [Peta Route](#15-peta-route)
+- [Dokumentasi API](#16-dokumentasi-api)
+- [Autentikasi dan Otorisasi](#17-autentikasi-dan-otorisasi)
+- [Upload, Media dan Lampiran](#18-upload-media-dan-lampiran)
+- [Panduan Penggunaan CMS](#19-panduan-penggunaan-cms)
+- [Konten Awal Seed](#20-konten-awal-seed)
+- [Pengujian dan Kualitas](#21-pengujian-dan-kualitas)
+- [SEO dan Performa](#22-seo-dan-performa)
+- [Deployment](#23-deployment)
+- [Keamanan](#24-keamanan)
+- [Pemecahan Masalah](#25-pemecahan-masalah)
+- [Roadmap](#26-roadmap)
+- [Kontribusi](#27-kontribusi)
+- [Changelog Ringkas](#28-changelog-ringkas)
+- [Lisensi dan Kontak](#29-lisensi-dan-kontak)
 
 ## 3. Tentang Proyek
 
@@ -45,6 +46,9 @@ Jaya Abadi adalah monorepo dengan dua aplikasi:
 
 - `client/`: SPA React + Vite untuk pengunjung dan CMS admin.
 - `server/`: REST API Express + Prisma yang terhubung ke PostgreSQL.
+
+Dokumen requirement bertahap tersedia di [`PRD.md`](PRD.md). Dokumentasi pola
+backend dan endpoint yang lebih rinci tersedia di [`server/README.md`](server/README.md).
 
 ### Pengguna
 
@@ -61,11 +65,11 @@ Jaya Abadi adalah monorepo dengan dua aplikasi:
 | Model Prisma | **28** | `server/prisma/schema.prisma` |
 | Enum Prisma | **10** | `server/prisma/schema.prisma` |
 | Migrasi | **1** | `server/prisma/migrations/` (`init`) |
-| Endpoint publik | **32** | `publicRouter` dan `public-router.js` |
+| Endpoint publik | **32** | Deklarasi route pada `publicRouter` dan `public-router.js`; 31 pola URL unik karena `/api/public/faqs` dideklarasikan di dua router |
 | Endpoint admin | **134** | route module yang dipasang di `/api/admin/*` |
 | Halaman publik | **10** | route React publik, termasuk 404 |
 | Halaman admin | **38** | login + 37 route area admin, termasuk placeholder 404 |
-| Modul CMS admin | **27** | 25 prefix `/api/admin/*` + Media + Pengguna |
+| Modul CMS admin | **27** | Dashboard, 25 prefix `/api/admin/*`, Media, dan Pengguna |
 
 Endpoint `/api/auth/*`, `/api/users/*`, `/api/media/*`, dan `/api/health` dihitung terpisah dari angka admin karena tidak dipasang di prefix `/api/admin/*`.
 
@@ -127,7 +131,7 @@ Semua modul admin di bawah memerlukan login. Saat ini backend hanya menerapkan p
 | Galeri | CRUD galeri | Kategori, publish, reorder | Semua user login |
 | Kantor Cabang | CRUD kantor | Satu kantor utama, jam 7 hari, koordinat, peta, publish | Semua user login |
 | Pesan Masuk | Membaca dan memproses konsultasi | Status cepat, filter, catatan autosave, lampiran, WhatsApp, CSV | Semua user login |
-| Subscriber | Daftar newsletter | Listing dan pagination | Semua user login |
+| Subscriber | Daftar newsletter | Daftar dan ekspor CSV di sisi client | Semua user login |
 | Media | Upload dan kelola media | Maks. 10 file, 5 MB/file, kompresi WebP, thumbnail | Semua user login |
 | Pengaturan Situs | Key-value settings | Kontak, statistik, konten umum, response time | Semua user login |
 | Pengguna | CRUD akun CMS | Aktif/nonaktif, role, ganti password | **SUPER_ADMIN** |
@@ -567,31 +571,64 @@ erDiagram
 
 ## 11. Instalasi dan Menjalankan Lokal
 
-```bash
-# 1. Clone
-git clone <URL_REPO>
-cd kotraktor-jaya-abadi
+### PowerShell (Windows)
 
-# 2. Install root, server, dan client
+```powershell
+# 1. Clone ke nama folder repository yang dipakai proyek.
+git clone <URL_REPO> kotraktor-jaya-abadi
+Set-Location .\kotraktor-jaya-abadi
+
+# 2. Install dependency root, server, dan client.
 npm run install-all
 
-# 3. Salin environment
+# 3. Salin environment.
+Copy-Item .\server\.env.example .\server\.env
+Copy-Item .\client\.env.example .\client\.env
+# Isi DATABASE_URL, JWT_SECRET, dan SEED_ADMIN_PASSWORD di server\.env.
+
+# 4. Buat database lokal PostgreSQL.
+createdb -U postgres jayaabadi
+
+# 5. Validasi, buat/terapkan migration init, dan generate client.
+Set-Location .\server
+npx prisma validate
+npx prisma migrate dev
+npx prisma generate
+
+# 6. Isi data awal.
+npm run seed
+
+# 7. Jalankan server dan client dari root.
+Set-Location ..
+npm run dev
+```
+
+Jika `createdb` belum ada di `PATH`, jalankan executable PostgreSQL dari
+PowerShell, misalnya:
+
+```powershell
+& "C:\Program Files\PostgreSQL\18\bin\createdb.exe" -U postgres jayaabadi
+```
+
+### Bash
+
+```bash
+git clone <URL_REPO> kotraktor-jaya-abadi
+cd kotraktor-jaya-abadi
+npm run install-all
 cp server/.env.example server/.env
 cp client/.env.example client/.env
-# Isi DATABASE_URL dan SEED_ADMIN_PASSWORD.
-
-# 4. Validasi dan migrasi database
+createdb -U postgres jayaabadi
 cd server
 npx prisma validate
 npx prisma migrate dev
-
-# 5. Isi data awal
+npx prisma generate
 npm run seed
-
-# 6. Jalankan server dan client dari root
 cd ..
 npm run dev
 ```
+
+`npx prisma migrate dev` menerapkan migration `init` yang tersedia saat ini.
 
 Alamat lokal:
 
@@ -607,36 +644,110 @@ Akun seed memakai email `admin@jayaabadi.co.id`. Password dibaca dari `SEED_ADMI
 
 ### Reset database pengembangan
 
-Perintah berikut destruktif untuk database yang sedang dipakai:
+Perintah ini destruktif dan hanya boleh dipakai pada database lokal. Prosedur
+lengkap, termasuk backup dan verifikasi diff, ada di [Migrasi Database](#12-migrasi-database).
 
-```bash
-cd server
-npx prisma migrate reset
+```powershell
+Set-Location .\server
+npx prisma migrate reset --force --skip-seed
 npm run seed
 ```
 
-Jalankan hanya pada database development.
+## 12. Migrasi Database
 
-### Migrasi Prisma
+### Riwayat dan SQL manual
 
-Riwayat migration proyek baru ini dirapikan menjadi satu migration bernama
-`init` di `server/prisma/migrations/`. Migration tersebut berisi schema Prisma
-terakhir dan SQL khusus yang diperlukan database, termasuk aturan satu kantor
-utama.
+Proyek ini belum dirilis ke produksi, sehingga riwayat migration sengaja
+dirapikan menjadi satu migration `20261103045625_init`.
+`migration_lock.toml` tetap dipertahankan dengan `provider = "postgresql"`.
 
-Untuk membuat migration berikutnya selama pengembangan:
+SQL hasil Prisma tetap berada di migration tersebut. SQL khusus ditempatkan di
+bagian paling bawah dengan komentar `-- Custom SQL`.
+
+| Nama objek | SQL | Tujuan | Dampak bila hilang |
+| --- | --- | --- | --- |
+| `branches_one_main_idx` | `CREATE UNIQUE INDEX "branches_one_main_idx" ON "branches"("isMain") WHERE "isMain" = true;` | Menjamin hanya satu kantor memiliki `isMain = true`. | Dua kantor utama dapat tersimpan bersamaan. |
+
+Index parsial ini sengaja tidak ditulis di `schema.prisma` karena Prisma belum
+mewakili predikat `WHERE` tersebut.
+
+### Aturan perubahan schema
+
+- Sebelum rilis pertama, perubahan schema boleh digabung kembali ke `init`
+  memakai prosedur squash di bawah.
+- Setelah rilis, setiap perubahan menjadi migration baru. Jangan mengubah
+  migration yang sudah diterapkan.
+- Gunakan awalan kata kerja yang jelas: `add_`, `rename_`, `drop_`, atau
+  `alter_`.
+- Uji di database lokal, lalu gunakan `npx prisma migrate deploy` di server.
+- SQL manual baru harus ditulis di bagian bawah migration dengan komentar
+  `-- Custom SQL` dan dicatat di tabel dokumentasi ini.
+
+### Peringatan perintah database
+
+Jangan memakai `npx prisma db push` atau `npx prisma migrate reset` pada
+database yang berisi data penting.
+
+`db push` tidak mengenal SQL manual, sehingga partial index kantor utama bisa
+hilang. `migrate reset` menghapus data dan tabel `_prisma_migrations`.
+Gunakan `migrate dev` untuk development dan `migrate deploy` untuk production.
+
+### Prosedur squash sebelum rilis pertama
+
+Tidak ada dokumen prosedur `MG1` terpisah di `docs/`; prosedur yang berlaku
+adalah:
 
 ```powershell
-cd server
-npx prisma migrate dev --name add_nama_perubahan
+Set-Location .\server
+
+# Backup migration lama sebelum operasi destruktif.
+Copy-Item .\prisma\migrations .\prisma\migrations_backup -Recurse
+
+# Hapus semua folder migration, pertahankan migration_lock.toml.
+Get-ChildItem .\prisma\migrations -Directory | Remove-Item -Recurse -Force
+
+# Hanya untuk database lokal development.
+npx prisma migrate reset --force --skip-seed
+npx prisma migrate dev --create-only --name init
+
+# Tempelkan kembali SQL manual di bagian paling bawah migration.sql.
+npx prisma migrate dev
+npx prisma migrate status
+npx prisma migrate diff --from-migrations .\prisma\migrations --to-schema-datamodel .\prisma\schema.prisma --shadow-database-url postgresql://USER:PASSWORD@localhost:5432/jayaabadi_shadow
 ```
 
-Gunakan nama deskriptif berbasis kata kerja. Setelah proyek berjalan di
-produksi, gunakan awalan yang jelas seperti `add_`, `rename_`, `drop_`, atau
-`alter_`. Selama pengembangan awal sebelum rilis pertama, gabungkan perubahan
-schema ke `init` menggunakan prosedur squash migration.
+Verifikasi harus menunjukkan tepat satu migration, database up to date, dan
+diff kosong. Buat database shadow lokal sementara bila belum tersedia, lalu
+hapus setelah verifikasi.
 
-## 12. Variabel Lingkungan
+### Reset dan baseline
+
+Reset lokal development:
+
+```powershell
+Set-Location .\server
+npx prisma migrate reset --force --skip-seed
+npm run seed
+```
+
+Untuk database yang sudah memiliki schema yang sama dan perlu dicatat sebagai
+sudah menerapkan migration, gunakan baseline dengan hati-hati:
+
+```powershell
+npx prisma migrate resolve --applied 20261103045625_init
+```
+
+Jangan memakai `migrate resolve` untuk menggantikan migration pada database
+kosong atau untuk mengabaikan perubahan schema yang belum diverifikasi.
+
+### Backup lokal
+
+`server/prisma/migrations_backup/` dan `server/prisma/backup.sql` adalah file
+cadangan sementara yang di-ignore Git. `backup.sql` dapat memuat data lokal,
+sehingga tidak boleh di-commit atau dibagikan. Hapus keduanya setelah migration
+baru dipastikan normal.
+
+## 13. Variabel Lingkungan
 
 ### Server
 
@@ -660,7 +771,7 @@ schema ke `init` menggunakan prosedur squash migration.
 | `VITE_SITE_URL` | Opsional | `http://localhost:5173` | Canonical, Open Graph, JSON-LD. |
 | `VITE_WA_NUMBER` | Opsional | `6281234567890` | Fallback WhatsApp pada `FaqSection`; settings/branch tetap sumber utama komponen kontak. |
 
-## 13. Script NPM
+## 14. Script NPM
 
 | Lokasi | Script | Fungsi |
 | --- | --- | --- |
@@ -678,7 +789,7 @@ schema ke `init` menggunakan prosedur squash migration.
 
 Tidak ada script `lint` atau `test` di manifest saat ini. TODO: tambahkan test runner dan linting standar.
 
-## 14. Peta Route
+## 15. Peta Route
 
 ### Route React publik
 
@@ -713,48 +824,48 @@ Tidak ada script `lint` atau `test` di manifest saat ini. TODO: tambahkan test r
 | `/admin/subscribers`, `/admin/hero-slider`, `/admin/pesan`, `/admin/branches`, `/admin/media`, `/admin/pengaturan`, `/admin/akun` | Operasional | Semua user login |
 | `/admin/pengguna` | Pengguna | `SUPER_ADMIN` |
 
-## 15. Dokumentasi API
+## 16. Dokumentasi API
 
 ### Modul publik
 
-| Method | Path | Auth | Deskripsi |
-| --- | --- | --- | --- |
-| GET | `/api/health` | Tidak | Health check. |
-| GET | `/api/public/services`, `/api/public/services/:slug` | Tidak | Daftar/detail layanan terbit. |
-| GET | `/api/public/projects`, `/api/public/projects/:slug` | Tidak | Daftar/detail proyek terbit. |
-| GET | `/api/public/projects/map`, `/api/public/projects/stats` | Tidak | Titik peta dan statistik proyek. |
-| GET | `/api/public/posts`, `/api/public/posts/:slug`, `/api/public/posts/featured`, `/api/public/posts/popular` | Tidak | Artikel terbit. |
-| GET | `/api/public/tags`, `/api/public/testimonials`, `/api/public/team` | Tidak | Tag, testimoni, dan tim. |
-| GET | `/api/public/categories`, `/api/public/faqs`, `/api/public/partners`, `/api/public/certificates` | Tidak | Kategori, FAQ, dan konten publik. |
-| GET | `/api/public/features`, `/api/public/process-steps`, `/api/public/before-after`, `/api/public/estimate-prices` | Tidak | Konten beranda. |
-| GET | `/api/public/milestones`, `/core-values`, `/gallery`, `/branches` | Tidak | Konten Tentang dan kantor. |
-| GET | `/api/public/hero-slides` | Tidak | Slide hero aktif. |
-| GET | `/api/public/service-packages?serviceId=` | Tidak | Paket per layanan. |
-| GET | `/api/public/settings` | Tidak | Settings publik yang tidak sensitif. |
-| POST | `/api/public/subscribe` | Rate limit dasar | Subscriber newsletter. |
-| POST | `/api/public/messages` | 5/jam/IP | Pesan konsultasi, honeypot, ticket. |
-| POST | `/api/public/messages/attachments` | 5/jam/IP | Lampiran JPG/PNG/WebP/PDF. |
+| Method | Path | Auth | Role | Deskripsi |
+| --- | --- | --- | --- | --- |
+| GET | `/api/health` | Tidak | — | Health check. |
+| GET | `/api/public/services`, `/api/public/services/:slug` | Tidak | — | Daftar/detail layanan terbit. |
+| GET | `/api/public/projects`, `/api/public/projects/:slug` | Tidak | — | Daftar/detail proyek terbit. |
+| GET | `/api/public/projects/map`, `/api/public/projects/stats` | Tidak | — | Titik peta dan statistik proyek. |
+| GET | `/api/public/posts`, `/api/public/posts/:slug`, `/api/public/posts/featured`, `/api/public/posts/popular` | Tidak | — | Artikel terbit. |
+| GET | `/api/public/tags`, `/api/public/testimonials`, `/api/public/team` | Tidak | — | Tag, testimoni, dan tim. |
+| GET | `/api/public/categories`, `/api/public/faqs`, `/api/public/partners`, `/api/public/certificates` | Tidak | — | Kategori, FAQ, dan konten publik. |
+| GET | `/api/public/features`, `/api/public/process-steps`, `/api/public/before-after`, `/api/public/estimate-prices` | Tidak | — | Konten beranda. |
+| GET | `/api/public/milestones`, `/api/public/core-values`, `/api/public/gallery`, `/api/public/branches` | Tidak | — | Konten Tentang dan kantor. |
+| GET | `/api/public/hero-slides` | Tidak | — | Slide hero aktif. |
+| GET | `/api/public/service-packages?serviceId=` | Tidak | — | Paket per layanan. |
+| GET | `/api/public/settings` | Tidak | — | Settings publik yang tidak sensitif. |
+| POST | `/api/public/subscribe` | Rate limit global | — | Subscriber newsletter. |
+| POST | `/api/public/messages` | 5/jam/IP | — | Pesan konsultasi, honeypot, ticket. |
+| POST | `/api/public/messages/attachments` | 5/jam/IP | — | Lampiran JPG/PNG/WebP/PDF. |
 
 ### Modul admin
 
-| Prefix | Method umum | Auth/role | Deskripsi |
-| --- | --- | --- | --- |
-| `/api/admin/categories` | GET, GET `/:id`, POST, PUT, DELETE | Login | Kategori. |
-| `/api/admin/dashboard` | GET | Login | Statistik dashboard. |
-| `/api/admin/projects` | GET, POST, GET/PUT/DELETE `/:id`, PATCH bulk/publish/featured | Login | Proyek. |
-| `/api/admin/services` | GET, POST, GET/PUT/DELETE `/:id`, PATCH reorder | Login | Layanan. |
-| `/api/admin/service-scopes` | GET, POST, GET/PUT/DELETE `/:id`, PATCH reorder | Login | Scope layanan. |
-| `/api/admin/service-packages` | GET, POST, GET/PUT/DELETE `/:id`, PATCH reorder | Login | Paket layanan. |
-| `/api/admin/hero-slides` | GET, POST, GET/PUT/DELETE `/:id` | Login | Slide hero. |
-| `/api/admin/posts` | GET, POST, GET/PUT/DELETE `/:id`, PATCH bulk/publish | Login | Artikel. |
-| `/api/admin/tags` | GET, POST, PUT/DELETE `/:id` | Login | Tag. |
-| `/api/admin/testimonials`, `/api/admin/team`, `/api/admin/partners`, `/api/admin/certificates` | CRUD + reorder/publish sesuai modul | Login | Konten profil. |
-| `/api/admin/faqs`, `/api/admin/features`, `/api/admin/process-steps`, `/api/admin/before-after` | CRUD + reorder | Login | Konten beranda. |
-| `/api/admin/estimate-prices`, `/api/admin/milestones`, `/api/admin/core-values`, `/api/admin/gallery` | CRUD + reorder bila tersedia | Login | Kalkulator/Tentang. |
-| `/api/admin/branches` | GET, POST, GET/PUT/DELETE `/:id` | Login | Cabang dan kantor utama. |
-| `/api/admin/messages` | GET, GET `/:id`, PATCH, PATCH `/:id/read`, DELETE, GET `/export`, GET `/unread-count` | Login | Pesan masuk, status, catatan, CSV. |
-| `/api/admin/settings` | GET, PUT | Login | Site settings. |
-| `/api/admin/subscribers` | GET | Login | Subscriber. |
+| Prefix | Method umum | Auth | Role | Deskripsi |
+| --- | --- | --- | --- | --- |
+| `/api/admin/categories` | GET, GET `/:id`, POST, PUT, DELETE | JWT | Semua role login | Kategori. |
+| `/api/admin/dashboard` | GET | JWT | Semua role login | Statistik dashboard. |
+| `/api/admin/projects` | GET, POST, GET/PUT/DELETE `/:id`, PATCH bulk/publish/featured | JWT | Semua role login | Proyek. |
+| `/api/admin/services` | GET, POST, GET/PUT/DELETE `/:id`, PATCH reorder | JWT | Semua role login | Layanan. |
+| `/api/admin/service-scopes` | GET, POST, GET/PUT/DELETE `/:id`, PATCH reorder | JWT | Semua role login | Scope layanan. |
+| `/api/admin/service-packages` | GET, POST, GET/PUT/DELETE `/:id`, PATCH reorder | JWT | Semua role login | Paket layanan. |
+| `/api/admin/hero-slides` | GET, POST, GET/PUT/DELETE `/:id` | JWT | Semua role login | Slide hero. |
+| `/api/admin/posts` | GET, POST, GET/PUT/DELETE `/:id`, PATCH bulk/publish | JWT | Semua role login | Artikel. |
+| `/api/admin/tags` | GET, POST, PUT/DELETE `/:id` | JWT | Semua role login | Tag. |
+| `/api/admin/testimonials`, `/api/admin/team`, `/api/admin/partners`, `/api/admin/certificates` | CRUD + reorder/publish sesuai modul | JWT | Semua role login | Konten profil. |
+| `/api/admin/faqs`, `/api/admin/features`, `/api/admin/process-steps`, `/api/admin/before-after` | CRUD + reorder | JWT | Semua role login | Konten beranda. |
+| `/api/admin/estimate-prices`, `/api/admin/milestones`, `/api/admin/core-values`, `/api/admin/gallery` | CRUD + reorder bila tersedia | JWT | Semua role login | Kalkulator/Tentang. |
+| `/api/admin/branches` | GET, POST, GET/PUT/DELETE `/:id` | JWT | Semua role login | Cabang dan kantor utama. |
+| `/api/admin/messages` | GET, GET `/:id`, PATCH, PATCH `/:id/read`, DELETE, GET `/export`, GET `/unread-count` | JWT | Semua role login | Pesan masuk, status, catatan, CSV. |
+| `/api/admin/settings` | GET, PUT | JWT | Semua role login | Site settings. |
+| `/api/admin/subscribers` | GET | JWT | Semua role login | Subscriber. |
 
 Endpoint operasional di luar prefix admin:
 
@@ -784,7 +895,12 @@ Error:
 }
 ```
 
-Parameter umum: `page`, `limit`, `search`, `sort`, `category`, `status`, `serviceId`. Endpoint proyek publik juga memakai `year`, `service`, `featured`, `exclude`. `meta` berisi pagination; endpoint proyek publik dapat menambahkan `facets` berisi kategori, status, dan tahun.
+Parameter umum: `page`, `limit`, `search`, `sort`, `category`, `status`, dan `serviceId` bila didukung modul. Endpoint proyek publik memakai `q`, `layanan`, `tahun`, `urutan`, `status`, `kategori`, dan `halaman` dari UI; endpoint artikel memakai pencarian, kategori, tag, urutan, dan halaman. `meta` berisi `{ total, page, limit, totalPages }` pada endpoint berpaginasi. Daftar proyek juga dapat mengembalikan `facets` berisi kategori, status, dan tahun.
+
+Jika terjadi race condition saat dua request mencoba menandai kantor utama,
+partial index dapat menghasilkan respons `409` dengan format standar
+`{ "success": false, "message": "Data sudah ada — gunakan nilai lain", "errors": null }`.
+Operasi admin normal lebih dulu menonaktifkan kantor utama lain dalam transaksi.
 
 ### Contoh proyek
 
@@ -832,7 +948,7 @@ Respons tiket di atas berasal dari smoke test lokal dan record uji langsung diha
 
 > Dokumentasi backend yang lebih rinci ada di [`server/README.md`](server/README.md).
 
-## 16. Autentikasi dan Otorisasi
+## 17. Autentikasi dan Otorisasi
 
 | Modul | SUPER_ADMIN | ADMIN | EDITOR |
 | --- | --- | --- | --- |
@@ -844,7 +960,7 @@ Status di atas mengikuti kode backend saat ini. `users/route.js` memakai `requir
 
 Login membuat JWT 7 hari dengan payload `sub` dan `role`, lalu menyimpannya pada cookie `token` dengan `httpOnly`, `sameSite=lax`, `path=/`, dan `secure=true` hanya ketika `NODE_ENV=production`. Header `Authorization: Bearer` juga diterima middleware.
 
-## 17. Upload, Media dan Lampiran
+## 18. Upload, Media dan Lampiran
 
 | Jenis | Tipe | Batas | Lokasi |
 | --- | --- | --- | --- |
@@ -855,7 +971,7 @@ Media admin memakai `sharp`: gambar diputar sesuai metadata, diubah maksimal 160
 
 Untuk migrasi ke S3/Cloudinary, pertahankan kontrak URL respons, pindahkan storage adapter pada modul `media` dan `messages`, simpan key/object URL di database, lalu tambahkan lifecycle cleanup dan private access policy.
 
-## 18. Panduan Penggunaan CMS
+## 19. Panduan Penggunaan CMS
 
 ### Tugas umum
 
@@ -864,7 +980,7 @@ Untuk migrasi ke S3/Cloudinary, pertahankan kontrak URL respons, pindahkan stora
 3. **Galeri:** upload media lebih dulu, tambah item galeri, pilih kategori, atur urutan, lalu publish.
 4. **Beranda/Tentang:** isi settings, hero slider, mitra, sertifikat, keunggulan, process steps, milestone, nilai, dan galeri.
 5. **Pesan masuk:** buka `/admin/pesan`, filter status BARU, buka detail, ubah status, tulis catatan internal, lalu gunakan WhatsApp atau ekspor CSV.
-6. **Subscriber:** buka `/admin/subscribers` untuk membaca daftar email. Fitur pengiriman kampanye newsletter belum tersedia.
+6. **Subscriber:** buka `/admin/subscribers` untuk membaca daftar email dan gunakan **Ekspor CSV** di sisi client. Fitur pengiriman kampanye newsletter belum tersedia.
 
 ### Urutan pengisian situs baru
 
@@ -878,39 +994,48 @@ Untuk migrasi ke S3/Cloudinary, pertahankan kontrak URL respons, pindahkan stora
 8. Cabang kantor dan jam operasional.
 9. Uji halaman publik, form kontak, sitemap, dan SEO.
 
-## 19. Konten Awal Seed
+## 20. Konten Awal Seed
 
-Seed terakhir berhasil dijalankan dan melaporkan:
+Seed bersifat idempoten: data utama memakai `upsert`, sedangkan relasi tag
+artikel dan FAQ layanan dibersihkan lalu dibuat ulang. Ringkasan jumlah record
+setelah seed lokal:
 
-| Data | Jumlah seed |
+| Model/tabel | Jumlah |
 | --- | ---: |
-| User | 1 |
-| Kategori | 8 |
-| Tag artikel | 8 |
-| Layanan | 4 |
-| Scope layanan | 17 |
-| Paket layanan | 12 |
-| Proyek | 6 |
-| Testimoni | 3 |
-| Tim | 4 |
-| Hero slide | 3 |
-| Artikel | 12 |
-| SiteSetting | 27 |
-| Cabang | 2 |
-| Mitra | 8 |
-| Sertifikat | 4 |
-| FAQ | 6 |
-| Keunggulan | 6 |
-| Langkah alur | 5 |
-| Before/After | 3 |
-| Harga estimasi | 4 |
-| Milestone | 7 |
-| Nilai perusahaan | 5 |
-| Galeri | 12 |
+| `User` | 1 |
+| `Category` | 8 |
+| `Project` | 6 |
+| `ProjectImage` | 0 |
+| `Service` | 4 |
+| `ServiceScope` | 17 |
+| `ServicePackage` | 12 |
+| `Post` | 12 |
+| `Tag` | 8 |
+| `PostTag` | 30 |
+| `Testimonial` | 3 |
+| `TeamMember` | 4 |
+| `Milestone` | 7 |
+| `CoreValue` | 5 |
+| `GalleryItem` | 12 |
+| `HeroSlide` | 3 |
+| `Message` | 0 |
+| `Branch` | 2 |
+| `SiteSetting` | 27 |
+| `Partner` | 8 |
+| `Certificate` | 4 |
+| `Faq` | 16 (6 umum + 10 layanan) |
+| `Subscriber` | 0 |
+| `Feature` | 6 |
+| `ProcessStep` | 5 |
+| `BeforeAfter` | 3 |
+| `EstimatePrice` | 4 |
+| `Media` | 0 |
 
-Seed bersifat upsert. Gambar seed adalah placeholder dan wajib diganti sebelum produksi. Database development saat ini juga dapat memiliki data tambahan dari migrasi atau pengujian.
+Gambar seed menggunakan URL placeholder `picsum.photos` dan wajib diganti
+sebelum produksi. Database development dapat memiliki data tambahan dari
+pengujian.
 
-## 20. Pengujian dan Kualitas
+## 21. Pengujian dan Kualitas
 
 ### Perintah yang tersedia
 
@@ -938,18 +1063,18 @@ Tidak ada script lint/test otomatis. TODO: tambahkan Vitest/Playwright dan ESLin
 - [ ] Uji Leaflet marker, fallback embed, gambar, sitemap, robots, dan JSON-LD.
 - [ ] Jalankan Lighthouse mobile dan desktop.
 
-## 21. SEO dan Performa
+## 22. SEO dan Performa
 
 - Komponen `Seo` mengatur title, description, canonical, Open Graph, Twitter card, dan JSON-LD.
-- JSON-LD yang digunakan: Organization/website pada halaman terkait, `Service`, `Article`, `FAQPage`, `LocalBusiness`/`GeneralContractor`, dan data konten before/after bila disediakan halaman.
+- JSON-LD yang digunakan di kode: `Organization`, `Service`, `ItemList`, `Article`, `FAQPage`, `LocalBusiness`/`GeneralContractor`, dan `CreativeWork` untuk detail proyek.
 - `server/src/modules/seo.js` membuat `sitemap.xml` dari halaman statis dan slug layanan, proyek, artikel yang terbit.
 - `robots.txt` mengizinkan publik dan memblok `/admin` serta `/api`.
 - `React.lazy` memecah bundle per halaman.
 - OfficeMap dan Leaflet dimuat malas saat mendekati viewport.
-- TanStack Query menyimpan cache request publik selama sesi aplikasi.
+- TanStack Query memakai `staleTime` global 1 menit, `retry: 1`, dan tidak refetch saat window focus; query auth `/auth/me` memakai `staleTime` 5 menit.
 - Gambar Media admin dikompresi WebP dan memiliki thumbnail.
 
-## 22. Deployment
+## 23. Deployment
 
 ### A. Docker Compose
 
@@ -982,9 +1107,17 @@ pg_dump "$DATABASE_URL" > backup.sql
 psql "$DATABASE_URL" < backup.sql
 ```
 
+Padanan PowerShell di Windows (gunakan path executable PostgreSQL yang
+terpasang di mesin Anda):
+
+```powershell
+& "C:\Program Files\PostgreSQL\18\bin\pg_dump.exe" $env:DATABASE_URL --file .\backup.sql
+& "C:\Program Files\PostgreSQL\18\bin\psql.exe" $env:DATABASE_URL --file .\backup.sql
+```
+
 Backup juga folder `server/uploads/` karena file tidak berada di database.
 
-## 23. Keamanan
+## 24. Keamanan
 
 Yang sudah diterapkan:
 
@@ -1009,12 +1142,15 @@ Sebelum produksi:
 - Pindahkan upload ke object storage bila multi-instance.
 - Hapus atau ganti data placeholder.
 
-## 24. Pemecahan Masalah
+## 25. Pemecahan Masalah
 
 | Masalah | Solusi |
 | --- | --- |
 | PostgreSQL connection refused | Periksa service PostgreSQL, `DATABASE_URL`, port, user, dan database. |
-| Migration gagal atau drift | Jalankan `npx prisma migrate status`; backup lalu gunakan `migrate dev` hanya di development. Jangan reset production. |
+| Migration gagal atau drift setelah migration diterapkan | Jangan mengedit migration lama. Pulihkan dari backup, buat migration baru, lalu jalankan `npx prisma migrate status`. |
+| `migrate dev` meminta reset database | Hentikan proses dan pastikan URL menunjuk ke database lokal. Backup dulu; reset hanya database development dengan `migrate reset --force --skip-seed`. |
+| `db push` menghapus partial index | Jangan gunakan `db push` pada schema ini. Terapkan migration dengan `migrate dev` atau `migrate deploy`, lalu cek `branches_one_main_idx`. |
+| Unique constraint saat menandai kantor utama kedua | Backend normal menonaktifkan kantor utama sebelumnya. Jika terjadi konflik `409`, cek transaksi bersamaan dan index `branches_one_main_idx`. |
 | Cookie/CORS tidak terkirim | Samakan origin dengan `CLIENT_URL`, gunakan `withCredentials`, cek `sameSite`/HTTPS. |
 | Port 4000/5173 bentrok | Hentikan proses lama atau ubah `PORT`/konfigurasi Vite dan sesuaikan `VITE_API_URL`. |
 | Upload gagal | Pastikan field multipart bernama `files`, MIME dan ukuran sesuai batas. |
@@ -1028,9 +1164,13 @@ Sebelum produksi:
 | JSON-LD tidak terlihat di DOM awal | Periksa Helmet setelah data async selesai dan gunakan Rich Results Test. |
 | Contact form rate-limited | Tunggu window rate limit atau restart hanya pada development; jangan menghapus limiter production. |
 
-## 25. Roadmap
+## 26. Roadmap
 
 Fitur yang belum tersedia di kode saat dokumentasi ini dibuat:
+
+Tidak ada modul CRUD aktif yang ditandai `Belum tersedia`; `PlaceholderPage`
+hanya dipakai untuk fallback route admin `*`. Daftar berikut berasal dari
+artefak atau kemampuan yang memang tidak ditemukan saat audit repositori:
 
 - [ ] `docker-compose.yml` untuk PostgreSQL, server, dan client.
 - [ ] Script `lint` dan `test` di package manifest.
@@ -1043,7 +1183,7 @@ Fitur yang belum tersedia di kode saat dokumentasi ini dibuat:
 
 Modul CRUD yang diminta pada CMS sudah tersedia. Modul yang tidak ditemukan dan karena itu ditandai TODO: Docker Compose, newsletter campaign, storage cloud, granular role policy, automated test/lint, dan lisensi resmi.
 
-## 26. Kontribusi
+## 27. Kontribusi
 
 1. Buat branch fitur dari `main`, misalnya `feat/contact-faq`.
 2. Ikuti Conventional Commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`.
@@ -1053,7 +1193,7 @@ Modul CRUD yang diminta pada CMS sudah tersedia. Modul yang tidak ditemukan dan 
 6. Untuk modul CRUD baru, ikuti pola `server/src/modules/categories/`: `route.js`, `controller.js`, `service.js`, `validation.js`, lalu mount di `server/src/app.js`.
 7. Tambahkan halaman admin lazy-loaded, nav sidebar, invalidation query, dan dokumentasi API.
 
-## 27. Changelog Ringkas
+## 28. Changelog Ringkas
 
 Riwayat git yang tersedia:
 
@@ -1069,7 +1209,7 @@ Tahap fitur yang telah selesai di working tree:
 - Pengayaan: form konsultasi tiga langkah, OfficeMap, WhatNext, ContactFaq, ContactCta, JSON-LD.
 - Finishing: Reveal, skeleton, responsive viewport QA, rate limit, status pesan, ekspor CSV.
 
-## 28. Lisensi dan Kontak
+## 29. Lisensi dan Kontak
 
 Lisensi resmi **belum ditentukan**. Sampai file `LICENSE` ditambahkan, semua hak atas kode dan konten tetap pada pemilik proyek.
 

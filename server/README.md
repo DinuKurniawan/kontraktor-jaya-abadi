@@ -10,6 +10,16 @@ Setiap modul fitur mengikuti pola yang sama persis dengan modul `categories`
 Proyek baru ini memakai PostgreSQL melalui Prisma. Riwayat migration saat ini
 terdiri dari satu migration bernama `init` di `server/prisma/migrations/`.
 
+Migration aktif adalah `20261103045625_init`. Bagian paling bawah
+`migration.sql` berisi SQL manual berikut:
+
+| Objek | Tujuan | Dampak bila hilang |
+| --- | --- | --- |
+| `branches_one_main_idx` | Unique partial index pada `branches("isMain")` dengan predikat `WHERE "isMain" = true`. | Database tidak lagi menjamin hanya satu kantor utama. |
+
+SQL manual ditandai dengan komentar `-- Custom SQL`. Jangan menghapus atau
+mengganti bagian tersebut ketika meninjau hasil Prisma.
+
 ```powershell
 # Validasi schema dan status database
 npx prisma validate
@@ -25,8 +35,35 @@ npm run seed
 Untuk perubahan setelah proyek berjalan di produksi, gunakan awalan kata kerja
 yang jelas: `add_` untuk menambah, `rename_`, `drop_`, atau `alter_`. Selama
 pengembangan awal sebelum rilis pertama, gabungkan perubahan schema ke `init`
-dengan prosedur squash migration. Jangan menjalankan `migrate reset` pada
-database produksi.
+dengan prosedur squash migration. Jangan menjalankan `db push` atau
+`migrate reset` pada database produksi. `db push` tidak mengenal SQL manual,
+sehingga partial index kantor utama dapat hilang.
+
+### Squash sebelum rilis pertama
+
+Jika schema berubah sebelum rilis pertama, backup migration lama, hapus semua
+folder migration selain `migration_lock.toml`, reset database lokal, lalu:
+
+```powershell
+npx prisma migrate dev --create-only --name init
+# Tambahkan kembali SQL manual di bagian bawah migration.sql.
+npx prisma migrate dev
+npx prisma migrate status
+npx prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma --shadow-database-url postgresql://USER:PASSWORD@localhost:5432/jayaabadi_shadow
+```
+
+Diff harus kosong. Setelah rilis, buat migration baru dan jangan mengubah
+migration lama. Untuk database yang sudah memiliki schema yang sama, baseline
+dapat dicatat dengan:
+
+```powershell
+npx prisma migrate resolve --applied 20261103045625_init
+```
+
+Perintah tersebut bukan pengganti verifikasi schema. `server/prisma/migrations_backup/`
+dan `server/prisma/backup.sql` hanya cadangan lokal sementara, di-ignore Git,
+tidak boleh dibagikan, dan dihapus setelah semuanya normal. `backup.sql` dapat
+berisi data lokal.
 
 ## Struktur file
 

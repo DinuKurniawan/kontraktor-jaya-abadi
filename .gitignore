@@ -17,3 +17,9 @@ Thumbs.db
 /server/prisma/migrations_backup/
 /server/prisma/backup.sql
 /server/prisma/schema_generated.sql
+
+# Upload pengguna: simpan folder, jangan commit isinya
+/server/uploads/*
+!/server/uploads/.gitkeep
+/server/uploads/messages/*
+!/server/uploads/messages/.gitkeep
