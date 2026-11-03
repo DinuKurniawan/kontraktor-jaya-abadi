@@ -5,27 +5,26 @@ import path from "node:path";
 import sharp from "sharp";
 import prisma from "../../config/prisma.js";
 import ApiError from "../../utils/api-error.js";
-import { convertImageToWebp } from "../../utils/image.js";
 import { paginate, paginationMeta } from "../../utils/paginate.js";
 import { UPLOAD_DIR } from "./upload.js";
 
 // Perkecil & konversi ke WebP; buat -thumb.webp (480px) untuk grid.
+// Gagal kompresi = tetap simpan file asli (jangan hentikan upload).
 async function optimizeImage(filePath) {
-  const parsed = path.parse(filePath);
-  const webpPath = path.join(parsed.dir, `${parsed.name}.webp`);
+  const webpPath = filePath.replace(/\.(jpg|jpeg|png)$/i, ".webp");
   const thumbPath = webpPath.replace(/\.webp$/, "-thumb.webp");
   try {
-    await convertImageToWebp(filePath, webpPath, { maxWidth: 1600, quality: 80 });
+    await sharp(filePath).rotate().resize({ width: 1600, withoutEnlargement: true }).webp({ quality: 80 }).toFile(webpPath);
     await sharp(webpPath).resize({ width: 480, withoutEnlargement: true }).webp({ quality: 72 }).toFile(thumbPath);
-    try { await fs.rm(filePath, { force: true }); } catch { /* EBUSY Windows — file sementara jadi orphan */ }
+    const done = webpPath !== filePath;
+    if (done) {
+      try {
+        await fs.rm(filePath, { force: true });
+      } catch { /* EBUSY Windows — file asli jadi orphan */ }
+    }
     return { webp: path.basename(webpPath), thumb: path.basename(thumbPath) };
   } catch {
-    await Promise.all([
-      fs.rm(filePath, { force: true }).catch(() => undefined),
-      fs.rm(webpPath, { force: true }).catch(() => undefined),
-      fs.rm(thumbPath, { force: true }).catch(() => undefined),
-    ]);
-    throw new ApiError(400, "Gambar tidak dapat dikonversi menjadi WebP");
+    return { webp: null, thumb: null }; // fallback: file asli tetap ada
   }
 }
 
@@ -46,31 +45,24 @@ export async function saveFiles(files) {
   }
 
   const created = [];
-  const generatedFiles = [];
-  try {
-    for (const file of files) {
-      const { webp, thumb } = await optimizeImage(path.join(UPLOAD_DIR, file.filename));
-      generatedFiles.push(webp, thumb);
-      const stat = await fs.stat(path.join(UPLOAD_DIR, webp));
-      created.push(
-        prisma.media.create({
-          data: {
-            url: `/uploads/${webp}`,
-            filename: file.originalname,
-            mimeType: "image/webp",
-            size: stat.size,
-          },
-        })
-      );
-    }
-
-    const rows = await prisma.$transaction(created);
-    return rows.map(toResponse);
-  } catch (error) {
-    await Promise.all(generatedFiles.map((name) => fs.rm(path.join(UPLOAD_DIR, name), { force: true }).catch(() => undefined)));
-    await Promise.all(files.map((file) => fs.rm(path.join(UPLOAD_DIR, file.filename), { force: true }).catch(() => undefined)));
-    throw error;
+  for (const file of files) {
+    const { webp, thumb } = await optimizeImage(path.join(UPLOAD_DIR, file.filename));
+    const finalName = webp ?? file.filename; // gagal kompresi → nama asli
+    const stat = await fs.stat(path.join(UPLOAD_DIR, finalName));
+    created.push(
+      prisma.media.create({
+        data: {
+          url: `/uploads/${finalName}`,
+          filename: file.originalname,
+          mimeType: webp ? "image/webp" : file.mimetype,
+          size: stat.size,
+        },
+      })
+    );
   }
+
+  const rows = await prisma.$transaction(created);
+  return rows.map(toResponse);
 }
 
 // Daftar media dengan paginasi + pencarian nama file asli

@@ -23,7 +23,7 @@ const TIME_LABEL = { PAGI: "Pagi", SIANG: "Siang", SORE: "Sore", BEBAS: "Bebas" 
 const fmtDate = (date) => date ? new Date(date).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "—";
 const fmtDateTime = (date) => date ? `${fmtDate(date)} ${new Date(date).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }).replace(/\./g, ":")}` : "—";
 const attachmentUrl = (url) => url?.startsWith("http") ? url : `${SERVER}${url}`;
-const isImage = (url) => /\.(jpe?g|png|webp|gif|avif|bmp|tiff?|svg)$/i.test(url ?? "");
+const isImage = (url) => /\.(jpe?g|png|webp)$/i.test(url ?? "");
 
 function useDebounced(value, delay = 350) {
   const [debounced, setDebounced] = useState(value);
