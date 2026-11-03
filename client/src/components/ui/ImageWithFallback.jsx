@@ -2,7 +2,7 @@
 import { ImageOff } from "lucide-react";
 import { useState } from "react";
 
-export default function ImageWithFallback({ src, alt = "", className = "", placeholderClassName = "", ...props }) {
+export default function ImageWithFallback({ src, alt = "", className = "", placeholderClassName = "", onError, ...props }) {
   const [failed, setFailed] = useState(false);
 
   if (failed || !src) {
@@ -13,5 +13,5 @@ export default function ImageWithFallback({ src, alt = "", className = "", place
     );
   }
 
-  return <img src={src} alt={alt} className={className} onError={() => setFailed(true)} {...props} />;
+  return <img src={src} alt={alt} className={className} onError={(event) => { setFailed(true); onError?.(event); }} {...props} />;
 }

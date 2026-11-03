@@ -1,14 +1,13 @@
 // ImagePicker — pemilih gambar: buka Modal berisi pustaka media + tab unggah baru.
 // Menggantikan input file langsung di form admin. value: url (single) | [{url}] (multiple).
 import { useRef, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ImagePlus, Trash2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { ImagePlus } from "lucide-react";
 import api from "../../lib/axios.js";
 import Modal from "../ui/Modal.jsx";
 import Button from "../ui/Button.jsx";
-import Skeleton from "../ui/Skeleton.jsx";
-import EmptyState from "../ui/EmptyState.jsx";
 import ImageWithFallback from "../ui/ImageWithFallback.jsx";
+import MediaLibrary from "./MediaLibrary.jsx";
 import { toast } from "../ui/Toast.jsx";
 
 // Unggah file dengan progres — dipakai ImagePicker & halaman Media
@@ -66,32 +65,28 @@ export default function ImagePicker({ value, onChange, multiple = false, label =
         </button>
       </div>
 
-      <MediaBrowserModal open={open} onClose={() => setOpen(false)} selected={(items.map((i) => i.url))} onSelect={pick} />
+      <MediaBrowserModal
+        open={open}
+        onClose={() => setOpen(false)}
+        selected={items.map((i) => i.url)}
+        onSelect={pick}
+        onDeleted={(deleted) => {
+          const deletedUrls = new Set(deleted.map((media) => media.url));
+          if (multiple) onChange(items.filter((item) => !deletedUrls.has(item.url)));
+          else if (value && deletedUrls.has(value)) onChange("");
+          if (items.some((item) => deletedUrls.has(item.url))) toast.success("Gambar yang terpilih telah dihapus");
+        }}
+      />
     </div>
   );
 }
 
 // Modal pustaka media: tab Pustaka (grid + search) & Unggah (progress)
-export function MediaBrowserModal({ open, onClose, selected = [], onSelect }) {
+export function MediaBrowserModal({ open, onClose, selected = [], onSelect, onDeleted }) {
   const queryClient = useQueryClient();
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
   const [tab, setTab] = useState("Pustaka");
   const [progress, setProgress] = useState(null);
   const fileRef = useRef(null);
-
-  const { data, isLoading } = useQuery({
-    queryKey: ["media", { page, search }],
-    queryFn: async () => (await api.get("/media", { params: { page, limit: 12, search: search || undefined } })).data,
-    enabled: open,
-  });
-
-  // Hapus media dari pustaka
-  const deleteMutation = useMutation({
-    mutationFn: (id) => api.delete(`/media/${id}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["media"] }),
-    onError: (err) => toast.error(err.response?.data?.message ?? "Gagal menghapus media"),
-  });
 
   const handleFiles = async (e) => {
     const files = [...e.target.files];
@@ -102,7 +97,7 @@ export function MediaBrowserModal({ open, onClose, selected = [], onSelect }) {
       await uploadImages(files, setProgress);
       queryClient.invalidateQueries({ queryKey: ["media"] });
       toast.success(`${files.length} gambar berhasil diunggah`);
-setTab("Pustaka");
+      setTab("Pustaka");
     } catch (err) {
       toast.error(err.response?.data?.message ?? "Gagal mengunggah");
     } finally {
@@ -125,16 +120,6 @@ setTab("Pustaka");
             {t}
           </button>
         ))}
-        {tab === "Pustaka" && (
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari nama file…"
-            aria-label="Cari media"
-            className="ml-auto w-48 rounded-xl border border-border px-3 py-2 text-sm outline-none focus:border-primary"
-          />
-        )}
       </div>
 
       {tab === "Unggah" ? (
@@ -148,52 +133,7 @@ setTab("Pustaka");
           )}
           <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" multiple className="sr-only" onChange={handleFiles} />
         </label>
-      ) : isLoading ? (
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
-          {[...Array(8)].map((_, i) => (
-            <Skeleton key={i} className="h-24" rounded="rounded-xl" />
-          ))}
-        </div>
-      ) : (data?.data ?? []).length === 0 ? (
-        <EmptyState icon={ImagePlus} title="Pustaka kosong" description="Unggah gambar lewat tab Unggah." />
-      ) : (
-        <>
-          <div className="grid max-h-96 grid-cols-3 gap-3 overflow-y-auto pr-1 sm:grid-cols-4">
-            {data.data.map((m) => {
-              const isSelected = selected.includes(m.url);
-              return (
-                <div key={m.id} className={`relative overflow-hidden rounded-xl border-2 transition ${isSelected ? "border-primary" : "border-transparent hover:border-border"}`}>
-                  <button type="button" onClick={() => onSelect(m)} className="block h-24 w-full" aria-label={`Pilih ${m.filename}`}>
-                    <ImageWithFallback src={m.url} alt={m.filename} className="h-full w-full object-cover" />
-                    {isSelected && <span className="absolute inset-x-0 bottom-0 bg-primary/90 py-0.5 text-center text-[10px] font-semibold text-white">Terpilih</span>}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => deleteMutation.mutate(m.id)}
-                    aria-label={`Hapus ${m.filename}`}
-                    className="absolute left-1 top-1 rounded-lg bg-black/50 p-1 text-white opacity-0 transition hover:bg-danger group-hover:opacity-100"
-                  >
-                    <Trash2 size={12} />
-                  </button>
-                </div>
-              );
-            })}
-          </div>
-          {data.meta.totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-center gap-2">
-              <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-                Sebelumnya
-              </Button>
-              <span className="text-xs text-text-muted">
-                {page} / {data.meta.totalPages}
-              </span>
-              <Button size="sm" variant="outline" disabled={page >= data.meta.totalPages} onClick={() => setPage((p) => p + 1)}>
-                Berikutnya
-              </Button>
-            </div>
-          )}
-        </>
-      )}
+      ) : <MediaLibrary open={open} selected={selected} onSelect={onSelect} onDeleted={onDeleted} showCleanup />}
 
       <div className="mt-5 flex justify-end">
         <Button variant="outline" onClick={onClose}>

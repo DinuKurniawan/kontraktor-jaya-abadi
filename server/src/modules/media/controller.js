@@ -20,3 +20,27 @@ export const remove = asyncHandler(async (req, res) => {
   const result = await mediaService.deleteMedia(req.params.id);
   sendSuccess(res, { data: result });
 });
+
+// GET /api/media/:id/usage
+export const usage = asyncHandler(async (req, res) => {
+  const data = await mediaService.getMediaUsageById(req.params.id);
+  sendSuccess(res, { data });
+});
+
+// POST /api/media/bulk-delete
+export const bulkRemove = asyncHandler(async (req, res) => {
+  const data = await mediaService.bulkDeleteMedia(req.body.ids);
+  sendSuccess(res, { data });
+});
+
+// GET /api/media/broken
+export const listBroken = asyncHandler(async (_req, res) => {
+  const data = await mediaService.listBrokenMedia();
+  sendSuccess(res, { data });
+});
+
+// POST /api/media/cleanup-broken
+export const cleanupBroken = asyncHandler(async (req, res) => {
+  const data = await mediaService.cleanupBrokenMedia(req.body.dryRun);
+  sendSuccess(res, { data });
+});

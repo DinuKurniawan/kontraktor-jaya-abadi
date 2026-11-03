@@ -11,6 +11,7 @@ export default function ConfirmDialog({
   confirmLabel = "Hapus",
   confirmVariant = "danger",
   loading = false,
+  children,
 }) {
   return (
     <Modal
@@ -30,6 +31,7 @@ export default function ConfirmDialog({
       }
     >
       <p className="text-sm text-text">{message}</p>
+      {children}
     </Modal>
   );
 }
