@@ -5,6 +5,29 @@ Setiap modul fitur mengikuti pola yang sama persis dengan modul `categories`
 `projects`, `services`, `posts`, `testimonials`, `teamMembers`, `heroSlides`,
 `messages`, `siteSettings`, dan lainnya.
 
+## Database dan migration
+
+Proyek baru ini memakai PostgreSQL melalui Prisma. Riwayat migration saat ini
+terdiri dari satu migration bernama `init` di `server/prisma/migrations/`.
+
+```powershell
+# Validasi schema dan status database
+npx prisma validate
+npx prisma migrate status
+
+# Buat dan terapkan migration baru saat development
+npx prisma migrate dev --name add_nama_perubahan
+
+# Isi data awal setelah reset database development
+npm run seed
+```
+
+Untuk perubahan setelah proyek berjalan di produksi, gunakan awalan kata kerja
+yang jelas: `add_` untuk menambah, `rename_`, `drop_`, atau `alter_`. Selama
+pengembangan awal sebelum rilis pertama, gabungkan perubahan schema ke `init`
+dengan prosedur squash migration. Jangan menjalankan `migrate reset` pada
+database produksi.
+
 ## Struktur file
 
 ```

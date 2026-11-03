@@ -60,7 +60,7 @@ Jaya Abadi adalah monorepo dengan dua aplikasi:
 | --- | ---: | --- |
 | Model Prisma | **28** | `server/prisma/schema.prisma` |
 | Enum Prisma | **10** | `server/prisma/schema.prisma` |
-| Migrasi | **12** | `server/prisma/migrations/` |
+| Migrasi | **1** | `server/prisma/migrations/` (`init`) |
 | Endpoint publik | **32** | `publicRouter` dan `public-router.js` |
 | Endpoint admin | **134** | route module yang dipasang di `/api/admin/*` |
 | Halaman publik | **10** | route React publik, termasuk 404 |
@@ -616,6 +616,25 @@ npm run seed
 ```
 
 Jalankan hanya pada database development.
+
+### Migrasi Prisma
+
+Riwayat migration proyek baru ini dirapikan menjadi satu migration bernama
+`init` di `server/prisma/migrations/`. Migration tersebut berisi schema Prisma
+terakhir dan SQL khusus yang diperlukan database, termasuk aturan satu kantor
+utama.
+
+Untuk membuat migration berikutnya selama pengembangan:
+
+```powershell
+cd server
+npx prisma migrate dev --name add_nama_perubahan
+```
+
+Gunakan nama deskriptif berbasis kata kerja. Setelah proyek berjalan di
+produksi, gunakan awalan yang jelas seperti `add_`, `rename_`, `drop_`, atau
+`alter_`. Selama pengembangan awal sebelum rilis pertama, gabungkan perubahan
+schema ke `init` menggunakan prosedur squash migration.
 
 ## 12. Variabel Lingkungan
 
