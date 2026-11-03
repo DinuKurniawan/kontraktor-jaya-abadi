@@ -11,15 +11,16 @@ import MediaLibrary from "./MediaLibrary.jsx";
 import { toast } from "../ui/Toast.jsx";
 
 // Unggah file dengan progres — dipakai ImagePicker & halaman Media
-export async function uploadImages(files, onProgress) {
+export async function uploadImages(files, onProgress, purpose = "generic") {
   const fd = new FormData();
   for (const f of files) fd.append("files", f);
+  fd.append("purpose", purpose);
   const res = await api.post("/media/upload", fd, { onUploadProgress: (e) => onProgress?.(e.total ? Math.round((e.loaded / e.total) * 100) : 0) });
   return res.data.data;
 }
 
 // Tombol pembuka + preview kecil (meniru ImageUploader agar form tidak berubah banyak)
-export default function ImagePicker({ value, onChange, multiple = false, label = "Gambar" }) {
+export default function ImagePicker({ value, onChange, multiple = false, label = "Gambar", purpose = "generic", onUploaded }) {
   const [open, setOpen] = useState(false);
 
   // Pilih dari pustaka: single → url string; multiple → tambah ke array
@@ -70,6 +71,8 @@ export default function ImagePicker({ value, onChange, multiple = false, label =
         onClose={() => setOpen(false)}
         selected={items.map((i) => i.url)}
         onSelect={pick}
+        purpose={purpose}
+        onUploaded={onUploaded}
         onDeleted={(deleted) => {
           const deletedUrls = new Set(deleted.map((media) => media.url));
           if (multiple) onChange(items.filter((item) => !deletedUrls.has(item.url)));
@@ -82,7 +85,7 @@ export default function ImagePicker({ value, onChange, multiple = false, label =
 }
 
 // Modal pustaka media: tab Pustaka (grid + search) & Unggah (progress)
-export function MediaBrowserModal({ open, onClose, selected = [], onSelect, onDeleted }) {
+export function MediaBrowserModal({ open, onClose, selected = [], onSelect, onDeleted, purpose = "generic", onUploaded }) {
   const queryClient = useQueryClient();
   const [tab, setTab] = useState("Pustaka");
   const [progress, setProgress] = useState(null);
@@ -94,9 +97,10 @@ export function MediaBrowserModal({ open, onClose, selected = [], onSelect, onDe
     if (files.length === 0) return;
     setProgress(0);
     try {
-      await uploadImages(files, setProgress);
+      const uploaded = await uploadImages(files, setProgress, purpose);
       queryClient.invalidateQueries({ queryKey: ["media"] });
       toast.success(`${files.length} gambar berhasil diunggah`);
+      onUploaded?.(uploaded);
       setTab("Pustaka");
     } catch (err) {
       toast.error(err.response?.data?.message ?? "Gagal mengunggah");

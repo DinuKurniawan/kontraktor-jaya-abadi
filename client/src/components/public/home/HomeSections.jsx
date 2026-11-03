@@ -13,6 +13,7 @@ import useReveal from "../../../hooks/useReveal.js";
 import { SERVICE_ICONS } from "../../../lib/service-icons.jsx";
 import { toast } from "../../ui/Toast.jsx";
 import { useSiteSettings } from "./HeroSection.jsx";
+import AspectImage from "../../ui/AspectImage.jsx";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
@@ -112,17 +113,8 @@ export function ServicesSection() {
         to={`/layanan/${s.slug}`}
         className={`group relative block overflow-hidden rounded-2xl shadow-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand ${big ? "sm:col-span-2 sm:row-span-2" : ""}`}
       >
-        <div className={`relative ${big ? "h-72 sm:h-[26rem]" : "h-72"}`}>
-          {s.image && (
-            <img
-              src={img(s.image)}
-              alt={s.title}
-              width={800}
-              height={600}
-              loading="lazy"
-              className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-110"
-            />
-          )}
+        <div className="relative">
+          <AspectImage src={img(s.image || s.heroImage)} alt={s.title} ratio="4/3" className="w-full transition duration-700 group-hover:scale-110" />
           <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/35 to-ink/10 transition group-hover:from-ink/95 group-hover:via-ink/50" />
         </div>
         <div className="absolute inset-0 flex flex-col justify-end p-5">
@@ -130,7 +122,7 @@ export function ServicesSection() {
             {Icon ? <Icon size={20} /> : <Wrench size={20} />}
           </span>
           <h3 className={`font-jakarta font-bold text-white ${big ? "text-2xl" : "text-lg"}`}>{s.title}</h3>
-          <p className={`mt-1 text-cream/80 ${big ? "max-w-sm text-sm" : "line-clamp-2 text-xs"}`}>{s.shortDesc}</p>
+          <p className={`mt-1 break-words text-cream/80 ${big ? "line-clamp-3 max-w-sm text-sm" : "line-clamp-2 text-xs"}`}>{s.shortDesc}</p>
           <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-brand opacity-0 transition group-hover:opacity-100">
             Selengkapnya <ArrowRight size={14} />
           </span>
@@ -148,13 +140,13 @@ export function ServicesSection() {
           actionLabel="Lihat semua layanan"
         />
         {isLoading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:auto-rows-fr lg:grid-cols-4">
+          <div className="grid items-stretch gap-4 sm:grid-cols-2 lg:auto-rows-fr lg:grid-cols-4">
             {[0, 1, 2, 3].map((i) => <div key={i} className="h-72 animate-pulse rounded-2xl bg-cream-deep" />)}
           </div>
         ) : (data ?? []).length === 0 ? (
           <p className="text-sm text-ink-light">Layanan belum tersedia.</p>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:auto-rows-fr lg:grid-cols-4">
+          <div className="grid items-stretch gap-4 sm:grid-cols-2 lg:auto-rows-fr lg:grid-cols-4">
             {(data ?? []).slice(0, 5).map((s, i) => card(s, i === 0))}
           </div>
         )}

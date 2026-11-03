@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
-    "seed": "node prisma/seed.js"
+    "seed": "node prisma/seed.js",
+    "services:normalize-images": "node scripts/normalize-service-images.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

@@ -16,15 +16,17 @@ async function removeFile(filePath) {
 }
 
 // Perkecil & konversi ke WebP; buat -thumb.webp (480px) untuk grid.
-async function optimizeImage(filePath) {
+async function optimizeImage(filePath, purpose = "generic") {
   const parsed = path.parse(filePath);
   const webpPath = path.join(parsed.dir, `${parsed.name}.webp`);
   const thumbPath = webpPath.replace(/\.webp$/, "-thumb.webp");
   try {
     // Validasi buffer sebelum menulis agar hasil kosong tidak menjadi orphan di Windows.
-    const webpBuffer = await sharp(filePath)
-      .rotate()
-      .resize({ width: 1600, withoutEnlargement: true })
+    let pipeline = sharp(filePath).rotate();
+    if (purpose === "service-card") pipeline = pipeline.resize(1200, 900, { fit: "cover", position: "attention" });
+    else if (purpose === "service-hero") pipeline = pipeline.resize(1920, 1080, { fit: "cover", position: "attention" });
+    else pipeline = pipeline.resize({ width: 1600, withoutEnlargement: true });
+    const webpBuffer = await pipeline
       .webp({ quality: 80 })
       .toBuffer();
     if (webpBuffer.length < MIN_IMAGE_BYTES) {
@@ -169,7 +171,7 @@ async function enrichMedia(rows, usageIndex) {
 }
 
 // Simpan record Media: optimasi tiap file lalu tulis ke DB
-export async function saveFiles(files) {
+export async function saveFiles(files, { purpose = "generic" } = {}) {
   if (!files || files.length === 0) {
     throw new ApiError(400, "Tidak ada file yang diunggah");
   }
@@ -178,7 +180,7 @@ export async function saveFiles(files) {
   const generatedFiles = [];
   try {
     for (const file of files) {
-      const { webp, thumb } = await optimizeImage(path.join(UPLOAD_DIR, file.filename));
+      const { webp, thumb } = await optimizeImage(path.join(UPLOAD_DIR, file.filename), purpose);
       generatedFiles.push(webp, thumb);
       const stat = await fs.stat(path.join(UPLOAD_DIR, webp));
       if (stat.size < MIN_IMAGE_BYTES) {

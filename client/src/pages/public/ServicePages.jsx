@@ -20,6 +20,7 @@ import RelatedProjects from "../../components/public/services/RelatedProjects.js
 import ServiceTestimonials from "../../components/public/services/ServiceTestimonials.jsx";
 import ServiceFaq from "../../components/public/services/ServiceFaq.jsx";
 import ServiceCta from "../../components/public/services/ServiceCta.jsx";
+import AspectImage from "../../components/ui/AspectImage.jsx";
 
 const SITE = import.meta.env.VITE_SITE_URL || "http://localhost:5173";
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
@@ -189,11 +190,7 @@ export function ServiceDetailPage() {
       {/* ===== Hero: gambar lebar + breadcrumb + judul + harga + CTA ===== */}
       <header className="relative bg-ink text-cream">
         <div className="absolute inset-0">
-          {service.heroImage || service.image ? (
-            <img src={imgS(service.heroImage || service.image)} alt={service.title} className="h-full w-full object-cover opacity-45" />
-          ) : (
-            <div className="h-full w-full bg-gradient-to-br from-ink to-ink/70" />
-          )}
+          <AspectImage src={imgS(service.heroImage || service.image)} alt={service.title} ratio="16/9" className="h-full max-h-[36rem] w-full opacity-45" />
           <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/50 to-ink/20" />
         </div>
         <Container className="relative pb-14 pt-28 sm:pt-32">

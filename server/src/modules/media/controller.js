@@ -5,7 +5,7 @@ import * as mediaService from "./service.js";
 
 // POST /api/media/upload (multipart field "files")
 export const upload = asyncHandler(async (req, res) => {
-  const media = await mediaService.saveFiles(req.files);
+  const media = await mediaService.saveFiles(req.files, { purpose: req.body?.purpose });
   sendSuccess(res, { data: media, status: 201 });
 });
 

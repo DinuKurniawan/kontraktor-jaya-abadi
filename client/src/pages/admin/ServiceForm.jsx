@@ -16,7 +16,9 @@ import Select from "../../components/ui/Select.jsx";
 import Switch from "../../components/ui/Switch.jsx";
 import Skeleton from "../../components/ui/Skeleton.jsx";
 import { toast } from "../../components/ui/Toast.jsx";
-import ImagePicker from "../../components/admin/ImagePicker.jsx";
+import ImagePicker, { uploadImages } from "../../components/admin/ImagePicker.jsx";
+import ImageCropModal from "../../components/admin/ImageCropModal.jsx";
+import AspectImage from "../../components/ui/AspectImage.jsx";
 
 const serviceSchema = z.object({
   title: z.string().min(2, "Judul minimal 2 karakter").max(100),
@@ -30,13 +32,39 @@ function slugify(text = "") {
   return String(text).toLowerCase().trim().replace(/[^a-z0-9\s-]/g, "").replace(/[\s_]+/g, "-").replace(/-+/g, "-").replace(/(^-|-$)/g, "");
 }
 
+function ImageQualityNotice({ src, ratio, onCrop }) {
+  const [metrics, setMetrics] = useState(null);
+  useEffect(() => {
+    if (!src) { setMetrics(null); return undefined; }
+    const image = new Image();
+    image.onload = () => setMetrics({ width: image.naturalWidth, height: image.naturalHeight });
+    image.onerror = () => setMetrics(null);
+    image.src = src;
+    return () => { image.onload = null; image.onerror = null; };
+  }, [src]);
+  if (!metrics) return null;
+  const expected = ratio === "16/9" ? 16 / 9 : 4 / 3;
+  const actual = metrics.width / metrics.height;
+  const warning = Math.abs(actual - expected) / expected > 0.15 || metrics.width < 800;
+  if (!warning) return null;
+  return (
+    <div className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+      <p>Rasio atau resolusi gambar kurang sesuai ({metrics.width}×{metrics.height}). Disarankan rasio {ratio} dan lebar minimal 800 px.</p>
+      <Button type="button" size="sm" variant="outline" className="mt-2 border-amber-300 bg-amber-100 text-amber-900 hover:bg-amber-200" onClick={onCrop}>Potong &amp; Atur</Button>
+    </div>
+  );
+}
+
 export default function ServiceForm() {
   const { id } = useParams();
   const isEdit = !!id;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [image, setImage] = useState("");
+  const [heroImage, setHeroImage] = useState("");
   const [isPublished, setIsPublished] = useState(false);
+  const [crop, setCrop] = useState(null);
+  const [cropSaving, setCropSaving] = useState(false);
 
   const { data: existing, isLoading: loadingExisting } = useQuery({
     queryKey: ["service", id],
@@ -61,6 +89,7 @@ export default function ServiceForm() {
     if (!isEdit || !existing || existing.id !== id) return;
     reset({ title: existing.title, shortDesc: existing.shortDesc, description: existing.description, icon: existing.icon, sortOrder: existing.sortOrder });
     setImage(existing.image ?? "");
+    setHeroImage(existing.heroImage ?? "");
     setIsPublished(existing.isPublished);
   }, [isEdit, existing, id, reset]);
 
@@ -75,7 +104,24 @@ export default function ServiceForm() {
   });
 
   const onSubmit = (values) => {
-    saveMutation.mutate({ ...values, sortOrder: Number(values.sortOrder), image: image || null, isPublished });
+    saveMutation.mutate({ ...values, sortOrder: Number(values.sortOrder), image: image || null, heroImage: heroImage || null, isPublished });
+  };
+
+  const saveCrop = async (file) => {
+    setCropSaving(true);
+    try {
+      const uploaded = await uploadImages([file], undefined, crop.purpose);
+      const url = uploaded[0]?.url;
+      if (!url) throw new Error("URL hasil potongan tidak tersedia");
+      if (crop.purpose === "service-card") setImage(url);
+      else setHeroImage(url);
+      setCrop(null);
+      toast.success("Gambar berhasil dipotong dan dipilih");
+    } catch (error) {
+      toast.error(error.response?.data?.message ?? error.message ?? "Gagal mengunggah hasil potongan");
+    } finally {
+      setCropSaving(false);
+    }
   };
 
   const slugPreview = slugify(watch("title")) || "otomatis-dari-judul";
@@ -141,9 +187,22 @@ export default function ServiceForm() {
             {errors.icon && <p className="mt-2 text-xs text-danger">{errors.icon.message}</p>}
           </Card>
 
-          <Card title="Gambar (opsional)" headerVariant="primary">
-            <ImagePicker label="" value={image} onChange={setImage} />
-            <p className="mt-2 text-xs text-text-muted">Jika kosong, ikon yang dipilih menjadi tampilan kartu.</p>
+          <Card title="Gambar layanan" headerVariant="primary" bodyClassName="space-y-5">
+            <div>
+              <p className="mb-2 text-sm font-semibold text-text">Gambar kartu</p>
+              <ImagePicker label="" value={image} onChange={setImage} purpose="service-card" />
+              <p className="mt-2 text-xs text-text-muted">Gambar kartu: rasio 4:3, ideal 1200×900 px (min 800 px).</p>
+              <AspectImage src={image} alt="Pratinjau kartu layanan" ratio="4/3" className="mt-3 rounded-xl" />
+              <ImageQualityNotice src={image} ratio="4/3" onCrop={() => setCrop({ src: image, ratio: "4/3", purpose: "service-card" })} />
+            </div>
+            <div>
+              <p className="mb-2 text-sm font-semibold text-text">Gambar hero</p>
+              <ImagePicker label="" value={heroImage} onChange={setHeroImage} purpose="service-hero" />
+              <p className="mt-2 text-xs text-text-muted">Gambar hero: rasio 16:9, ideal 1920×1080 px.</p>
+              <AspectImage src={heroImage} alt="Pratinjau hero layanan" ratio="16/9" className="mt-3 rounded-xl" />
+              <ImageQualityNotice src={heroImage} ratio="16/9" onCrop={() => setCrop({ src: heroImage, ratio: "16/9", purpose: "service-hero" })} />
+            </div>
+            <p className="text-xs text-text-muted">Jika gambar kartu kosong, ikon yang dipilih menjadi tampilan kartu.</p>
           </Card>
 
           <Card title="Publikasi" headerVariant="primary">
@@ -155,6 +214,7 @@ export default function ServiceForm() {
           </Button>
         </div>
       </form>
+      <ImageCropModal open={!!crop} src={crop?.src} ratio={crop?.ratio} onClose={() => !cropSaving && setCrop(null)} onSave={saveCrop} />
     </div>
   );
 }

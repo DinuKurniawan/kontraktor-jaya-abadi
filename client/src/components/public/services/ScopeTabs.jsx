@@ -9,6 +9,7 @@ import { ArrowRight, MessageCircle } from "lucide-react";
 import Container from "../Container.jsx";
 import { SERVICE_ICONS } from "../../../lib/service-icons.jsx";
 import { Wrench } from "lucide-react";
+import AspectImage from "../../ui/AspectImage.jsx";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
@@ -48,13 +49,7 @@ export default function ScopeTabs({ services }) {
         <div key={current.slug} className="mt-8 grid items-start gap-8 rounded-3xl bg-white p-6 shadow-soft sm:p-8 lg:grid-cols-5" style={{ animation: "fade-in 0.4s ease-out both" }}>
           {/* Gambar */}
           <div className="lg:col-span-2">
-            <div className="relative overflow-hidden rounded-2xl bg-cream-deep">
-              {current.heroImage || current.image ? (
-                <img src={img(current.heroImage || current.image)} alt={current.title} width={640} height={480} loading="lazy" className="aspect-[4/3] w-full object-cover" />
-              ) : (
-                <div className="flex aspect-[4/3] items-center justify-center text-ink/20"><Wrench size={56} /></div>
-              )}
-            </div>
+            <AspectImage src={img(current.image || current.heroImage)} alt={current.title} ratio="4/3" className="rounded-2xl" />
             {current.startingPrice ? (
               <p className="mt-3 text-sm text-ink-light">Mulai dari <span className="font-jakarta font-bold text-ink">{new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(current.startingPrice)}</span></p>
             ) : null}
@@ -72,7 +67,7 @@ export default function ScopeTabs({ services }) {
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand-dark"><Icon size={18} /></span>
                     <div>
                       <p className="font-jakarta text-sm font-bold text-ink">{sc.title}</p>
-                      {sc.description && <p className="mt-0.5 text-xs leading-relaxed text-ink-light">{sc.description}</p>}
+                      {sc.description && <p className="mt-0.5 break-words text-xs leading-relaxed text-ink-light">{sc.description}</p>}
                     </div>
                   </div>
                 );
