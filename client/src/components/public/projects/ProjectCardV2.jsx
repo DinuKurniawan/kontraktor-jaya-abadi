@@ -8,6 +8,7 @@
 import { Link } from "react-router-dom";
 import { ArrowUpRight, MapPin } from "lucide-react";
 import { STATUS_LABEL } from "../../../pages/public/project-labels.js";
+import ImageWithFallback from "../../ui/ImageWithFallback.jsx";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
@@ -30,7 +31,7 @@ export default function ProjectCardV2({ project }) {
     >
       <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-cream-deep">
         {coverImage ? (
-          <img
+          <ImageWithFallback
             src={img(coverImage)}
             alt={title}
             width={800}

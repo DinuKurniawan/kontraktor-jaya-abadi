@@ -1,5 +1,6 @@
 // Kartu proyek — foto rounded-2xl dengan overlay lokasi, judul di bawah
 import { MapPin } from "lucide-react";
+import ImageWithFallback from "../ui/ImageWithFallback.jsx";
 
 export default function ProjectCard({ title, location, image, category, year, badge, onClick, clampTitle = false }) {
   return (
@@ -10,7 +11,7 @@ export default function ProjectCard({ title, location, image, category, year, ba
     >
       <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-cream-deep">
         {image ? (
-          <img src={image} alt={title} width={800} height={600} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+          <ImageWithFallback src={image} alt={title} width={800} height={600} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
         ) : (
           <div className="flex h-full items-center justify-center font-jakarta text-sm text-ink-light">Belum ada foto</div>
         )}

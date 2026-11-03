@@ -1,4 +1,5 @@
 // Kartu artikel — kategori, judul, tanggal, waktu baca
+import ImageWithFallback from "../ui/ImageWithFallback.jsx";
 function HighlightedTitle({ title, query }) {
   const keyword = String(query ?? "").trim();
   if (!keyword) return title;
@@ -18,7 +19,7 @@ export default function ArticleCard({ title, category, date, readTime, image, on
     >
       <div className="aspect-[16/10] overflow-hidden rounded-2xl bg-cream-deep">
         {image && (
-          <img src={image} alt={title} width={800} height={500} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+          <ImageWithFallback src={image} alt={title} width={800} height={500} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
         )}
       </div>
       <div className="flex flex-1 flex-col pt-4">

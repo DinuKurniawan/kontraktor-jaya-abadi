@@ -12,6 +12,7 @@ import EmptyState from "../../components/ui/EmptyState.jsx";
 import ConfirmDialog from "../../components/ui/ConfirmDialog.jsx";
 import { toast } from "../../components/ui/Toast.jsx";
 import { uploadImages, copyUrl } from "../../components/admin/ImagePicker.jsx";
+import ImageWithFallback from "../../components/ui/ImageWithFallback.jsx";
 
 const fmtSize = (b) => (b > 1024 * 1024 ? `${(b / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(b / 1024))} KB`);
 
@@ -134,7 +135,7 @@ export default function Media() {
               onClick={() => setDetail(m)}
               className="group relative aspect-square overflow-hidden rounded-xl border border-border bg-white transition hover:shadow-soft"
             >
-              <img src={m.url} alt={m.filename} loading="lazy" className="h-full w-full object-cover transition group-hover:scale-105" />
+              <ImageWithFallback src={m.url} alt={m.filename} loading="lazy" className="h-full w-full object-cover transition group-hover:scale-105" />
               <span className="absolute inset-x-0 bottom-0 truncate bg-black/55 px-2 py-1 text-left text-[10px] text-white opacity-0 transition group-hover:opacity-100">
                 {m.filename}
               </span>
@@ -149,7 +150,7 @@ export default function Media() {
       <Modal open={!!detail} onClose={() => setDetail(null)} title="Detail Media" size="sm">
         {detail && (
           <div className="space-y-4">
-            <img src={detail.url} alt={detail.filename} className="max-h-64 w-full rounded-xl object-contain" />
+            <ImageWithFallback src={detail.url} alt={detail.filename} className="max-h-64 w-full rounded-xl object-contain" />
             <dl className="space-y-1.5 text-sm">
               <div className="flex justify-between gap-3">
                 <dt className="text-text-muted">Nama</dt>

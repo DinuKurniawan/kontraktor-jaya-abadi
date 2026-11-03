@@ -1,6 +1,4 @@
 // Konfigurasi aplikasi Express — dipasang menuju server.js
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
@@ -40,8 +38,8 @@ import mediaRoutes from "./modules/media/route.js";
 import userRoutes from "./modules/users/route.js";
 import { errorHandler, notFound } from "./middleware/error-handler.js";
 import { sendSuccess } from "./utils/response.js";
+import { UPLOAD_DIR } from "./config/uploads.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 const EXTRA_ORIGINS = ["http://localhost:4173", "http://localhost:4174"]; // preview build
@@ -55,7 +53,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // File statis hasil upload (multer menulis ke folder uploads/)
-app.use("/uploads", express.static(path.resolve(__dirname, "../uploads")));
+app.use("/uploads", (req, res, next) => {
+  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  next();
+}, express.static(UPLOAD_DIR));
 
 // Rate limit dasar untuk semua route /api
 app.use(

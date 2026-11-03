@@ -16,6 +16,7 @@ import Switch from "../../components/ui/Switch.jsx";
 import Skeleton from "../../components/ui/Skeleton.jsx";
 import { toast } from "../../components/ui/Toast.jsx";
 import ImagePicker from "../../components/admin/ImagePicker.jsx";
+import ImageWithFallback from "../../components/ui/ImageWithFallback.jsx";
 import MapPicker from "../../components/admin/MapPicker.jsx";
 import { STATUS_LABEL } from "./Projects.jsx";
 
@@ -352,7 +353,7 @@ export default function ProjectForm() {
                   <ul className="divide-y divide-border rounded-xl border border-border">
                     {images.map((img, i) => (
                       <li key={`${img.url}-${i}`} className="flex items-center gap-3 px-3 py-2">
-                        <img src={img.url} alt="" className="h-10 w-14 rounded-lg object-cover" />
+                        <ImageWithFallback src={img.url} alt="" className="h-10 w-14 rounded-lg object-cover" />
                         <span className="flex-1 truncate text-sm text-text-muted">{img.url.split("/").pop()}</span>
                         <div className="flex gap-1">
                           <button type="button" onClick={() => moveImage(i, -1)} disabled={i === 0} aria-label="Naikkan urutan" className="rounded-lg p-1.5 text-text-muted transition hover:bg-primary-soft hover:text-primary disabled:opacity-30"><ArrowUp size={15} /></button>

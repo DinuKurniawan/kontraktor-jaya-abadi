@@ -1,13 +1,19 @@
 // Konfigurasi multer untuk upload media (field "files", multi-file)
 import crypto from "node:crypto";
+<<<<<<< HEAD
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import multer from "multer";
 import ApiError from "../../utils/api-error.js";
+=======
+import fs from "node:fs/promises";
+import multer from "multer";
+import ApiError from "../../utils/api-error.js";
+import { isImageMime } from "../../utils/image.js";
+import { UPLOAD_DIR } from "../../config/uploads.js";
+>>>>>>> 6f3bcfb (memperbaiki gambar yang terkena cors)
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-export const UPLOAD_DIR = path.resolve(__dirname, "../../../uploads");
+export { UPLOAD_DIR } from "../../config/uploads.js";
 
 // Mimetype yang diizinkan → ekstensi file
 export const ALLOWED_TYPES = {

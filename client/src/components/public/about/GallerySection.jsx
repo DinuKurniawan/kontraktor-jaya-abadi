@@ -12,6 +12,7 @@ import { useSearchParams } from "react-router-dom";
 import api from "../../../lib/axios.js";
 import Container from "../Container.jsx";
 import Pagination from "../Pagination.jsx";
+import ImageWithFallback from "../../ui/ImageWithFallback.jsx";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
@@ -109,7 +110,7 @@ export default function GallerySection() {
             rows.map((g, i) => (
               <button key={g.id} type="button" onClick={() => setZoom(i)} aria-label={`Perbesar ${g.caption ?? "foto"}`}
                 className="group relative overflow-hidden rounded-xl">
-                <img src={img(g.image)} alt={g.caption ?? "Galeri"} loading="lazy" className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-105" />
+                <ImageWithFallback src={img(g.image)} alt={g.caption ?? "Galeri"} loading="lazy" className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-105" />
                 {g.caption && (
                   <span className="absolute inset-0 flex items-end bg-gradient-to-t from-ink/80 via-transparent to-transparent p-3 opacity-0 transition group-hover:opacity-100">
                     <span className="text-left text-xs font-semibold text-white">{g.caption}</span>
@@ -143,7 +144,7 @@ export default function GallerySection() {
             touchX.current = null;
           }}
           className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/90 p-4 backdrop-blur-sm">
-          <img src={img(rows[zoom].image)} alt={rows[zoom].caption ?? ""} className="max-h-[82vh] max-w-full rounded-2xl shadow-soft-lg" />
+          <ImageWithFallback src={img(rows[zoom].image)} alt={rows[zoom].caption ?? ""} className="max-h-[82vh] max-w-full rounded-2xl shadow-soft-lg" />
           <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-sm font-semibold text-white">
             {zoom + 1} / {rows.length}{rows[zoom].caption ? ` — ${rows[zoom].caption}` : ""}
           </p>

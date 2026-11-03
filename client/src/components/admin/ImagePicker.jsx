@@ -8,6 +8,7 @@ import Modal from "../ui/Modal.jsx";
 import Button from "../ui/Button.jsx";
 import Skeleton from "../ui/Skeleton.jsx";
 import EmptyState from "../ui/EmptyState.jsx";
+import ImageWithFallback from "../ui/ImageWithFallback.jsx";
 import { toast } from "../ui/Toast.jsx";
 
 // Unggah file dengan progres — dipakai ImagePicker & halaman Media
@@ -42,7 +43,7 @@ export default function ImagePicker({ value, onChange, multiple = false, label =
       <div className="flex flex-wrap gap-3">
         {items.map((img, i) => (
           <div key={`${img.url}-${i}`} className="relative h-24 w-24 overflow-hidden rounded-xl border border-border">
-            <img src={img.url} alt="" className="h-full w-full object-cover" />
+            <ImageWithFallback src={img.url} alt="" className="h-full w-full object-cover" />
             <button
               type="button"
               onClick={() => removeAt(i)}
@@ -163,7 +164,7 @@ setTab("Pustaka");
               return (
                 <div key={m.id} className={`relative overflow-hidden rounded-xl border-2 transition ${isSelected ? "border-primary" : "border-transparent hover:border-border"}`}>
                   <button type="button" onClick={() => onSelect(m)} className="block h-24 w-full" aria-label={`Pilih ${m.filename}`}>
-                    <img src={m.url} alt={m.filename} className="h-full w-full object-cover" />
+                    <ImageWithFallback src={m.url} alt={m.filename} className="h-full w-full object-cover" />
                     {isSelected && <span className="absolute inset-x-0 bottom-0 bg-primary/90 py-0.5 text-center text-[10px] font-semibold text-white">Terpilih</span>}
                   </button>
                   <button
