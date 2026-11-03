@@ -94,9 +94,9 @@ export default function Media() {
                 <button type="button" className="font-semibold text-primary underline" onClick={() => fileRef.current?.click()}>
                   pilih file
                 </button>{" "}
-                (JPG/PNG/WebP, maks 5MB)
+                (gambar umum, WebP otomatis, maks 5MB)
               </p>
-              <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" multiple className="sr-only" onChange={(e) => { handleFiles([...e.target.files]); e.target.value = ""; }} />
+              <input ref={fileRef} type="file" accept="image/*" multiple className="sr-only" onChange={(e) => { handleFiles([...e.target.files]); e.target.value = ""; }} />
             </>
           )}
         </div>

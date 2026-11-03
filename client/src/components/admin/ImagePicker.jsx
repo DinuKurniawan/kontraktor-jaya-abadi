@@ -139,13 +139,13 @@ setTab("Pustaka");
       {tab === "Unggah" ? (
         <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border py-10 text-text-muted transition hover:border-primary hover:text-primary">
           <ImagePlus size={28} />
-          <span className="text-sm font-medium">{progress === null ? "Klik pilih file (JPG/PNG/WebP, maks 5MB)" : `Mengunggah… ${progress}%`}</span>
+          <span className="text-sm font-medium">{progress === null ? "Klik pilih file gambar (WebP otomatis, maks 5MB)" : `Mengunggah… ${progress}%`}</span>
           {progress !== null && (
             <div className="h-2 w-56 overflow-hidden rounded-full bg-primary-soft">
               <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progress}%` }} />
             </div>
           )}
-          <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" multiple className="sr-only" onChange={handleFiles} />
+          <input ref={fileRef} type="file" accept="image/*" multiple className="sr-only" onChange={handleFiles} />
         </label>
       ) : isLoading ? (
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
