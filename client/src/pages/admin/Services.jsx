@@ -8,6 +8,7 @@ import { SERVICE_ICONS } from "../../lib/service-icons.jsx";
 import Card from "../../components/ui/Card.jsx";
 import Badge from "../../components/ui/Badge.jsx";
 import Button from "../../components/ui/Button.jsx";
+import Select from "../../components/ui/Select.jsx";
 import Switch from "../../components/ui/Switch.jsx";
 import Skeleton from "../../components/ui/Skeleton.jsx";
 import Pagination from "../../components/ui/Pagination.jsx";
@@ -28,15 +29,22 @@ export default function Services() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [categoryId, setCategoryId] = useState("");
   const [deleting, setDeleting] = useState(null);
   const debouncedSearch = useDebounced(search);
   const limit = 10;
 
-  useEffect(() => setPage(1), [debouncedSearch]);
+  useEffect(() => setPage(1), [debouncedSearch, categoryId]);
+
+  const { data: categoryData } = useQuery({
+    queryKey: ["service-categories"],
+    queryFn: async () => (await api.get("/admin/service-categories", { params: { limit: 100 } })).data,
+  });
+  const categories = categoryData?.data ?? [];
 
   const { data, isLoading } = useQuery({
-    queryKey: ["services", { page, search: debouncedSearch }],
-    queryFn: async () => (await api.get("/admin/services", { params: { page, limit, search: debouncedSearch || undefined } })).data,
+    queryKey: ["services", { page, search: debouncedSearch, categoryId }],
+    queryFn: async () => (await api.get("/admin/services", { params: { page, limit, search: debouncedSearch || undefined, categoryId: categoryId || undefined } })).data,
   });
   const rows = data?.data ?? [];
   const meta = data?.meta;
@@ -94,14 +102,20 @@ export default function Services() {
       </div>
 
       <Card bodyClassName="!py-4">
-        <input
-          type="search"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Cari judul layanan…"
-          aria-label="Cari layanan"
-          className="w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
-        />
+        <div className="grid gap-3 md:grid-cols-2">
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Cari judul layanan…"
+            aria-label="Cari layanan"
+            className="w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/20"
+          />
+          <Select label="Filter kategori" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+            <option value="">Semua kategori</option>
+            {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+          </Select>
+        </div>
       </Card>
 
       <Card bodyClassName="!px-0 !py-0">
@@ -120,10 +134,11 @@ export default function Services() {
           />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[680px] text-sm">
+            <table className="w-full min-w-[760px] text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-text-muted">
                   <th className="px-5 py-3.5 font-semibold">Layanan</th>
+                  <th className="px-3 py-3.5 font-semibold">Kategori</th>
                   <th className="px-3 py-3.5 text-center font-semibold">Urutan</th>
                   <th className="px-3 py-3.5 text-center font-semibold">Terbit</th>
                   <th className="px-5 py-3.5 text-right font-semibold">Aksi</th>
@@ -149,6 +164,7 @@ export default function Services() {
                           </div>
                         </div>
                       </td>
+                      <td className="px-3 py-3 text-text-muted">{s.category?.name ?? "Tanpa kategori"}</td>
                       <td className="px-3 py-3">
                         <div className="flex items-center justify-center gap-1">
                           <span className="mr-1 w-6 text-center text-xs font-semibold text-text-muted">{s.sortOrder + 1}</span>

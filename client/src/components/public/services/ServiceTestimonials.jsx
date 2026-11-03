@@ -1,9 +1,8 @@
 /*
- * ServiceTestimonials — filter layanan + 3 kartu testimoni (bintang, kutipan,
+ * ServiceTestimonials — 3 kartu testimoni (bintang, kutipan,
  * nama, jabatan, label layanan). PartnerMarquee di bawahnya.
  * Data: GET /api/public/testimonials?serviceId= (mapping id → label layanan di client).
  */
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Quote, Star } from "lucide-react";
 import api from "../../../lib/axios.js";
@@ -22,12 +21,9 @@ function Stars({ rating }) {
 }
 
 export default function ServiceTestimonials({ services }) {
-  const [svc, setSvc] = useState(""); // "" = Semua
-  const active = (services ?? []).find((s) => s.slug === svc) ?? null;
-
   const { data, isLoading } = useQuery({
-    queryKey: ["public-testimonials", active?.id ?? "all"],
-    queryFn: async () => (await api.get("/public/testimonials", { params: active?.id ? { serviceId: active.id } : {} })).data.data,
+    queryKey: ["public-testimonials", "all"],
+    queryFn: async () => (await api.get("/public/testimonials")).data.data,
   });
   const rows = (data ?? []).slice(0, 3);
   const labelFor = (id) => (services ?? []).find((s) => s.id === id)?.title ?? null;
@@ -40,18 +36,11 @@ export default function ServiceTestimonials({ services }) {
           <h2 className="mt-2 font-jakarta text-3xl font-extrabold text-ink sm:text-4xl">Kata <span className="text-brand">mereka</span></h2>
         </div>
 
-        {/* Filter layanan */}
+        {/* Filter testimoni: hanya tampilkan semua */}
         <div className="mt-8 flex flex-wrap justify-center gap-2" role="tablist" aria-label="Filter testimoni per layanan">
-          <button type="button" role="tab" aria-selected={svc === ""} onClick={() => setSvc("")}
-            className={`rounded-full px-4 py-2 text-sm font-semibold transition ${svc === "" ? "bg-ink text-cream" : "bg-white text-ink-soft hover:text-brand"}`}>
+          <button type="button" role="tab" aria-selected="true" className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-cream">
             Semua
           </button>
-          {(services ?? []).map((s) => (
-            <button key={s.id} type="button" role="tab" aria-selected={svc === s.slug} onClick={() => setSvc(s.slug)}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${svc === s.slug ? "bg-ink text-cream" : "bg-white text-ink-soft hover:text-brand"}`}>
-              {s.title}
-            </button>
-          ))}
         </div>
 
         {isLoading ? (

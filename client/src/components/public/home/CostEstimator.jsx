@@ -2,6 +2,7 @@
  * CostEstimator — kalkulator estimasi biaya: tipe bangunan (EstimatePrice),
  * slider luas 20-1000 m², tingkat finishing (pengali), hasil rentang Rupiah animatif.
  * Tombol kirim membuka form kecil → POST /api/public/messages (nama+WA+ringkasan).
+ * Dapat ditampilkan sebagai section penuh atau popup modal.
  */
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -9,6 +10,7 @@ import { Calculator, Loader2, Send } from "lucide-react";
 import api from "../../../lib/axios.js";
 import Container from "../Container.jsx";
 import Input from "../../ui/Input.jsx"; // ponytail: kalau tak ada, ganti <input> polos
+import Modal from "../../ui/Modal.jsx";
 import { toast } from "../../ui/Toast.jsx";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
@@ -42,9 +44,9 @@ function AnimatedRupiah({ value }) {
   return <>{rupiah(v)}</>;
 }
 
-export default function CostEstimator() {
+export default function CostEstimator({ modal = false, onClose }) {
   const qc = useQueryClient();
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["public-estimate-prices"],
     queryFn: async () => (await api.get("/public/estimate-prices")).data.data,
   });
@@ -75,11 +77,19 @@ export default function CostEstimator() {
     onError: (e) => toast.error(e.response?.data?.message ?? "Gagal mengirim, coba lagi."),
   });
 
-  if (types.length === 0) return null;
+  if (types.length === 0) {
+    if (!modal) return null;
+    return (
+      <Modal open onClose={onClose} title="Hitung Estimasi Biaya" size="lg">
+        <div className="py-8 text-center text-sm text-ink-light">
+          {isLoading ? "Memuat kalkulator estimasi…" : "Data estimasi belum tersedia."}
+        </div>
+      </Modal>
+    );
+  }
 
-  return (
-    <section id="estimasi" className="scroll-mt-24 bg-ink py-16 sm:py-20">
-      <Container className="grid gap-10 lg:grid-cols-2">
+  const content = (
+    <div className={`grid gap-10 lg:grid-cols-2 ${modal ? "rounded-2xl bg-ink p-5 sm:p-6" : ""}`}>
         {/* Kiri: kontrol */}
         <div>
           <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand"><Calculator size={14} /> Kalkulator Estimasi</p>
@@ -153,7 +163,16 @@ export default function CostEstimator() {
             </form>
           )}
         </div>
-      </Container>
+    </div>
+  );
+
+  if (modal) {
+    return <Modal open onClose={onClose} title="Hitung Estimasi Biaya" size="lg">{content}</Modal>;
+  }
+
+  return (
+    <section id="estimasi" className="scroll-mt-24 bg-ink py-16 sm:py-20">
+      <Container>{content}</Container>
     </section>
   );
 }

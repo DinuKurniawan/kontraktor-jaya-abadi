@@ -100,6 +100,23 @@ async function main() {
   console.log("✅ Tag artikel:", tags.length);
 
   // 4. Layanan (upsert by slug)
+  const serviceCategories = [
+    { name: "Konstruksi", slug: "konstruksi", sortOrder: 0 },
+    { name: "Renovasi", slug: "renovasi", sortOrder: 1 },
+    { name: "Desain & Interior", slug: "desain-interior", sortOrder: 2 },
+    { name: "Pengawasan", slug: "pengawasan", sortOrder: 3 },
+  ];
+  const serviceCategoryId = {};
+  for (const category of serviceCategories) {
+    const row = await prisma.serviceCategory.upsert({
+      where: { slug: category.slug },
+      update: category,
+      create: category,
+    });
+    serviceCategoryId[category.slug] = row.id;
+  }
+  console.log("✅ Kategori layanan:", serviceCategories.length);
+
   const services = [
     {
       title: "Konstruksi Bangunan",
@@ -108,6 +125,7 @@ async function main() {
         "Layanan konstruksi bangunan baru dari tahap perencanaan hingga serah terima kunci. Kami menangani gedung perkantoran, ruko, hotel, dan perumahan dengan tim struktural berpengalaman, pengendalian mutu bertahap, serta laporan progres mingguan.",
       icon: "building-2",
       image: IMG("ja-layanan-konstruksi"),
+      categoryId: serviceCategoryId.konstruksi,
     },
     {
       title: "Renovasi Bangunan",
@@ -116,6 +134,7 @@ async function main() {
         "Renovasi dan penataan ulang bangunan berdiri — mulai perbaikan struktur, pertukangan listrik dan air, hingga penataan fasad dan beranda. Untuk penghuni tetap aktif, pekerjaan dibagi per tahap agar aktivitas tidak terganggu.",
       icon: "hammer",
       image: IMG("ja-layanan-renovasi"),
+      categoryId: serviceCategoryId.renovasi,
     },
     {
       title: "Desain & Interior",
@@ -124,6 +143,7 @@ async function main() {
         "Perancangan dan pemasangan interior lengkap: partisi, plafon, lantai, furniture custom, tata cahaya, dan akustik. Tim desainer kami bekerja dari moodboard dan konsep 3D hingga pemasangan di lapangan.",
       icon: "sofa",
       image: IMG("ja-layanan-interior"),
+      categoryId: serviceCategoryId["desain-interior"],
     },
     {
       title: "Pengawasan Proyek",
@@ -132,6 +152,7 @@ async function main() {
         "Layanan konsultan pengawas independen yang memastikan kontraktor pelaksana patuh terhadap gambar rencana. Cakupannya inspeksi material, pengujian struktural, laporan berjenjang, dan verifikasi termin pembayaran.",
       icon: "clipboard-check",
       image: IMG("ja-layanan-pengawasan"),
+      categoryId: serviceCategoryId.pengawasan,
     },
   ];
   for (const [i, s] of services.entries()) {

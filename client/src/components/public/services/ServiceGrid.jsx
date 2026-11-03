@@ -3,95 +3,138 @@
  * 3 poin ruang lingkup teratas, label "Mulai dari", tautan "Lihat detail".
  * Featured → span 2 kolom + lencana "Paling Dicari". Kolom: 1 mobile / 2 tablet
  * & md / 4 desktop lebar; jumlah ganjil → kartu terakhir melebar penuh.
- * Pencarian + filter cepat (Semua/Bangun/Renovasi/Desain/Pengawas) tanpa reload.
+ * Pencarian + filter kategori dari API tanpa reload.
  * Seluruh kartu = satu tautan; tinggi seragam (h-full flex).
  */
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link, useSearchParams } from "react-router-dom";
 import { ArrowRight, Search, Wrench } from "lucide-react";
-import Container from "../Container.jsx";
+import api from "../../../lib/axios.js";
 import { SERVICE_ICONS } from "../../../lib/service-icons.jsx";
 import AspectImage from "../../ui/AspectImage.jsx";
+import EmptyState from "../../ui/EmptyState.jsx";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
 const rupiah = (n) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(n) || 0);
 
-const FILTERS = [
-  ["", "Semua"],
-  ["konstruksi", "Bangun"],
-  ["renovasi", "Renovasi"],
-  ["interior", "Desain"],
-  ["pengawasan", "Pengawasan"],
-];
-const MATCH_KEY = { konstruksi: "konstruksi", renovasi: "renovasi", interior: "desain|interior", pengawasan: "pengawas" };
+function useDebounced(value, delay = 300) {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
+}
 
-export default function ServiceGrid({ services, isLoading, isError }) {
-  const [q, setQ] = useState("");
-  const [filter, setFilter] = useState("");
+export default function ServiceGrid({ services: initialServices, isLoading: initialLoading, isError: initialError }) {
+  const [sp, setSp] = useSearchParams();
+  const requestedCategory = sp.get("kategori") ?? "";
+  const q = sp.get("q") ?? "";
+  const debouncedQ = useDebounced(q);
+  const { data: facetData, isLoading: facetsLoading } = useQuery({
+    queryKey: ["public-service-categories"],
+    queryFn: async () => (await api.get("/public/service-categories")).data,
+  });
+  const categories = facetData?.data?.categories ?? [];
+  const activeCategory = categories.some((category) => category.slug === requestedCategory) ? requestedCategory : "";
 
-  const rows = useMemo(() => {
-    let list = services ?? [];
-    if (filter) {
-      const re = new RegExp(MATCH_KEY[filter], "i");
-      list = list.filter((s) => re.test(`${s.slug} ${s.title}`));
+  useEffect(() => {
+    if (!facetsLoading && requestedCategory && !categories.some((category) => category.slug === requestedCategory)) {
+      setSp((previous) => {
+        const next = new URLSearchParams(previous);
+        next.delete("kategori");
+        return next;
+      });
     }
-    if (q.trim()) {
-      const term = q.trim().toLowerCase();
-      list = list.filter((s) => `${s.title} ${s.shortDesc}`.toLowerCase().includes(term));
-    }
-    return list;
-  }, [services, q, filter]);
+  }, [categories, facetsLoading, requestedCategory, setSp]);
 
-  // Skeleton / error / kosong — diminta oleh revisi kartu layanan
-  if (isLoading) {
-    return (
-      <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-4" aria-busy="true">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} aria-hidden className="overflow-hidden rounded-2xl bg-white shadow-soft">
-            <div className="aspect-[4/3] animate-pulse bg-cream-deep" />
-            <div className="space-y-3 p-5"><div className="h-5 w-2/3 animate-pulse rounded bg-cream-deep" /><div className="h-3 w-full animate-pulse rounded bg-cream-deep" /><div className="h-3 w-4/5 animate-pulse rounded bg-cream-deep" /></div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-  if (isError) return <p className="rounded-2xl bg-white p-6 text-sm text-ink-soft">Gagal memuat layanan — muat ulang halaman.</p>;
-  if (rows.length === 0) {
-    return (
-      <div className="rounded-2xl border border-dashed border-ink/15 py-14 text-center">
-        <Wrench size={28} className="mx-auto text-ink/30" />
-        <p className="mt-3 font-jakarta font-bold text-ink">Layanan tidak ditemukan</p>
-        <p className="mt-1 text-sm text-ink-light">Coba kata kunci lain atau pilih filter "Semua".</p>
-      </div>
-    );
-  }
+  const { data, isLoading: servicesLoading, isError: servicesError } = useQuery({
+    queryKey: ["public-services-grid", activeCategory, debouncedQ],
+    queryFn: async () => (await api.get("/public/services", { params: { category: activeCategory || undefined, search: debouncedQ.trim() || undefined } })).data,
+    initialData: !activeCategory && !debouncedQ && initialServices?.length ? { data: initialServices } : undefined,
+  });
+  const rows = data?.data ?? [];
+  const isLoading = initialLoading || servicesLoading;
+  const isError = initialError || servicesError;
+
+  const updateParam = (key, value) => {
+    setSp((previous) => {
+      const next = new URLSearchParams(previous);
+      if (value) next.set(key, value);
+      else next.delete(key);
+      return next;
+    });
+  };
+  const resetFilters = () => setSp((previous) => {
+    const next = new URLSearchParams(previous);
+    next.delete("kategori");
+    next.delete("q");
+    return next;
+  });
+
+  const showChips = !facetsLoading && categories.length > 1;
 
   const odd = rows.length % 2 === 1;
 
   return (
     <div>
-      {/* Pencarian + filter cepat */}
-      <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative sm:w-72">
-          <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-light" />
-          <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Cari layanan…"
-            aria-label="Cari layanan"
-            className="w-full rounded-full border border-ink/10 bg-white py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20" />
-        </div>
-        <div className="flex flex-wrap gap-2" role="tablist" aria-label="Filter layanan">
-          {FILTERS.map(([v, label]) => (
-            <button key={v || "all"} type="button" role="tab" aria-selected={filter === v}
-              onClick={() => setFilter(v)}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${filter === v ? "bg-ink text-cream" : "bg-white text-ink-soft hover:text-brand"}`}>
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
+       {/* Pencarian + filter dari data kategori layanan */}
+       <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+         <div className="relative sm:w-72">
+           <Search size={16} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-light" />
+           <input type="search" value={q} onChange={(e) => updateParam("q", e.target.value.trimStart())} placeholder="Cari layanan…"
+             aria-label="Cari layanan"
+             className="w-full rounded-full border border-ink/10 bg-white py-2.5 pl-10 pr-4 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20" />
+         </div>
+         {facetsLoading ? (
+           <div className="flex gap-2" aria-busy="true" aria-label="Memuat filter kategori">
+             {[0, 1, 2].map((i) => <span key={i} className="h-10 w-24 animate-pulse rounded-full bg-white" aria-hidden />)}
+           </div>
+         ) : showChips ? (
+           <div className="relative min-w-0 sm:max-w-[calc(100%-19rem)]">
+             <div className="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:justify-end sm:overflow-visible" role="tablist" aria-label="Filter layanan">
+               <button type="button" role="tab" aria-selected={activeCategory === ""} onClick={() => updateParam("kategori", "")}
+                 className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition ${activeCategory === "" ? "bg-ink text-cream" : "bg-white text-ink-soft hover:text-brand"}`}>
+                 Semua ({facetData?.data?.totalServiceCount ?? 0})
+               </button>
+               {categories.map((category) => (
+                 <button key={category.id} type="button" role="tab" aria-selected={activeCategory === category.slug} onClick={() => updateParam("kategori", category.slug)}
+                   className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition ${activeCategory === category.slug ? "bg-ink text-cream" : "bg-white text-ink-soft hover:text-brand"}`}>
+                   {category.name} ({category.serviceCount})
+                 </button>
+               ))}
+             </div>
+             <span aria-hidden className="pointer-events-none absolute right-0 top-0 h-10 w-8 bg-gradient-to-l from-cream to-transparent sm:hidden" />
+           </div>
+         ) : null}
+       </div>
 
-      {/* Grid kartu */}
-      <div className="mt-8 grid items-stretch gap-6 sm:grid-cols-2 xl:grid-cols-4">
+       {!isLoading && !isError && <p className="mt-4 text-sm text-ink-light">{rows.length} layanan ditemukan</p>}
+
+       {isError ? (
+         <p className="mt-8 rounded-2xl bg-white p-6 text-sm text-ink-soft">Gagal memuat layanan — muat ulang halaman.</p>
+       ) : isLoading ? (
+         <div className="mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-4" aria-busy="true">
+           {[...Array(4)].map((_, i) => (
+             <div key={i} aria-hidden className="overflow-hidden rounded-2xl bg-white shadow-soft">
+               <div className="aspect-[4/3] animate-pulse bg-cream-deep" />
+               <div className="space-y-3 p-5"><div className="h-5 w-2/3 animate-pulse rounded bg-cream-deep" /><div className="h-3 w-full animate-pulse rounded bg-cream-deep" /><div className="h-3 w-4/5 animate-pulse rounded bg-cream-deep" /></div>
+             </div>
+           ))}
+         </div>
+       ) : rows.length === 0 ? (
+         <EmptyState
+           icon={Wrench}
+           title="Tidak ada layanan yang cocok"
+           description="Coba kata kunci atau kategori lain."
+           action={<button type="button" onClick={resetFilters} className="rounded-full bg-ink px-5 py-2.5 text-sm font-bold text-cream transition hover:bg-ink/80">Reset</button>}
+         />
+       ) : null}
+
+       {!isLoading && !isError && rows.length > 0 && (
+        <div className="mt-8 grid items-stretch gap-6 sm:grid-cols-2 xl:grid-cols-4">
         {rows.map((s, i) => {
           const Icon = SERVICE_ICONS[s.icon] ?? Wrench;
           const isLast = i === rows.length - 1;
@@ -134,12 +177,13 @@ export default function ServiceGrid({ services, isLoading, isError }) {
                   </span>
                 </div>
               </div>
-              {/* Overlay tepi saat hover */}
+               {/* Overlay tepi saat hover */}
               <span aria-hidden className="pointer-events-none absolute inset-0 rounded-2xl ring-2 ring-brand/0 transition group-hover:ring-brand/30" />
             </Link>
           );
         })}
-      </div>
+       </div>
+       )}
     </div>
   );
 }

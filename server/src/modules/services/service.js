@@ -7,9 +7,16 @@ import { paginate, paginationMeta } from "../../utils/paginate.js";
 // Daftar layanan (admin): urutan tampil, paginasi + search judul
 export async function listServices(query) {
   const { page, limit, skip, where } = paginate(query, { searchFields: ["title"], defaultLimit: 50 });
+  if (query.categoryId) where.categoryId = query.categoryId;
 
   const [rows, total] = await prisma.$transaction([
-    prisma.service.findMany({ where, orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }], skip, take: limit }),
+    prisma.service.findMany({
+      where,
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      skip,
+      take: limit,
+      include: { category: { select: { id: true, name: true, slug: true } } },
+    }),
     prisma.service.count({ where }),
   ]);
 
@@ -18,7 +25,7 @@ export async function listServices(query) {
 
 // Detail layanan
 export async function getService(id) {
-  const service = await prisma.service.findUnique({ where: { id } });
+  const service = await prisma.service.findUnique({ where: { id }, include: { category: { select: { id: true, name: true, slug: true } } } });
   if (!service) throw new ApiError(404, "Layanan tidak ditemukan");
   return service;
 }

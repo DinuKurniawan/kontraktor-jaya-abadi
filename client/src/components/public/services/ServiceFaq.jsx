@@ -1,10 +1,10 @@
 /*
- * ServiceFaq — tab layanan (kiri desktop / atas mobile) + accordion FAQ
+ * ServiceFaq — tab "Semua Layanan" (kiri desktop / atas mobile) + accordion FAQ
  * (satu terbuka, aria-expanded/controls), kolom "Belum terjawab?" + tombol WhatsApp.
  * JSON-LD FAQPage disisipkan via Helmet.
- * Data: GET /api/public/faqs?serviceId=.
+ * Data: GET /api/public/faqs.
  */
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet-async";
 import { ChevronDown, MessageCircle } from "lucide-react";
@@ -15,16 +15,14 @@ const SITE = import.meta.env.VITE_SITE_URL || "http://localhost:5173";
 const WA = "6281234567890"; // ponytail: nomor WA hardcode — ganti ke site_settings saat admin form tersedia
 
 export default function ServiceFaq({ services }) {
-  const [svc, setSvc] = useState(services?.[0]?.slug ?? "");
   const [open, setOpen] = useState(null); // index FAQ terbuka
 
-  const active = useMemo(() => (services ?? []).find((s) => s.slug === svc) ?? null, [services, svc]);
   const { data, isLoading } = useQuery({
-    queryKey: ["public-faqs", active?.id ?? "all"],
-    queryFn: async () => (await api.get("/public/faqs", { params: active?.id ? { serviceId: active.id } : {} })).data.data,
+    queryKey: ["public-faqs", "all"],
+    queryFn: async () => (await api.get("/public/faqs")).data.data,
   });
   const rows = (data ?? []).slice(0, 10);
-  const scope = active ? `${active.title} — Faq` : "Faq Umum";
+  const scope = "FAQ umum";
 
   return (
     <section id="faq" className="scroll-mt-32 bg-white py-16 sm:py-20">
@@ -47,18 +45,11 @@ export default function ServiceFaq({ services }) {
         </div>
 
         <div className="mt-10 grid gap-8 lg:grid-cols-3">
-          {/* Tab layanan */}
+          {/* Filter FAQ: hanya tampilkan semua layanan */}
           <div role="tablist" aria-label="Pilih layanan untuk FAQ" className="flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
-            <button type="button" role="tab" aria-selected={svc === ""} onClick={() => { setSvc(""); setOpen(null); }}
-              className={`shrink-0 rounded-full px-4 py-2.5 text-left text-sm font-semibold transition lg:w-full lg:rounded-2xl ${svc === "" ? "bg-ink text-cream" : "bg-cream-deep text-ink-soft hover:text-brand"}`}>
+            <button type="button" role="tab" aria-selected="true" className="shrink-0 rounded-full bg-ink px-4 py-2.5 text-left text-sm font-semibold text-cream lg:w-full lg:rounded-2xl">
               Semua Layanan
             </button>
-            {(services ?? []).map((s) => (
-              <button key={s.id} type="button" role="tab" aria-selected={svc === s.slug} onClick={() => { setSvc(s.slug); setOpen(null); }}
-                className={`shrink-0 rounded-full px-4 py-2.5 text-left text-sm font-semibold transition lg:w-full lg:rounded-2xl ${svc === s.slug ? "bg-ink text-cream" : "bg-cream-deep text-ink-soft hover:text-brand"}`}>
-                {s.title}
-              </button>
-            ))}
           </div>
 
           {/* Accordion */}

@@ -16,10 +16,8 @@ export default function ProcessSection({ services }) {
     queryKey: ["public-process-steps"],
     queryFn: async () => (await api.get("/public/process-steps")).data.data,
   });
-  const [svc, setSvc] = useState(""); // slug filter (opsional, dipakai /layanan)
   const all = (data ?? []).slice(0, 6);
-  const filtered = svc ? all.filter((s) => s.serviceId === services?.find((x) => x.slug === svc)?.id) : all;
-  const rows = services?.length ? filtered : all; // tanpa prop services → beranda, tanpa chip
+  const rows = all;
   const ref = useRef(null);
   const [p, setP] = useState(0); // 0..1 progress garis terisi
 
@@ -39,26 +37,19 @@ export default function ProcessSection({ services }) {
   return (
     <section ref={ref} className="bg-cream py-16 sm:py-20">
       <Container className={rows.length > 4 ? "max-w-7xl" : ""}>
-        <div className={`mx-auto max-w-2xl text-center ${services?.length ? "flex flex-col" : ""}`}>
+        <div className="mx-auto max-w-2xl text-center">
           <p className="text-xs font-bold uppercase tracking-widest text-brand">Cara Kami Bekerja</p>
           <h2 className="mt-2 font-jakarta text-3xl font-extrabold text-ink sm:text-4xl">
             Lima langkah, <span className="text-brand">tanpa drama</span>
           </h2>
         </div>
 
-        {/* Chip filter per layanan (hanya bila ada langkah tertaut layanan) */}
+        {/* Filter alur kerja: hanya tampilkan semua langkah */}
         {services?.length ? (
           <div className="mt-8 flex flex-wrap justify-center gap-2" role="tablist" aria-label="Filter alur kerja per layanan">
-            <button type="button" role="tab" aria-selected={svc === ""} onClick={() => setSvc("")}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${svc === "" ? "bg-ink text-cream" : "bg-white text-ink-soft hover:text-brand"}`}>
+            <button type="button" role="tab" aria-selected="true" className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-cream">
               Semua
             </button>
-            {services.map((s) => (
-              <button key={s.id} type="button" role="tab" aria-selected={svc === s.slug} onClick={() => setSvc(s.slug)}
-                className={`rounded-full px-4 py-2 text-sm font-semibold transition ${svc === s.slug ? "bg-ink text-cream" : "bg-white text-ink-soft hover:text-brand"}`}>
-                {s.title}
-              </button>
-            ))}
           </div>
         ) : null}
 

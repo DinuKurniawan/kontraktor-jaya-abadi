@@ -1,6 +1,6 @@
 /*
  * ServiceProcess — reuse ProcessSection (beranda) untuk halaman /layanan.
- * Menambah chip filter "Semua / per layanan" bila ada langkah tertaut layanan.
+ * Menampilkan satu chip "Semua" pada halaman layanan.
  */
 import ProcessSection from "../home/ProcessSection.jsx";
 export default function ServiceProcess({ services }) {

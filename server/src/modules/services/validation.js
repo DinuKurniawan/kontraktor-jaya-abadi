@@ -8,6 +8,7 @@ export const createSchema = z.object({
   icon: z.string().min(1, "Pilih ikon"), // nama ikon Lucide, mis. "Wrench"
   image: z.string().optional().nullable(),
   heroImage: z.string().optional().nullable(),
+  categoryId: z.string().min(1).optional().nullable(),
   sortOrder: z.number({ invalid_type_error: "Urutan wajib berupa angka" }).int().min(0).optional(),
   isPublished: z.boolean().optional(),
 });

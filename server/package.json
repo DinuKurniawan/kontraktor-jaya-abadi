@@ -7,7 +7,8 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "seed": "node prisma/seed.js",
-    "services:normalize-images": "node scripts/normalize-service-images.js"
+    "services:normalize-images": "node scripts/normalize-service-images.js",
+    "db:prod:update": "prisma migrate deploy"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

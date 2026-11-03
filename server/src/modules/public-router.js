@@ -31,7 +31,7 @@ const paged = (fn) => asyncHandler(async (req, res) => {
   sendSuccess(res, { data, meta, ...extra });
 });
 
-router.get("/services", plain(() => listPublishedServices()));
+router.get("/services", plain((req) => listPublishedServices(req.query)));
 router.get("/services/:slug", plain((req) =>
   getPublishedService(req.params.slug).then((s) => {
     if (!s) throw new ApiError(404, "Layanan tidak ditemukan");

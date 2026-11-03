@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Plus, Save } from "lucide-react";
 import api from "../../lib/axios.js";
 import { SERVICE_ICONS } from "../../lib/service-icons.jsx";
 import Card from "../../components/ui/Card.jsx";
@@ -13,6 +13,7 @@ import Button from "../../components/ui/Button.jsx";
 import Input from "../../components/ui/Input.jsx";
 import Textarea from "../../components/ui/Textarea.jsx";
 import Select from "../../components/ui/Select.jsx";
+import Modal from "../../components/ui/Modal.jsx";
 import Switch from "../../components/ui/Switch.jsx";
 import Skeleton from "../../components/ui/Skeleton.jsx";
 import { toast } from "../../components/ui/Toast.jsx";
@@ -65,12 +66,21 @@ export default function ServiceForm() {
   const [isPublished, setIsPublished] = useState(false);
   const [crop, setCrop] = useState(null);
   const [cropSaving, setCropSaving] = useState(false);
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+  const [categoryName, setCategoryName] = useState("");
+  const [categoryError, setCategoryError] = useState("");
 
   const { data: existing, isLoading: loadingExisting } = useQuery({
     queryKey: ["service", id],
     queryFn: async () => (await api.get(`/admin/services/${id}`)).data.data,
     enabled: isEdit,
   });
+
+  const { data: categoryData } = useQuery({
+    queryKey: ["service-categories"],
+    queryFn: async () => (await api.get("/admin/service-categories", { params: { limit: 100 } })).data,
+  });
+  const serviceCategories = categoryData?.data ?? [];
 
   const {
     register,
@@ -81,13 +91,13 @@ export default function ServiceForm() {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(serviceSchema),
-    defaultValues: { title: "", shortDesc: "", description: "", icon: "Wrench", sortOrder: 0 },
+    defaultValues: { title: "", shortDesc: "", description: "", icon: "Wrench", sortOrder: 0, categoryId: "" },
   });
 
   // Isi form saat data detail tersedia
   useEffect(() => {
     if (!isEdit || !existing || existing.id !== id) return;
-    reset({ title: existing.title, shortDesc: existing.shortDesc, description: existing.description, icon: existing.icon, sortOrder: existing.sortOrder });
+    reset({ title: existing.title, shortDesc: existing.shortDesc, description: existing.description, icon: existing.icon, sortOrder: existing.sortOrder, categoryId: existing.categoryId ?? "" });
     setImage(existing.image ?? "");
     setHeroImage(existing.heroImage ?? "");
     setIsPublished(existing.isPublished);
@@ -103,8 +113,21 @@ export default function ServiceForm() {
     onError: (err) => toast.error(err.response?.data?.message ?? "Gagal menyimpan layanan"),
   });
 
+  const categoryMutation = useMutation({
+    mutationFn: () => api.post("/admin/service-categories", { name: categoryName.trim() }),
+    onSuccess: ({ data }) => {
+      queryClient.invalidateQueries({ queryKey: ["service-categories"] });
+      setValue("categoryId", data.data.id, { shouldDirty: true });
+      setCategoryModalOpen(false);
+      setCategoryName("");
+      setCategoryError("");
+      toast.success("Kategori layanan berhasil dibuat");
+    },
+    onError: (err) => setCategoryError(err.response?.data?.message ?? "Gagal membuat kategori"),
+  });
+
   const onSubmit = (values) => {
-    saveMutation.mutate({ ...values, sortOrder: Number(values.sortOrder), image: image || null, heroImage: heroImage || null, isPublished });
+    saveMutation.mutate({ ...values, sortOrder: Number(values.sortOrder), image: image || null, heroImage: heroImage || null, categoryId: values.categoryId || null, isPublished });
   };
 
   const saveCrop = async (file) => {
@@ -125,6 +148,11 @@ export default function ServiceForm() {
   };
 
   const slugPreview = slugify(watch("title")) || "otomatis-dari-judul";
+  const openCategoryModal = () => {
+    setCategoryName("");
+    setCategoryError("");
+    setCategoryModalOpen(true);
+  };
 
   if (isEdit && loadingExisting) {
     return (
@@ -157,6 +185,15 @@ export default function ServiceForm() {
               <Textarea label="Deskripsi Singkat" rows={2} placeholder="Satu kalimat untuk kartu layanan" error={errors.shortDesc?.message} className="sm:col-span-2" {...register("shortDesc")} />
               <Textarea label="Deskripsi Lengkap" rows={8} placeholder="Jelaskan cakupan layanan…" error={errors.description?.message} className="sm:col-span-2" {...register("description")} />
               <Input label="Urutan Tampil" type="number" min={0} hint="Angka kecil tampil lebih dulu; urutkan juga dari tombol naik/turun" error={errors.sortOrder?.message} {...register("sortOrder")} />
+              <div>
+                <Select label="Kategori layanan" {...register("categoryId")}>
+                  <option value="">Tanpa kategori</option>
+                  {serviceCategories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+                </Select>
+                <button type="button" onClick={openCategoryModal} className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline">
+                  <Plus size={13} /> Kategori baru
+                </button>
+              </div>
             </div>
           </Card>
         </div>
@@ -215,6 +252,18 @@ export default function ServiceForm() {
         </div>
       </form>
       <ImageCropModal open={!!crop} src={crop?.src} ratio={crop?.ratio} onClose={() => !cropSaving && setCrop(null)} onSave={saveCrop} />
+      <Modal
+        open={categoryModalOpen}
+        onClose={() => !categoryMutation.isPending && setCategoryModalOpen(false)}
+        title="Tambah Kategori Layanan"
+        size="sm"
+        footer={<><Button variant="outline" onClick={() => setCategoryModalOpen(false)} disabled={categoryMutation.isPending}>Batal</Button><Button type="submit" form="service-category-form" loading={categoryMutation.isPending}>Simpan</Button></>}
+      >
+        <form id="service-category-form" onSubmit={(event) => { event.preventDefault(); if (categoryName.trim().length < 2) { setCategoryError("Nama minimal 2 karakter"); return; } categoryMutation.mutate(); }} className="space-y-1" noValidate>
+          <Input label="Nama kategori" value={categoryName} onChange={(event) => setCategoryName(event.target.value)} placeholder="Contoh: Konstruksi" error={categoryError} autoFocus />
+          <p className="text-xs text-text-muted">Slug kategori dibuat otomatis dari nama.</p>
+        </form>
+      </Modal>
     </div>
   );
 }

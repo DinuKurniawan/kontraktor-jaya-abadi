@@ -177,6 +177,21 @@ model ProjectImage {
 }
 
 // Layanan jasa (konstruksi, renovasi, interior, pengawasan)
+model ServiceCategory {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  sortOrder   Int       @default(0)
+  isPublished Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  services Service[]
+
+  @@index([sortOrder])
+  @@map("service_categories")
+}
+
 model Service {
   id              String   @id @default(cuid())
   title           String
@@ -195,9 +210,11 @@ model Service {
   isFeatured      Boolean  @default(false)
   sortOrder       Int      @default(0)
   isPublished     Boolean  @default(false)
+  categoryId      String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  category     ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   scopes       ServiceScope[]
   packages     ServicePackage[]
   projects     Project[]
@@ -207,6 +224,7 @@ model Service {
   messages     Message[]
 
   @@index([sortOrder])
+  @@index([categoryId])
   @@map("services")
 }
 

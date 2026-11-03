@@ -22,9 +22,12 @@ export default function ScopeTabs({ services }) {
   const urlTab = sp.get("tab");
   const current = rows.find((s) => s.slug === urlTab) ?? rows[0];
   const setTab = (slug) => {
-    const next = {};
-    if (slug !== rows[0].slug) next.tab = slug;
-    setSp({ ...Object.fromEntries(sp.entries()), ...next });
+    setSp((previous) => {
+      const next = new URLSearchParams(previous);
+      if (slug === rows[0].slug) next.delete("tab");
+      else next.set("tab", slug);
+      return next;
+    });
   };
 
   return (

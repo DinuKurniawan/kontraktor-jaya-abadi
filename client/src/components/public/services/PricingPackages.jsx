@@ -2,13 +2,14 @@
  * PricingPackages — pilihan layanan (segmented control), kartu paket per layanan.
  * Popular: lebih besar + lencana "Paling Populer" + bingkai oranye. Mobile: carousel
  * scroll-snap. Tombol paket → modal singkat (nama, WhatsApp, luas/lokasi) →
- * POST /api/public/messages. Catatan harga indikatif + tautan estimasi biaya.
+ * POST /api/public/messages. Catatan harga indikatif + popup estimasi biaya.
  */
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Calculator, Check, ChevronDown, MessageCircle, Star, X } from "lucide-react";
 import api from "../../../lib/axios.js";
 import Container from "../Container.jsx";
+import CostEstimator from "../home/CostEstimator.jsx";
 import Reveal from "./Reveal.jsx";
 
 export const rupiah = (n) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(n) || 0);
@@ -21,6 +22,7 @@ export default function PricingPackages({ services }) {
   const [sending, setSending] = useState(false);
   const [done, setDone] = useState(false);
   const [err, setErr] = useState("");
+  const [estimateOpen, setEstimateOpen] = useState(false);
 
   const active = useMemo(() => services?.find((s) => s.slug === svcSlug) ?? services?.[0], [services, svcSlug]);
   const { data, isLoading } = useQuery({
@@ -121,9 +123,9 @@ export default function PricingPackages({ services }) {
 
         <p className="mt-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-center text-xs text-ink-light">
           <span>Harga indikatif — penawaran final setelah survei lokasi.</span>
-          <a href="/#estimasi" className="inline-flex items-center gap-1.5 font-bold text-brand hover:underline">
+          <button type="button" onClick={() => setEstimateOpen(true)} aria-haspopup="dialog" className="inline-flex items-center gap-1.5 font-bold text-brand hover:underline">
             <Calculator size={14} /> Hitung estimasi biaya
-          </a>
+          </button>
         </p>
       </Container>
 
@@ -167,6 +169,7 @@ export default function PricingPackages({ services }) {
           </div>
         </div>
       )}
+      {estimateOpen && <CostEstimator modal onClose={() => setEstimateOpen(false)} />}
     </section>
   );
 }

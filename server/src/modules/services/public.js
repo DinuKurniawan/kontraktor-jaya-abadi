@@ -2,13 +2,22 @@
 import prisma from "../../config/prisma.js";
 
 // List: jumlah proyek terbit, harga mulai, scope ringkas (maks 4)
-export async function listPublishedServices() {
+export async function listPublishedServices({ category, search } = {}) {
+  const where = { isPublished: true };
+  if (category) where.category = { slug: category, isPublished: true };
+  if (search?.trim()) {
+    where.OR = [
+      { title: { contains: search.trim(), mode: "insensitive" } },
+      { shortDesc: { contains: search.trim(), mode: "insensitive" } },
+    ];
+  }
   const rows = await prisma.service.findMany({
-    where: { isPublished: true },
+    where,
     orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
     select: {
       id: true, title: true, slug: true, shortDesc: true, description: true,
       icon: true, image: true, heroImage: true, startingPrice: true, isFeatured: true,
+      category: { select: { id: true, name: true, slug: true } },
       _count: { select: { projects: { where: { isPublished: true } } } },
       scopes: { orderBy: { sortOrder: "asc" }, take: 4, select: { id: true, title: true, icon: true } },
     },
