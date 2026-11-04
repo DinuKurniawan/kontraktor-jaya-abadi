@@ -15,9 +15,10 @@ import EmptyState from "../../components/ui/EmptyState.jsx";
 import ConfirmDialog from "../../components/ui/ConfirmDialog.jsx";
 import { toast } from "../../components/ui/Toast.jsx";
 import ImagePicker from "../../components/admin/ImagePicker.jsx";
+import { TEAM_DEPARTMENTS, TEAM_DEPT_LABEL } from "../../lib/team.js";
 
-// Label divisi untuk kartu (bentuk panjang ARSITEK_INTERIOR dsb.)
-const DEPT_LABEL = { MANAJEMEN: "Manajemen", TEKNIK: "Teknik", ARSITEK_INTERIOR: "Arsitek & Interior", PENGAWAS: "Pengawas", ADMINISTRASI: "Administrasi" };
+// Label divisi tim berasal dari sumber bersama halaman publik.
+const DEPT_LABEL = TEAM_DEPT_LABEL;
 
 export default function Team() {
   const queryClient = useQueryClient();
@@ -185,11 +186,7 @@ function TeamModal({ modal, onClose, onSave, saving }) {
           <Input label="Jabatan" value={form.position} onChange={set("position")} error={errors.position} placeholder="Site Manager" />
         </div>
         <Select label="Divisi" value={form.department} onChange={set("department")}>
-          <option value="MANAJEMEN">Manajemen</option>
-          <option value="TEKNIK">Teknik</option>
-          <option value="ARSITEK_INTERIOR">Arsitek &amp; Interior</option>
-          <option value="PENGAWAS">Pengawas</option>
-          <option value="ADMINISTRASI">Administrasi</option>
+          {TEAM_DEPARTMENTS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
         </Select>
         <Textarea label="Bio (opsional)" rows={3} value={form.bio} onChange={set("bio")} placeholder="Pengalaman singkat…" />
         <ImagePicker label="Foto" value={form.photo} onChange={(v) => setForm((f) => ({ ...f, photo: v }))} />

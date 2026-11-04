@@ -98,31 +98,29 @@ export function StatsStrip() {
   );
 }
 // ===== Layanan — kartu gambar latar, ikon oranye, hover zoom/overlay/panah
-// Grid 4 kolom; kartu pertama 2x2 di desktop; tinggi kartu sejajar (auto-rows-fr).
+// Grid 4 kolom dengan kartu berukuran sama (260×300 di desktop; tinggi dipatok 300px).
 export function ServicesSection() {
   const { data, isLoading } = useQuery({
     queryKey: ["public-services"],
     queryFn: async () => (await api.get("/public/services")).data.data,
   });
 
-  const card = (s, big) => {
+  const card = (s) => {
     const Icon = SERVICE_ICONS[s.icon];
     return (
       <Link
         key={s.id}
         to={`/layanan/${s.slug}`}
-        className={`group relative block overflow-hidden rounded-2xl shadow-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand ${big ? "sm:col-span-2 sm:row-span-2" : ""}`}
+        className="group relative block h-[18.75rem] overflow-hidden rounded-2xl shadow-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
       >
-        <div className="relative">
-          <AspectImage src={img(s.image || s.heroImage)} alt={s.title} ratio="4/3" className="w-full transition duration-700 group-hover:scale-110" />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/35 to-ink/10 transition group-hover:from-ink/95 group-hover:via-ink/50" />
-        </div>
+        <AspectImage src={img(s.image || s.heroImage)} alt={s.title} ratio="4/3" className="h-full w-full transition duration-700 group-hover:scale-110" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/35 to-ink/10 transition group-hover:from-ink/95 group-hover:via-ink/50" />
         <div className="absolute inset-0 flex flex-col justify-end p-5">
           <span className="mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-brand text-white shadow-soft transition group-hover:scale-110">
             {Icon ? <Icon size={20} /> : <Wrench size={20} />}
           </span>
-          <h3 className={`font-jakarta font-bold text-white ${big ? "text-2xl" : "text-lg"}`}>{s.title}</h3>
-          <p className={`mt-1 break-words text-cream/80 ${big ? "line-clamp-3 max-w-sm text-sm" : "line-clamp-2 text-xs"}`}>{s.shortDesc}</p>
+          <h3 className="font-jakarta text-lg font-bold text-white">{s.title}</h3>
+          <p className="mt-1 line-clamp-2 break-words text-xs text-cream/80">{s.shortDesc}</p>
           <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-brand opacity-0 transition group-hover:opacity-100">
             Selengkapnya <ArrowRight size={14} />
           </span>
@@ -140,14 +138,14 @@ export function ServicesSection() {
           actionLabel="Lihat semua layanan"
         />
         {isLoading ? (
-          <div className="grid items-stretch gap-4 sm:grid-cols-2 lg:auto-rows-fr lg:grid-cols-4">
-            {[0, 1, 2, 3].map((i) => <div key={i} className="h-72 animate-pulse rounded-2xl bg-cream-deep" />)}
+          <div className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[0, 1, 2, 3].map((i) => <div key={i} className="h-[18.75rem] animate-pulse rounded-2xl bg-cream-deep" />)}
           </div>
         ) : (data ?? []).length === 0 ? (
           <p className="text-sm text-ink-light">Layanan belum tersedia.</p>
         ) : (
-          <div className="grid items-stretch gap-4 sm:grid-cols-2 lg:auto-rows-fr lg:grid-cols-4">
-            {(data ?? []).slice(0, 5).map((s, i) => card(s, i === 0))}
+          <div className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {(data ?? []).slice(0, 5).map((s) => card(s))}
           </div>
         )}
       </Container>
@@ -155,8 +153,8 @@ export function ServicesSection() {
   );
 }
 
-// ===== Proyek unggulan: bento (1 besar 2x2 + kecil), overlay info + badge status,
-// tab kategori tanpa reload (data lama tampil selama fetch — transisi halus),
+// ===== Proyek unggulan: grid kartu seragam 260×300 (4 kolom desktop), overlay info
+// + badge status, tab kategori tanpa reload (data lama tampil selama fetch — transisi halus),
 // dan baris angka ringkas dari settings (opsional).
 const FEATURED_TABS = [
   { label: "Semua", value: "" },
@@ -172,28 +170,26 @@ const STATUS_BADGE = {
 };
 const STATUS_LABEL = { COMPLETED: "Selesai", ONGOING: "Berjalan", PLANNING: "Perencanaan" };
 
-function BentoProjectCard({ p, big = false }) {
+function BentoProjectCard({ p }) {
   return (
     <Link
       to={`/proyek/${p.slug}`}
-      className={`group relative block overflow-hidden rounded-2xl shadow-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand ${big ? "sm:col-span-2 sm:row-span-2" : ""}`}
+      className="group relative block h-[18.75rem] overflow-hidden rounded-2xl shadow-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
     >
-      <div className={`${big ? "h-80 sm:h-full sm:min-h-[34rem]" : "h-72"} relative`}>
-        <img src={img(p.coverImage)} alt={p.title} width={big ? 1200 : 800} height={big ? 1200 : 600}
-          loading="lazy"
-          className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/30 to-transparent transition group-hover:from-ink/95" />
-      </div>
+      <img src={img(p.coverImage)} alt={p.title} width={520} height={600}
+        loading="lazy"
+        className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" />
+      <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/30 to-transparent transition group-hover:from-ink/95" />
       {p.status && (
         <span className={`absolute left-4 top-4 rounded-full px-3 py-1 text-xs font-bold ${STATUS_BADGE[p.status] ?? "bg-white text-ink"}`}>
           {STATUS_LABEL[p.status] ?? p.status}
         </span>
       )}
-      <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6">
+      <div className="absolute inset-x-0 bottom-0 p-5">
         <p className="text-xs font-semibold uppercase tracking-wide text-brand">
           {[p.category?.name, p.location, p.year].filter(Boolean).join(" · ")}
         </p>
-        <h3 className={`mt-1 font-jakarta font-bold text-white ${big ? "text-2xl" : "text-lg"}`}>{p.title}</h3>
+        <h3 className="mt-1 font-jakarta text-lg font-bold text-white">{p.title}</h3>
       </div>
     </Link>
   );
@@ -255,21 +251,21 @@ export function FeaturedProjects() {
         {rows.length === 0 ? (
           isFetching ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {[0, 1, 2, 3].map((i) => <div key={i} className="aspect-[4/5] animate-pulse rounded-2xl bg-white/60" />)}
+              {[0, 1, 2, 3].map((i) => <div key={i} className="h-[18.75rem] animate-pulse rounded-2xl bg-white/60" />)}
             </div>
           ) : (
             <p className="text-sm text-ink-light">Belum ada proyek unggulan pada kategori ini.</p>
           )
         ) : (
           <>
-            {/* Bento desktop: kartu pertama 2x2; dim selama fetch tab baru */}
-            <div className={`hidden gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-4 lg:auto-rows-fr transition-opacity ${isFetching ? "opacity-60" : "opacity-100"}`} role="tabpanel">
-              {rows.map((p, i) => <BentoProjectCard key={p.id} p={p} big={i === 0} />)}
+            {/* Grid kartu seragam; dim selama fetch tab baru */}
+            <div className={`hidden gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-4 transition-opacity ${isFetching ? "opacity-60" : "opacity-100"}`} role="tabpanel">
+              {rows.map((p) => <BentoProjectCard key={p.id} p={p} />)}
             </div>
-            {/* Carousel geser di mobile */}
+            {/* Carousel geser di mobile — ukuran kartu tetap sama */}
             <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 sm:hidden">
               {rows.map((p) => (
-                <div key={p.id} className="w-[85%] shrink-0 snap-start"><BentoProjectCard p={p} /></div>
+                <div key={p.id} className="w-[16.25rem] shrink-0 snap-start"><BentoProjectCard p={p} /></div>
               ))}
             </div>
           </>

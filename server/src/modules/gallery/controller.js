@@ -30,6 +30,6 @@ export const remove = asyncHandler(async (req, res) => {
 
 // GET /api/public/gallery?category=&page=&limit= — metapaginasi, limit default 12 maks 24
 export const publicList = asyncHandler(async (req, res) => {
-  const { data, meta } = await s.listPublicPaginated(req.query);
-  sendSuccess(res, { data, meta });
+  const { data, meta, categories } = await s.listPublicPaginated(req.query);
+  sendSuccess(res, { data, meta, categories });
 });

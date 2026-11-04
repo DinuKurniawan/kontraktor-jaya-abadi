@@ -1,11 +1,10 @@
-// OfficeMap — tab cabang, peta malas, detail kantor, jam operasional, dan aksi alamat.
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
+// OfficeMap — tab cabang, peta, detail kantor, jam operasional, dan aksi alamat.
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Check, Clock3, Copy, Mail, MapPin, MessageCircle, Navigation, Phone } from "lucide-react";
 import api from "../../../lib/axios.js";
 import Container from "../Container.jsx";
-
-const OfficeMapClient = lazy(() => import("./OfficeMapClient.jsx"));
+import OfficeMapClient from "./OfficeMapClient.jsx";
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const DAY_NAMES = { Sunday: "Minggu", Monday: "Senin", Tuesday: "Selasa", Wednesday: "Rabu", Thursday: "Kamis", Friday: "Jumat", Saturday: "Sabtu" };
 const FALLBACK_HOURS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"].map((hari) => ({ hari, buka: "", tutup: "", libur: true }));
@@ -26,18 +25,12 @@ function formatHours(item) {
   return `${String(item.buka).replace(":", ".")}–${String(item.tutup).replace(":", ".")} WIB`;
 }
 
-function MapLoading() {
-  return <div className="flex h-full min-h-[22rem] items-center justify-center bg-cream-deep text-sm font-semibold text-ink-light" aria-busy="true">Memuat peta…</div>;
-}
-
 function ContactLine({ icon: Icon, label, value, href }) {
   const content = <><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-dark"><Icon size={16} /></span><span className="min-w-0"><span className="block text-[11px] font-bold uppercase tracking-wide text-ink-light">{label}</span><span className="mt-0.5 block break-words text-sm font-semibold text-ink">{value || "Belum tersedia"}</span></span></>;
   return href ? <a href={href} target={href.startsWith("http") ? "_blank" : undefined} rel={href.startsWith("http") ? "noreferrer" : undefined} className="flex items-start gap-3 rounded-xl p-2 -m-2 transition hover:bg-cream-deep">{content}</a> : <div className="flex items-start gap-3">{content}</div>;
 }
 
 export default function OfficeMap({ branches: suppliedBranches }) {
-  const sectionRef = useRef(null);
-  const [isNearViewport, setIsNearViewport] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [copied, setCopied] = useState(false);
   const { data: queriedBranches, isLoading } = useQuery({
@@ -49,22 +42,6 @@ export default function OfficeMap({ branches: suppliedBranches }) {
   const selected = branches[selectedIndex] ?? branches[0];
   const hours = useMemo(() => hoursFor(selected), [selected]);
   const today = todayName();
-
-  useEffect(() => {
-    if (!sectionRef.current) return undefined;
-    if (!("IntersectionObserver" in window)) {
-      setIsNearViewport(true);
-      return undefined;
-    }
-    const observer = new IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting)) {
-        setIsNearViewport(true);
-        observer.disconnect();
-      }
-    }, { rootMargin: "240px 0px" });
-    observer.observe(sectionRef.current);
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     if (selectedIndex >= branches.length && branches.length) setSelectedIndex(0);
@@ -92,12 +69,14 @@ export default function OfficeMap({ branches: suppliedBranches }) {
     : selected.mapEmbedUrl;
 
   return (
-    <section ref={sectionRef} className="bg-cream-deep py-14 sm:py-16" aria-labelledby="office-map-title">
+    <section className="bg-cream-deep py-14 sm:py-16" aria-labelledby="office-map-title">
       <Container>
         <div className="mb-7"><p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">Kantor Jaya Abadi</p><h2 id="office-map-title" className="mt-2 font-jakarta text-3xl font-extrabold text-ink sm:text-4xl">Temui kami <span className="text-brand">di lokasi</span></h2><p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-soft">Pilih kantor terdekat untuk melihat detail alamat, jam operasional, dan petunjuk arah.</p></div>
         {branches.length > 1 && <div className="mb-5 flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Pilih cabang kantor">{branches.map((branch, index) => <button key={branch.id} type="button" role="tab" aria-selected={index === selectedIndex} onClick={() => { setSelectedIndex(index); setCopied(false); }} className={`shrink-0 rounded-full px-4 py-2.5 text-sm font-bold transition ${index === selectedIndex ? "bg-brand text-white shadow-soft" : "bg-white text-ink-soft hover:text-brand"}`}>{branch.name}{branch.isMain && <span className="ml-1.5 text-[10px] opacity-75">(Pusat)</span>}</button>)}</div>}
         <div className="grid overflow-hidden rounded-3xl border border-ink/10 bg-white shadow-soft-lg lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="min-h-[22rem] bg-cream-deep lg:min-h-[36rem]">{isNearViewport ? <Suspense fallback={<MapLoading />}><OfficeMapClient branch={selected} /></Suspense> : <div className="flex h-full min-h-[22rem] items-center justify-center bg-cream-deep px-6 text-center text-sm font-semibold text-ink-light">Peta dimuat saat Anda mendekati bagian ini…</div>}</div>
+          <div className="min-h-[22rem] bg-cream-deep lg:min-h-[36rem]">
+            <OfficeMapClient branch={selected} />
+          </div>
           <div className="flex flex-col p-6 sm:p-8">
             <div className="flex items-start gap-4">{selected.photo ? <img src={imageUrl(selected.photo)} alt={`Foto ${selected.name}`} className="h-20 w-24 rounded-xl object-cover" /> : <div className="flex h-20 w-24 items-center justify-center rounded-xl bg-brand-soft text-brand"><MapPin size={28} /></div>}<div className="min-w-0"><p className="text-xs font-bold uppercase tracking-wide text-brand">{selected.isMain ? "Kantor pusat" : "Kantor cabang"}</p><h3 className="mt-1 font-jakarta text-xl font-extrabold text-ink">{selected.name}</h3></div></div>
             <div className="mt-6 space-y-4"><ContactLine icon={MapPin} label="Alamat" value={`${selected.address}, ${selected.city}`} /><ContactLine icon={Phone} label="Telepon" value={selected.phone} href={phoneHref} /><ContactLine icon={MessageCircle} label="WhatsApp" value={selected.whatsapp} href={whatsappHref} /><ContactLine icon={Mail} label="Email" value={selected.email} href={selected.email ? `mailto:${selected.email}` : undefined} /></div>

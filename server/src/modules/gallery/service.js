@@ -19,7 +19,7 @@ export async function listPublicPaginated(query = {}) {
   const page = Math.max(1, Number.parseInt(query.page, 10) || 1);
   const limit = Math.min(24, Math.max(1, Number.parseInt(query.limit, 10) || 12));
   const where = { isPublished: true, ...(query.category ? { category: query.category } : {}) };
-  const [rows, total] = await prisma.$transaction([
+  const [rows, total, categories] = await prisma.$transaction([
     MODEL().findMany({
       where,
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
@@ -27,8 +27,14 @@ export async function listPublicPaginated(query = {}) {
       take: limit,
     }),
     MODEL().count({ where }),
+    MODEL().findMany({
+      where: { isPublished: true },
+      distinct: ["category"],
+      select: { category: true },
+      orderBy: { category: "asc" },
+    }),
   ]);
-  return { data: rows, meta: paginationMeta(total, page, limit) };
+  return { data: rows, meta: paginationMeta(total, page, limit), categories: categories.map(({ category }) => category) };
 }
 
 export async function getItem(id) {

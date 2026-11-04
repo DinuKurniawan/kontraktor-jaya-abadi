@@ -1,8 +1,9 @@
 /*
- * GallerySection — filter kategori (tab), grid 12/halaman (4/3/2 kolom),
- * pagination server-side (meta), lightbox panah/swipe/Esc + penghitung.
+ * GallerySection — filter kategori (tab) DARI DATA SERVER (sinkron dengan admin),
+ * grid 12/halaman (4/3/2 kolom), pagination server-side (meta),
+ * lightbox panah/swipe/Esc + penghitung.
  * Kategori & halaman di query string (?kategori=&hal=) — share & Back aman.
- * Data: GET /api/public/gallery?category=&page=&limit=12 → { data, meta }.
+ * Data: GET /api/public/gallery?category=&page=&limit=12 → { data, meta, categories }.
  * id="galeri" (anchor AboutBanner).
  */
 import { useEffect, useRef, useState } from "react";
@@ -13,12 +14,11 @@ import api from "../../../lib/axios.js";
 import Container from "../Container.jsx";
 import Pagination from "../Pagination.jsx";
 import ImageWithFallback from "../../ui/ImageWithFallback.jsx";
+import { galleryCatLabel } from "../../../lib/gallery.js";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
 
-const CATEGORY_KEYS = ["KEGIATAN", "PROYEK", "KANTOR", "PENGHARGAAN"];
-const CATEGORIES = [["", "Semua"], ["KEGIATAN", "Kegiatan"], ["PROYEK", "Proyek"], ["KANTOR", "Kantor"], ["PENGHARGAAN", "Penghargaan"]];
 const LIMIT = 12;
 
 export default function GallerySection() {
@@ -29,17 +29,19 @@ export default function GallerySection() {
   const [zoom, setZoom] = useState(null); // indeks foto di halaman aktif
 
   const urlCat = sp.get("kategori") ?? "";
-  const category = CATEGORY_KEYS.includes(urlCat) ? urlCat : undefined;
   const page = Math.max(1, Number.parseInt(sp.get("hal"), 10) || 1);
 
   const { data, isFetching } = useQuery({
-    queryKey: ["public-gallery", category ?? "all", page],
+    queryKey: ["public-gallery", urlCat || "all", page],
     queryFn: async () =>
-      (await api.get("/public/gallery", { params: { category, page, limit: LIMIT } })).data,
+      (await api.get("/public/gallery", { params: { category: urlCat || undefined, page, limit: LIMIT } })).data,
     placeholderData: keepPreviousData,
   });
   const rows = data?.data ?? [];
   const meta = data?.meta;
+  // Kategori dari server: hanya yang benar-benar ada di galeri terbit
+  const serverCats = data?.categories ?? [];
+  const CATEGORIES = [["", "Semua"], ...serverCats.map((v) => [v, galleryCatLabel(v)])];
 
   // Set params: kategori selalu reset ke halaman 1; halaman menyertakan kategori
   const setParams = (cat, pg) => {
@@ -62,11 +64,11 @@ export default function GallerySection() {
     const next = meta?.totalPages && page < meta.totalPages ? page + 1 : null;
     if (!next) return;
     qc.prefetchQuery({
-      queryKey: ["public-gallery", category ?? "all", next],
+      queryKey: ["public-gallery", urlCat || "all", next],
       queryFn: async () =>
-        (await api.get("/public/gallery", { params: { category, page: next, limit: LIMIT } })).data,
+        (await api.get("/public/gallery", { params: { category: urlCat || undefined, page: next, limit: LIMIT } })).data,
     });
-  }, [qc, category, page, meta?.totalPages]);
+  }, [qc, urlCat, page, meta?.totalPages]);
 
   // Esc untuk lightbox
   useEffect(() => {

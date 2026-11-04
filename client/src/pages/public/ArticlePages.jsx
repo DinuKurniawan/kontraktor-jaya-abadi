@@ -1,5 +1,6 @@
 // Artikel — daftar (besar + grid, filter kategori, search, paginasi)
 // dan detail (meta, konten, bagikan, terkait)
+// Data kategori & tag diambil dari admin (endpoint publik)
 import { useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -28,6 +29,7 @@ const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
 const fmt = (d) => d && new Date(d).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 const initials = (name = "Jaya Abadi") => name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "JA";
 
+// ===== Halaman Daftar Artikel (/artikel) =====
 export function ArticlesPage() {
   const [params, setParams] = useSearchParams();
   const search = params.get("q") ?? "";
@@ -55,39 +57,60 @@ export function ArticlesPage() {
     setParams({}, { replace: true });
   };
 
+  // Query utama: daftar artikel (data dari admin, filter hanya yang terbit)
   const { data, isLoading, isError } = useQuery({
     queryKey: ["public-posts", { page, search, category, tag, sort }],
     queryFn: async () => (await api.get("/public/posts", { params: { page, limit: 9, search: search || undefined, category: category || undefined, tag: tag || undefined, sort } })).data,
   });
 
+  // Kategori artikel diambil dari admin (hanya type POST)
   const { data: cats } = useQuery({
     queryKey: ["public-categories-post"],
-    queryFn: async () => (await api.get("/public/categories", { params: { type: "POST", limit: 20 } })).data.data,
+    queryFn: async () => (await api.get("/public/categories", { params: { type: "POST" } })).data.data,
   });
 
+  // Tag artikel diambil dari admin (hanya yang dipakai artikel terbit)
   const { data: tags } = useQuery({
     queryKey: ["public-tags"],
     queryFn: async () => (await api.get("/public/tags")).data.data,
   });
 
+  // Facet kategori global (untuk sidebar & empty state)
   const { data: globalFacetCategories = [] } = useQuery({
     queryKey: ["public-post-category-facets"],
     queryFn: async () => (await api.get("/public/posts", { params: { page: 1, limit: 1 } })).data.facets?.categories ?? [],
     staleTime: 60 * 1000,
   });
 
+  // Saran pencarian diambil dari data yang ada: judul artikel terpopuler
+  const { data: popularPosts = [] } = useQuery({
+    queryKey: ["public-posts-suggestions"],
+    queryFn: async () => (await api.get("/public/posts/popular", { params: { limit: 8 } })).data.data,
+    staleTime: 60 * 1000,
+  });
+
   const rows = data?.data ?? [];
   const facetCategories = data?.facets?.categories ?? [];
   const facetBySlug = Object.fromEntries(facetCategories.map((item) => [item.slug, item]));
-  const categories = [
-    ...(cats ?? []).map((item) => ({ ...item, count: facetBySlug[item.slug]?.count ?? 0 })),
+
+  // Gabungkan kategori dari admin + facet (dari data artikel), hindari duplikat
+  const categories = useMemo(() => [
+    ...(cats ?? []).map((item) => ({ ...item, count: facetBySlug[item.slug]?.count ?? item._count?.posts ?? 0 })),
     ...facetCategories.filter((item) => !(cats ?? []).some((categoryItem) => categoryItem.slug === item.slug)),
-  ];
+  ], [cats, facetCategories, facetBySlug]);
+
   const globalFacetBySlug = Object.fromEntries(globalFacetCategories.map((item) => [item.slug, item]));
-  const popularCategories = [
-    ...(cats ?? []).map((item) => ({ ...item, count: globalFacetBySlug[item.slug]?.count ?? 0 })),
+  const popularCategories = useMemo(() => [
+    ...(cats ?? []).map((item) => ({ ...item, count: globalFacetBySlug[item.slug]?.count ?? item._count?.posts ?? 0 })),
     ...globalFacetCategories.filter((item) => !(cats ?? []).some((categoryItem) => categoryItem.slug === item.slug)),
-  ];
+  ], [cats, globalFacetCategories, globalFacetBySlug]);
+
+  // Saran pencarian: kategori, tag, dan judul artikel yang benar-benar ada
+  const suggestions = useMemo(() => [
+    ...(cats ?? []).map((item) => item.name),
+    ...(tags ?? []).map((item) => item.name),
+    ...popularPosts.map((post) => post.title),
+  ], [cats, tags, popularPosts]);
 
   return (
     <>
@@ -96,7 +119,7 @@ export function ArticlesPage() {
         total={data?.meta?.total}
         value={search}
         onChange={setParam("q")}
-        suggestions={[...(cats ?? []).map((categoryItem) => categoryItem.name), ...(tags ?? []).map((tag) => tag.name)]}
+        suggestions={suggestions}
       /></Reveal>
       {page === 1 && !search && !category && !tag && sort === "terbaru" && <Reveal><FeaturedPostsHero /></Reveal>}
       <Container className="py-14">

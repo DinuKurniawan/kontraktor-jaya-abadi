@@ -18,9 +18,10 @@ import EmptyState from "../../components/ui/EmptyState.jsx";
 import ConfirmDialog from "../../components/ui/ConfirmDialog.jsx";
 import { toast } from "../../components/ui/Toast.jsx";
 import ImagePicker from "../../components/admin/ImagePicker.jsx";
+import { GALLERY_CATEGORIES, GALLERY_CAT_LABEL } from "../../lib/gallery.js";
 
-const CATEGORIES = ["KEGIATAN", "PROYEK", "KANTOR", "PENGHARGAAN"];
-const CAT_LABEL = { KEGIATAN: "Kegiatan", PROYEK: "Proyek", KANTOR: "Kantor", PENGHARGAAN: "Penghargaan" };
+const CATEGORIES = GALLERY_CATEGORIES.map(([c]) => c);
+const CAT_LABEL = GALLERY_CAT_LABEL;
 
 export default function Gallery() {
   const qc = useQueryClient();
@@ -167,6 +168,7 @@ function UploadModal({ modal, onClose, onAdd }) {
 
   useEffect(() => {
     if (modal) { setForm(modal); setError(""); }
+    else setForm(null); // reset saat modal ditutup agar benar-benar hilang
   }, [modal]);
 
   if (!form) return null;

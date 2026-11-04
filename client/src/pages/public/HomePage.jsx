@@ -1,7 +1,6 @@
 // Beranda — hanya merakit section. Section: components/public/home/*
 import Seo from "../../components/public/Seo.jsx";
 import HeroSection from "../../components/public/home/HeroSection.jsx";
-import PartnerMarquee from "../../components/public/home/PartnerMarquee.jsx";
 import { StatsStrip, ServicesSection, FeaturedProjects, TestimonialHighlight, LatestArticles, CtaBanner } from "../../components/public/home/HomeSections.jsx";
 import AboutTeaser from "../../components/public/home/AboutTeaser.jsx";
 import WhyUsSection from "../../components/public/home/WhyUsSection.jsx";
@@ -16,7 +15,6 @@ export default function HomePage() {
     <>
       <Seo path="/" description="Jasa konstruksi rumah, gedung & renovasi — RAB transparan, tepat waktu, garansi pekerjaan." />
       <HeroSection />
-      <PartnerMarquee />
       <StatsStrip />
       <ServicesSection />
       <FeaturedProjects />

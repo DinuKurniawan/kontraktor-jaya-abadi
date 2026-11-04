@@ -19,15 +19,34 @@ export async function listCategories(query) {
 }
 
 // Daftar kategori (publik): tanpa paginasi, filter type opsional → filter diterapkan
+// Untuk type POST, sertakan jumlah artikel terbit; untuk PROJECT, jumlah proyek.
 export async function listPublicCategories(type) {
   const where = {};
   if (type) where.type = type;
 
-  return prisma.category.findMany({
+  const include = { _count: { select: { projects: true } } };
+
+  // Jika type POST atau tanpa filter, hitung juga jumlah artikel terbit
+  if (!type || type === "POST") {
+    include._count.select.posts = {
+      where: { isPublished: true, publishedAt: { lte: new Date() } },
+    };
+  }
+
+  const categories = await prisma.category.findMany({
     where,
     orderBy: { name: "asc" },
-    include: { _count: { select: { projects: true } } },
+    include,
   });
+
+  return categories.map((category) => ({
+    ...category,
+    // Gunakan posts count jika tersedia, fallback ke 0
+    _count: {
+      ...category._count,
+      posts: category._count?.posts ?? 0,
+    },
+  }));
 }
 
 // Detail kategori

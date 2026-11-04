@@ -28,6 +28,6 @@ export async function listPublishedTeam() {
   return prisma.teamMember.findMany({
     where: { isPublished: true },
     orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-    select: { id: true, name: true, position: true, photo: true, bio: true },
+    select: { id: true, name: true, position: true, photo: true, bio: true, department: true, email: true, linkedin: true, instagram: true },
   });
 }

@@ -32,13 +32,32 @@ export default function FeaturedProjectsStrip() {
 
   const goTo = (i) => {
     const el = trackRef.current;
-    if (!el) return;
-    el.scrollTo({ left: i * el.clientWidth, behavior: "smooth" });
+    if (!el || !el.children.length) return;
+    const target = Math.max(0, Math.min(rows.length - 1, i));
+    const card = el.children[target];
+    const baseOffset = el.children[0].offsetLeft;
+    if (card) {
+      el.scrollTo({ left: card.offsetLeft - baseOffset, behavior: "smooth" });
+    }
+    setIndex(target);
   };
-  const step = (dir) => goTo(Math.min(rows.length - 1, Math.max(0, index + dir)));
+  const step = (dir) => goTo(index + dir);
   const onScroll = () => {
     const el = trackRef.current;
-    if (el) setIndex(Math.round(el.scrollLeft / el.clientWidth));
+    if (!el || !el.children.length) return;
+    const baseOffset = el.children[0].offsetLeft;
+    const scrollLeft = el.scrollLeft;
+    let closest = 0;
+    let minDiff = Infinity;
+    for (let i = 0; i < el.children.length; i++) {
+      const cardPos = el.children[i].offsetLeft - baseOffset;
+      const diff = Math.abs(cardPos - scrollLeft);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closest = i;
+      }
+    }
+    setIndex(closest);
   };
 
   return (
@@ -89,61 +108,54 @@ export default function FeaturedProjectsStrip() {
               key={p.id}
               aria-roledescription="slide"
               aria-label={`${i + 1} dari ${rows.length}: ${p.title}`}
-              className="w-full shrink-0 snap-start overflow-hidden rounded-3xl bg-white shadow-soft"
+              className="flex h-[700px] w-[645px] shrink-0 snap-start flex-col overflow-hidden rounded-3xl bg-white shadow-soft"
             >
-              <div className="grid lg:grid-cols-[1.45fr_1fr]">
-                {/* Foto */}
-                <div className="relative aspect-[16/10] overflow-hidden bg-cream-deep lg:aspect-auto lg:min-h-[340px]">
-                  <img
-                    src={img(p.coverImage)}
-                    alt={p.title}
-                    width={1200}
-                    height={800}
-                    loading="lazy"
-                    className="h-full w-full object-cover"
-                  />
-                  {p.category?.name && (
-                    <span className="absolute left-4 top-4 rounded-full bg-cream/90 px-3 py-1 text-[11px] font-semibold text-ink backdrop-blur">
-                      {p.category.name}
+              {/* Foto — utuh tanpa terpotong */}
+              <div className="relative flex flex-1 min-h-0 items-center justify-center bg-cream-deep">
+                <img
+                  src={img(p.coverImage)}
+                  alt={p.title}
+                  loading="lazy"
+                  className="h-full w-full object-contain"
+                />
+                {p.category?.name && (
+                  <span className="absolute left-4 top-4 rounded-full bg-cream/90 px-3 py-1 text-[11px] font-semibold text-ink backdrop-blur">
+                    {p.category.name}
+                  </span>
+                )}
+              </div>
+
+              {/* Info di bawah gambar (bukan overlay) */}
+              <div className="flex shrink-0 flex-col gap-3 p-6">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-brand">Proyek unggulan</p>
+                <h3 className="line-clamp-2 font-jakarta text-xl font-extrabold leading-snug text-ink">
+                  {p.title}
+                </h3>
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-soft">
+                  {p.location && (
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin size={13} className="text-brand" /> {p.location}
                     </span>
                   )}
+                  {p.area ? (
+                    <span className="inline-flex items-center gap-1">
+                      <Ruler size={13} className="text-brand" /> {num(p.area)} m²
+                    </span>
+                  ) : null}
+                  {p.durationMonths ? (
+                    <span className="inline-flex items-center gap-1">
+                      <CalendarDays size={13} className="text-brand" /> {num(p.durationMonths)} bulan
+                    </span>
+                  ) : null}
                 </div>
-
-                {/* Info */}
-                <div className="flex flex-col justify-center gap-4 p-6 sm:p-8">
-                  <p className="text-[11px] font-bold uppercase tracking-widest text-brand">Proyek unggulan</p>
-                  <h3 className="font-jakarta text-2xl font-extrabold leading-snug text-ink sm:text-3xl">
-                    {p.title}
-                  </h3>
-
-                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-ink-soft">
-                    {p.location && (
-                      <span className="inline-flex items-center gap-1.5">
-                        <MapPin size={15} className="text-brand" /> {p.location}
-                      </span>
-                    )}
-                    {p.area ? (
-                      <span className="inline-flex items-center gap-1.5">
-                        <Ruler size={15} className="text-brand" /> {num(p.area)} m²
-                      </span>
-                    ) : null}
-                    {p.durationMonths ? (
-                      <span className="inline-flex items-center gap-1.5">
-                        <CalendarDays size={15} className="text-brand" /> {num(p.durationMonths)} bulan
-                      </span>
-                    ) : null}
-                  </div>
-
-                  {p.summary && <p className="line-clamp-2 text-sm leading-relaxed text-ink-light">{p.summary}</p>}
-
-                  <div>
-                    <Link
-                      to={`/proyek/${p.slug}`}
-                      className="inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 font-jakarta text-sm font-semibold text-cream transition-colors hover:bg-brand"
-                    >
-                      Lihat proyek <ArrowRight size={16} />
-                    </Link>
-                  </div>
+                {p.summary && <p className="line-clamp-2 text-sm leading-relaxed text-ink-light">{p.summary}</p>}
+                <div>
+                  <Link
+                    to={`/proyek/${p.slug}`}
+                    className="mt-1 inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 font-jakarta text-xs font-semibold text-cream transition-colors hover:bg-brand"
+                  >
+                    Lihat proyek <ArrowRight size={14} />
+                  </Link>
                 </div>
               </div>
             </article>

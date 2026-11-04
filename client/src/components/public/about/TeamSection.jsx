@@ -10,17 +10,11 @@ import { Mail, Users, X } from "lucide-react";
 import api from "../../../lib/axios.js";
 import Container from "../Container.jsx";
 import PillButton from "../PillButton.jsx";
+import { teamDeptLabel } from "../../../lib/team.js";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
 
-const DIVISIONS = [
-  ["", "Semua"],
-  ["MANAJEMEN", "Manajemen"],
-  ["TEKNIK", "Teknik"],
-  ["ARSITEK_INTERIOR", "Arsitek & Interior"],
-  ["PENGAWAS", "Pengawas"],
-];
 const AVATAR_COLORS = ["bg-brand-soft text-brand-dark", "bg-ink/10 text-ink", "bg-amber-100 text-amber-800", "bg-sky-100 text-sky-800"];
 
 // Brand icons tidak tersedia di lucide-react — SVG inline sederhana
@@ -43,8 +37,12 @@ export default function TeamSection() {
   const rows = data ?? [];
   const [divisi, setDivisi] = useState("");
   const [zoom, setZoom] = useState(null);
+
+  // Tab kategori diambil dari divisi yang benar-benar ada di data tim (sumber: admin).
+  const divisiSet = Array.from(new Set(rows.map((m) => m.department).filter(Boolean))).sort();
+  const DIVISIONS = [["", "Semua"], ...divisiSet.map((v) => [v, teamDeptLabel(v)])];
   const filtered = rows.filter((m) => !divisi || m.department === divisi);
-  const nDivisi = new Set(rows.map((m) => m.department)).size;
+  const nDivisi = divisiSet.length;
 
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && setZoom(null);
