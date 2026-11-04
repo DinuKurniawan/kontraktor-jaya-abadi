@@ -1,7 +1,7 @@
 // Layanan — daftar (redesain 2026) & detail (TanStack Query, loading + error + 404)
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, ChevronLeft, ChevronRight, CircleDot, Clock, Download, MessageCircle, Phone, Send, Star, Wrench } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronRight, CircleDot, Clock, Download, MessageCircle, Phone, Send, Star, Wrench } from "lucide-react";
 import api from "../../lib/axios.js";
 import Container from "../../components/public/Container.jsx";
 import PageBanner from "../../components/public/PageBanner.jsx";
@@ -12,9 +12,7 @@ import { SERVICE_ICONS } from "../../lib/service-icons.jsx";
 import ServicesBanner from "../../components/public/services/ServicesBanner.jsx";
 import ServiceGrid from "../../components/public/services/ServiceGrid.jsx";
 import IntegratedServices from "../../components/public/services/IntegratedServices.jsx";
-import ScopeTabs from "../../components/public/services/ScopeTabs.jsx";
 import ServiceProcess from "../../components/public/services/ServiceProcess.jsx";
-import PricingPackages from "../../components/public/services/PricingPackages.jsx";
 import SectorsServed from "../../components/public/services/SectorsServed.jsx";
 import RelatedProjects from "../../components/public/services/RelatedProjects.jsx";
 import ServiceTestimonials from "../../components/public/services/ServiceTestimonials.jsx";
@@ -31,15 +29,13 @@ function ErrorNote({ message }) {
 }
 
 const SKELETON_SECTIONS = [
-  { key: "grid", cls: "bg-white py-16" },
-  { key: "integrated", cls: "bg-cream py-16" },
-  { key: "scope", cls: "bg-white py-16" },
+  { key: "grid", cls: "bg-cream py-16" },
+  { key: "integrated", cls: "bg-white py-16" },
   { key: "process", cls: "bg-cream py-16" },
-  { key: "paket", cls: "bg-white py-16" },
-  { key: "sektor", cls: "bg-cream py-16" },
-  { key: "proyek", cls: "bg-white py-16" },
-  { key: "testi", cls: "bg-cream py-16" },
-  { key: "faq", cls: "bg-white py-16" },
+  { key: "sektor", cls: "bg-white py-16" },
+  { key: "proyek", cls: "bg-cream py-16" },
+  { key: "testi", cls: "bg-white py-16" },
+  { key: "faq", cls: "bg-cream py-16" },
 ];
 
 function PageSkeleton() {
@@ -99,13 +95,11 @@ export function ServicesPage() {
         </section>
       )}
       <IntegratedServices services={rows} />
-      <ScopeTabs services={rows} />
       <ServiceProcess services={rows} />
-      <PricingPackages services={rows} />
-      <SectorsServed />
-      <RelatedProjects services={rows} />
-      <ServiceTestimonials services={rows} />
-      <ServiceFaq services={rows} />
+      <SectorsServed tone="white" />
+      <RelatedProjects services={rows} tone="cream" />
+      <ServiceTestimonials services={rows} tone="white" />
+      <ServiceFaq services={rows} tone="cream" />
       <ServiceCta services={rows} />
     </>
   );
@@ -225,7 +219,16 @@ export function ServiceDetailPage() {
 
       {/* ===== Dua kolom: konten + sidebar sticky ===== */}
       <div className="bg-cream py-14">
-        <Container className="grid gap-10 lg:grid-cols-3">
+        {/* Tombol kembali ke daftar layanan */}
+        <Container>
+          <Link
+            to="/layanan"
+            className="inline-flex items-center gap-2 rounded-full border border-ink/15 bg-white px-4 py-2 text-sm font-bold text-ink-soft shadow-soft transition hover:border-brand hover:text-brand"
+          >
+            <ArrowLeft size={15} /> Kembali ke Layanan
+          </Link>
+        </Container>
+        <Container className="mt-6 grid gap-10 lg:min-h-[calc(100vh-8rem)] lg:grid-cols-3">
           <main className="min-w-0 space-y-12 lg:col-span-2">
             {/* Deskripsi lengkap */}
             {(service.longDescription || service.description) && (
@@ -281,13 +284,6 @@ export function ServiceDetailPage() {
               </section>
             )}
 
-            {/* Paket — reuse PricingPackages utk layanan ini */}
-            {(service.packages ?? []).length > 0 && (
-              <div className="-mx-5 sm:mx-0">
-                <PricingPackages services={[{ ...service, scopes: undefined }]} />
-              </div>
-            )}
-
             {/* Proyek terkait — carousel */}
             {(service.projects ?? []).length > 0 && (
               <section aria-label="Proyek terkait">
@@ -326,29 +322,11 @@ export function ServiceDetailPage() {
 
             {/* FAQ khusus layanan — reuse ServiceFaq */}
             {(service.faqs ?? []).length > 0 && <ServiceFaq services={[{ ...service }]} />}
-
-            {/* Navigasi prev/next */}
-            {(service.prev || service.next) && (
-              <nav aria-label="Layanan lain" className="grid gap-3 border-t border-ink/10 pt-8 sm:grid-cols-2">
-                {service.prev ? (
-                  <Link to={`/layanan/${service.prev.slug}`} className="group rounded-2xl bg-white p-4 shadow-soft transition hover:shadow-soft-lg">
-                    <p className="inline-flex items-center gap-1.5 text-xs font-bold text-brand"><ChevronLeft size={14} /> Layanan Sebelumnya</p>
-                    <p className="mt-1 font-jakarta font-bold text-ink group-hover:text-brand">{service.prev.title}</p>
-                  </Link>
-                ) : <span />}
-                {service.next && (
-                  <Link to={`/layanan/${service.next.slug}`} className="group rounded-2xl bg-white p-4 text-right shadow-soft transition hover:shadow-soft-lg">
-                    <p className="inline-flex items-center gap-1.5 text-xs font-bold text-brand">Layanan Berikutnya <ChevronRight size={14} /></p>
-                    <p className="mt-1 font-jakarta font-bold text-ink group-hover:text-brand">{service.next.title}</p>
-                  </Link>
-                )}
-              </nav>
-            )}
           </main>
 
-          {/* ===== Sidebar sticky ===== */}
-          <aside className="relative">
-            <div className="space-y-4 lg:sticky lg:top-24">
+          {/* ===== Sidebar sticky: menempel saat halaman di-scroll ===== */}
+          <aside className="lg:sticky lg:top-24 lg:self-start">
+            <div className="space-y-4">
               {/* Kartu kontak cepat */}
               <div className="rounded-2xl bg-ink p-6 text-cream">
                 <h2 className="font-jakarta font-bold">Tertarik dengan {service.title}?</h2>

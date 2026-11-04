@@ -1,5 +1,5 @@
 // Gambar dengan rasio tetap dan placeholder aman saat sumber gagal dimuat.
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ImageOff } from "lucide-react";
 
 const RATIO_VALUES = {
@@ -20,9 +20,19 @@ export default function AspectImage({
 }) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
+  const imgRef = useRef(null);
   const ratioValue = RATIO_VALUES[ratio] ?? RATIO_VALUES["4/3"];
 
+  // Gambar dari cache browser bisa selesai dimuat sebelum event onLoad
+  // terpasang (mis. saat pindah halaman tanpa reload). Cek `complete`
+  // langsung supaya gambar tidak tertahan di opacity-0.
   useEffect(() => {
+    const el = imgRef.current;
+    if (el && el.complete && el.naturalWidth > 0) {
+      setLoaded(true);
+      setFailed(false);
+      return;
+    }
     setLoaded(false);
     setFailed(false);
   }, [src]);
@@ -38,6 +48,7 @@ export default function AspectImage({
         </div>
       ) : (
         <img
+          ref={imgRef}
           src={src}
           alt={alt}
           loading={priority ? undefined : "lazy"}

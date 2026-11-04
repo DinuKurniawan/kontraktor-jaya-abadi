@@ -11,7 +11,8 @@ import api from "../../../lib/axios.js";
 import Container from "../Container.jsx";
 import { SERVICE_ICONS } from "../../../lib/service-icons.jsx";
 
-export default function ProcessSection({ services }) {
+// id dipakai saat section ini jadi target anchor sub-navigasi (mis. "Alur" di /layanan)
+export default function ProcessSection({ services, id }) {
   const { data } = useQuery({
     queryKey: ["public-process-steps"],
     queryFn: async () => (await api.get("/public/process-steps")).data.data,
@@ -35,7 +36,7 @@ export default function ProcessSection({ services }) {
   if (rows.length === 0 && !services?.length) return null;
 
   return (
-    <section ref={ref} className="bg-cream py-16 sm:py-20">
+    <section id={id} ref={ref} className={`${id ? "scroll-mt-32" : ""} bg-cream py-16 sm:py-20`}>
       <Container className={rows.length > 4 ? "max-w-7xl" : ""}>
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-xs font-bold uppercase tracking-widest text-brand">Cara Kami Bekerja</p>
@@ -56,8 +57,8 @@ export default function ProcessSection({ services }) {
         <ol className="relative mt-12 space-y-8 md:flex md:space-y-0">
           {/* Garis dasar putus-putus */}
           <div aria-hidden className="absolute left-[1.4rem] top-2 h-full border-l-2 border-dashed border-ink/15 md:left-8 md:top-7 md:h-0 md:w-[calc(100%-4rem)] md:border-l-0 md:border-t-2" />
-          {/* Garis terisi horizontal saat terlihat (desktop) */}
-          <div aria-hidden className="absolute left-8 top-7 h-0 border-t-2 border-brand transition-[width] duration-1000 ease-out md:block"
+          {/* Garis terisi horizontal saat terlihat (desktop saja; di mobile pakai garis vertikal) */}
+          <div aria-hidden className="absolute left-8 top-7 hidden h-0 border-t-2 border-brand transition-[width] duration-1000 ease-out md:block"
             style={{ width: `${p * 100}%` }} />
           {rows.map((s, i) => {
             const Icon = SERVICE_ICONS[s.icon] ?? Hammer;

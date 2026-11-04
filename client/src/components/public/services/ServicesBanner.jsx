@@ -16,10 +16,9 @@ const anchorImg = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
 
 const SECTIONS = [
   ["layanan", "Layanan"],
-  ["ruang-lingkup", "Ruang Lingkup"],
   ["alur", "Alur"],
-  ["paket", "Paket"],
   ["proyek", "Proyek"],
+  ["testimoni", "Testimoni"],
   ["faq", "FAQ"],
 ];
 

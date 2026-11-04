@@ -14,7 +14,7 @@ import Container from "../Container.jsx";
 const SITE = import.meta.env.VITE_SITE_URL || "http://localhost:5173";
 const WA = "6281234567890"; // ponytail: nomor WA hardcode — ganti ke site_settings saat admin form tersedia
 
-export default function ServiceFaq({ services }) {
+export default function ServiceFaq({ services, tone = "white" }) {
   const [open, setOpen] = useState(null); // index FAQ terbuka
 
   const { data, isLoading } = useQuery({
@@ -23,9 +23,11 @@ export default function ServiceFaq({ services }) {
   });
   const rows = (data ?? []).slice(0, 10);
   const scope = "FAQ umum";
+  // Latar section bisa diganti agar warna antar-section tetap selang-seling
+  const bgClass = tone === "cream" ? "bg-cream" : "bg-white";
 
   return (
-    <section id="faq" className="scroll-mt-32 bg-white py-16 sm:py-20">
+    <section id="faq" className={`scroll-mt-32 ${bgClass} py-16 sm:py-20`}>
       <Helmet>
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",

@@ -54,15 +54,17 @@ export async function getPublishedService(slug) {
   });
   if (!service) return null;
 
-  // Navigasi sebelum/berikutnya berdasar urutan tampil
+  // Navigasi sebelum/berikutnya berdasar urutan tampil.
+  // Tanpa putar balik (wrap) agar kedua tombol tidak pernah menunjuk
+  // layanan yang sama saat jumlah layanan sedikit.
   const siblings = await prisma.service.findMany({
     where: { isPublished: true },
     orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
     select: { title: true, slug: true },
   });
   const i = siblings.findIndex((s) => s.slug === slug);
-  const prev = i > 0 ? siblings[i - 1] : siblings[siblings.length - 1] ?? null;
-  const next = i < siblings.length - 1 ? siblings[i + 1] : siblings[0] ?? null;
+  const prev = i > 0 ? siblings[i - 1] : null;
+  const next = i >= 0 && i < siblings.length - 1 ? siblings[i + 1] : null;
 
   return { ...service, prev: prev && prev.slug !== slug ? prev : null, next: next && next.slug !== slug ? next : null };
 }

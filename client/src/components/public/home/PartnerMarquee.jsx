@@ -1,6 +1,6 @@
 /*
- * PartnerMarquee — "Dipercaya oleh": logo mitra berjalan (CSS marquee murni),
- * grayscale → berwarna saat hover, Pause saat hover, dua baris arah berlawanan di desktop.
+ * PartnerMarquee — "Dipercaya oleh": satu baris logo mitra berjalan (CSS marquee murni),
+ * gambar tampil normal (tanpa grayscale/redup), membesar sedikit saat hover.
  * Data: GET /api/public/partners. Section disembunyikan bila data kosong.
  */
 import { useQuery } from "@tanstack/react-query";
@@ -12,26 +12,39 @@ import { useSiteSettings } from "./HeroSection.jsx";
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
 
-// Satu baris marquee: konten diduplikasi (x2) agar loop -50% mulus
-function MarqueeRow({ items, reverse = false, duration }) {
-  const doubled = [...items.filter((p) => p.logo), ...items.filter((p) => p.logo)];
-  if (doubled.length === 0) return null;
+// Satu set minimal 12 logo. Kalau mitra sedikit, satu set bisa lebih sempit dari
+// kontainer sehingga setelah logo terakhir muncul ruang kosong sebelum logo pertama
+// kembali — itulah yang terlihat seperti "berhenti". Dengan diulang, set selalu
+// lebih lebar dari layar sehingga logo terus mengalir tanpa jeda.
+const MIN_ITEMS_PER_SET = 12;
+
+// Satu baris marquee: satu set konten diduplikasi (x2) agar loop -50% mulus.
+// Durasi mengikuti jumlah logo (≈9 detik per logo) supaya kecepatan geser tetap
+// sama enaknya meski jumlah logo dalam satu set berubah.
+function MarqueeRow({ items }) {
+  const logos = items.filter((p) => p.logo);
+  if (logos.length === 0) return null;
+  const reps = Math.max(1, Math.ceil(MIN_ITEMS_PER_SET / logos.length));
+  const set = Array.from({ length: reps }, () => logos).flat();
+  const track = [...set, ...set]; // x2 → geser -50% tepat selebar satu set
+  const duration = `${set.length * 9}s`;
   return (
     <div className="marquee-mask overflow-hidden">
       <div
-        className={`flex w-max items-center gap-12 pr-12 ${reverse ? "animate-marquee-reverse" : "animate-marquee"}`}
+        className="flex w-max items-center gap-14 pr-14 animate-marquee"
         style={{ "--marquee-duration": duration }}
       >
-        {doubled.map((p, i) => (
+        {track.map((p, i) => (
           <img
             key={`${p.id}-${i}`}
             src={img(p.logo)}
-            alt={p.name}
+            alt={i < set.length ? p.name : ""}
+            aria-hidden={i >= set.length}
             title={p.name}
             loading="lazy"
-            width={140}
-            height={56}
-            className="h-12 w-auto max-w-[8.75rem] object-contain opacity-70 grayscale transition duration-300 hover:scale-105 hover:opacity-100 hover:grayscale-0"
+            width={224}
+            height={112}
+            className="h-24 w-auto max-w-[14rem] object-contain transition duration-300 hover:scale-105"
           />
         ))}
       </div>
@@ -48,9 +61,6 @@ export default function PartnerMarquee() {
   const rows = data ?? [];
   if (rows.length < 2) return null; // terlalu sedikit untuk marquee
 
-  const half = Math.ceil(rows.length / 2);
-  const rowA = rows.slice(0, half);
-  const rowB = rows.slice(half);
   const name = s?.company_name ?? "Jaya Abadi";
 
   return (
@@ -59,13 +69,9 @@ export default function PartnerMarquee() {
         <p className="mb-6 text-center text-xs font-bold uppercase tracking-widest text-ink-light">
           Dipercaya oleh
         </p>
-        <div className="group/marquee space-y-6" role="region" aria-label={`Mitra dan klien ${name}`}>
-          <MarqueeRow items={rowA} duration="32s" />
-          {rowB.length > 0 && (
-            <div className="hidden sm:block">
-              <MarqueeRow items={rowB} reverse duration="38s" />
-            </div>
-          )}
+        {/* Cukup satu baris mitra */}
+        <div className="group/marquee" role="region" aria-label={`Mitra dan klien ${name}`}>
+          <MarqueeRow items={rows} />
         </div>
         {/* Aksesibilitas: daftar statis untuk pembaca layar */}
         <ul className="sr-only">

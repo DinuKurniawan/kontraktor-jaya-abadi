@@ -20,16 +20,18 @@ const SECTOR_META = [
 ];
 const FALLBACK = { icon: Landmark, desc: "Amanah proyek Anda selesai rapi, tepat waktu." };
 
-export default function SectorsServed() {
+export default function SectorsServed({ tone = "cream" }) {
   const { data, isLoading } = useQuery({
     queryKey: ["public-categories-project"],
     queryFn: async () => (await api.get("/public/categories", { params: { type: "PROJECT" } })).data.data,
   });
   const rows = data ?? [];
   if (!isLoading && rows.length === 0) return null;
+  // Latar section bisa diganti agar warna antar-section tetap selang-seling
+  const bgClass = tone === "white" ? "bg-white" : "bg-cream";
 
   return (
-    <section className="bg-cream py-16 sm:py-20">
+    <section className={`${bgClass} py-16 sm:py-20`}>
       <Container>
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-xs font-bold uppercase tracking-widest text-brand">Sektor yang kami layani</p>
