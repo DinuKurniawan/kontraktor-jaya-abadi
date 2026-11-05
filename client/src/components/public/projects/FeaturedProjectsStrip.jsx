@@ -110,13 +110,14 @@ export default function FeaturedProjectsStrip() {
               aria-label={`${i + 1} dari ${rows.length}: ${p.title}`}
               className="flex h-[700px] w-[645px] shrink-0 snap-start flex-col overflow-hidden rounded-3xl bg-white shadow-soft"
             >
-              {/* Foto — utuh tanpa terpotong */}
-              <div className="relative flex flex-1 min-h-0 items-center justify-center bg-cream-deep">
+              {/* Foto — memenuhi area tanpa ruang kosong */}
+              <div className="relative aspect-[16/10] w-full overflow-hidden bg-cream-deep">
                 <img
                   src={img(p.coverImage)}
                   alt={p.title}
                   loading="lazy"
-                  className="h-full w-full object-contain"
+                  className="w-full h-full object-cover object-center"
+                  style={p.coverImagePosition ? { objectPosition: p.coverImagePosition } : undefined}
                 />
                 {p.category?.name && (
                   <span className="absolute left-4 top-4 rounded-full bg-cream/90 px-3 py-1 text-[11px] font-semibold text-ink backdrop-blur">
