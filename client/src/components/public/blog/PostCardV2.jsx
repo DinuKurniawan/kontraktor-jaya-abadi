@@ -27,7 +27,7 @@ export default function PostCardV2({ post, highlightQuery = "" }) {
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-ink/10 bg-white shadow-soft transition hover:-translate-y-0.5 hover:shadow-soft-lg">
       <Link to={`/artikel/${post.slug}`} className="block focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand">
-        <div className="aspect-video overflow-hidden bg-cream-deep">
+        <div className="h-[250px] w-full overflow-hidden bg-cream-deep">
           {post.coverImage && (
             <img src={imageUrl(post.coverImage)} alt={post.title} width={800} height={450} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
           )}

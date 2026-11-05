@@ -1,10 +1,9 @@
 /*
  * ServiceGrid — kartu layanan bergambar (4:3) + ikon bundar menimpa gambar,
  * 3 poin ruang lingkup teratas, label "Mulai dari", tautan "Lihat detail".
- * Featured → span 2 kolom + lencana "Paling Dicari". Kolom: 1 mobile / 2 tablet
- * & md / 4 desktop lebar; jumlah ganjil → kartu terakhir melebar penuh.
+ * Grid seragam: 1 kolom mobile / 2 kolom tablet / 4 kolom desktop.
  * Pencarian + filter kategori dari API tanpa reload.
- * Seluruh kartu = satu tautan; tinggi seragam (h-full flex).
+ * Seluruh kartu = satu tautan; tinggi & lebar seragam (h-full flex).
  */
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -136,16 +135,11 @@ export default function ServiceGrid({ services: initialServices, isLoading: init
 
        {!isLoading && !isError && rows.length > 0 && (
         <div className="mt-8 grid items-stretch gap-6 sm:grid-cols-2 xl:grid-cols-4">
-        {rows.map((s, i) => {
+        {rows.map((s) => {
           const Icon = SERVICE_ICONS[s.icon] ?? Wrench;
-          const isLast = i === rows.length - 1;
-          // Ganjil → kartu terakhir melebar penuh baris pada konteks 2 & 4 kolom
-           // Saat filter aktif, pertahankan ukuran kartu normal seperti tampilan Semua.
-           const stretch = !hasActiveFilter && odd && isLast ? "sm:col-span-2 xl:col-span-4" : "";
-          const featured = s.isFeatured ? "sm:col-span-2 xl:col-span-2" : "";
           return (
             <Link key={s.id} to={`/layanan/${s.slug}`}
-              className={`group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:shadow-soft-lg ${featured} ${stretch} ${s.isFeatured ? "sm:grid sm:grid-cols-2" : ""}`}>
+              className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:shadow-soft-lg">
               {s.isFeatured && (
                 <span className="absolute right-3 top-3 z-10 rounded-full bg-brand px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-soft">Paling Dicari</span>
               )}

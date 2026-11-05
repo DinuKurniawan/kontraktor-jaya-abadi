@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowDown, ArrowLeft, ArrowUp, Plus, Save, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Plus, Save, Trash2, X } from "lucide-react";
 import api from "../../lib/axios.js";
 import Card from "../../components/ui/Card.jsx";
 import Button from "../../components/ui/Button.jsx";
@@ -121,10 +121,9 @@ export default function ProjectForm() {
     defaultValues: EMPTY,
   });
 
-  // Isi form sekali data detail tersedia
-  const filledId = existing?.id;
+  // Isi form setiap kali data detail berubah / di-refetch
   useEffect(() => {
-    if (!isEdit || !existing || filledId !== id) return;
+    if (!isEdit || !existing || existing.id !== id) return;
     const iso = (d) => (d ? new Date(d).toISOString().slice(0, 10) : "");
     reset({
       ...EMPTY,
@@ -153,12 +152,15 @@ export default function ProjectForm() {
     setHighlights(existing.highlights?.length ? existing.highlights : [""]);
     setTagsInput(Array.isArray(existing.tags) ? existing.tags.join(", ") : "");
     setVideoPreview(existing.videoUrl ?? "");
-  }, [isEdit, existing, filledId, id, reset]);
+  }, [isEdit, existing, id, reset]);
 
   const saveMutation = useMutation({
     mutationFn: (payload) => (isEdit ? api.put(`/admin/projects/${id}`, payload) : api.post("/admin/projects", payload)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
+      if (isEdit) {
+        queryClient.invalidateQueries({ queryKey: ["project", id] });
+      }
       toast.success(isEdit ? "Proyek berhasil diperbarui" : "Proyek berhasil dibuat");
       navigate("/admin/proyek");
     },
@@ -208,6 +210,105 @@ export default function ProjectForm() {
   const watchedTitle = watch("title");
   const watchedMeta = watch("metaDescription");
   const numOrNull = (v) => (v === "" || v == null || Number.isNaN(Number(v)) ? null : Number(v));
+
+  // Validasi per-tab khusus untuk mode Tambah Proyek (wizard)
+  const currentTabIndex = TABS.findIndex(([k]) => k === tab);
+  const isFirstTab = currentTabIndex === 0;
+  const isLastTab = currentTabIndex === TABS.length - 1;
+
+  const currentTabValid = (() => {
+    if (tab === "info") {
+      const t = watch("title");
+      const s = watch("summary");
+      const d = watch("description");
+      const l = watch("location");
+      const c = watch("clientName");
+      const y = Number(watch("year"));
+      const v = watch("value");
+      const st = watch("status");
+      const cat = watch("categoryId");
+      return (
+        typeof t === "string" && t.trim().length >= 3 && t.length <= 150 &&
+        typeof s === "string" && s.trim().length >= 10 && s.length <= 300 &&
+        typeof d === "string" && d.trim().length >= 20 &&
+        typeof l === "string" && l.trim().length >= 2 && l.length <= 150 &&
+        typeof c === "string" && c.trim().length >= 2 && c.length <= 150 &&
+        !Number.isNaN(y) && y >= 1990 && y <= 2100 &&
+        typeof v === "string" && v.trim().length > 0 &&
+        Boolean(st) &&
+        Boolean(cat)
+      );
+    }
+    if (tab === "spesifikasi") {
+      const ar = watch("area");
+      const fl = watch("floors");
+      const dm = watch("durationMonths");
+      const arc = watch("architect");
+      const sDate = watch("startDate");
+      const eDate = watch("endDate");
+      const svc = watch("serviceId");
+
+      const arNum = Number(ar);
+      const flNum = Number(fl);
+      const dmNum = Number(dm);
+
+      if (!ar || Number.isNaN(arNum) || arNum <= 0 || arNum > 1000000) return false;
+      if (fl === "" || fl == null || Number.isNaN(flNum) || flNum < 0 || flNum > 200) return false;
+      if (!dm || Number.isNaN(dmNum) || dmNum <= 0 || dmNum > 600) return false;
+      if (!arc || !arc.trim() || arc.length > 150) return false;
+      if (!sDate || !eDate || new Date(sDate) > new Date(eDate)) return false;
+      if (!svc) return false;
+      return true;
+    }
+    if (tab === "cerita") {
+      const ch = watch("challenge");
+      const sl = watch("solution");
+      const rs = watch("result");
+      const hasHighlights = Array.isArray(highlights) && highlights.length > 0 && highlights.every((h) => typeof h === "string" && h.trim().length > 0);
+      const hasTags = typeof tagsInput === "string" && tagsInput.trim().length > 0;
+
+      if (!ch || !ch.trim() || ch.length > 2000) return false;
+      if (!sl || !sl.trim() || sl.length > 2000) return false;
+      if (!rs || !rs.trim() || rs.length > 2000) return false;
+      if (!hasHighlights || !hasTags) return false;
+      return true;
+    }
+    if (tab === "lokasi") {
+      const lat = watch("latitude");
+      const lng = watch("longitude");
+      if (lat === "" || lat == null || Number.isNaN(Number(lat)) || Number(lat) < -90 || Number(lat) > 90) return false;
+      if (lng === "" || lng == null || Number.isNaN(Number(lng)) || Number(lng) < -180 || Number(lng) > 180) return false;
+      return true;
+    }
+    if (tab === "media") {
+      const vid = watch("videoUrl");
+      if (!coverImage) return false;
+      if (!Array.isArray(images) || images.length === 0) return false;
+      if (!vid || !vid.trim() || !/^https?:\/\/.+/.test(vid.trim())) return false;
+      return true;
+    }
+    if (tab === "seo") {
+      const mt = watch("metaTitle");
+      const md = watch("metaDescription");
+      if (!mt || !mt.trim() || mt.length > 150) return false;
+      if (!md || !md.trim() || md.length > 300) return false;
+      return true;
+    }
+    return true;
+  })();
+
+  const goNextTab = () => {
+    if (!isLastTab && currentTabValid) {
+      setTab(TABS[currentTabIndex + 1][0]);
+    }
+  };
+
+  const goPrevTab = () => {
+    if (!isFirstTab) {
+      setTab(TABS[currentTabIndex - 1][0]);
+    }
+  };
+
   if (isEdit && loadingExisting) {
     return (
       <div className="space-y-6">
@@ -395,6 +496,31 @@ export default function ProjectForm() {
               </div>
             </Card>
           )}
+
+          {/* Tombol Navigasi Wizard (Hanya untuk Tambah Proyek Baru) */}
+          {!isEdit && (
+            <div className="flex items-center justify-between gap-3 pt-2">
+              <div>
+                {!isFirstTab && (
+                  <Button type="button" variant="outline" onClick={goPrevTab}>
+                    <ArrowLeft size={16} /> Sebelumnya
+                  </Button>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                {!isLastTab && (
+                  <Button type="button" onClick={goNextTab} disabled={!currentTabValid}>
+                    Selanjutnya <ArrowRight size={16} />
+                  </Button>
+                )}
+                {isLastTab && (
+                  <Button type="submit" loading={saveMutation.isPending} disabled={!currentTabValid}>
+                    <Save size={16} /> Buat Proyek
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Kolom samping: publikasi + simpan */}
@@ -406,9 +532,17 @@ export default function ProjectForm() {
             </div>
           </Card>
 
-          <Button type="submit" loading={saveMutation.isPending} className="w-full">
-            <Save size={16} /> {isEdit ? "Simpan Perubahan" : "Buat Proyek"}
-          </Button>
+          {isEdit ? (
+            <Button type="submit" loading={saveMutation.isPending} className="w-full">
+              <Save size={16} /> Simpan Perubahan
+            </Button>
+          ) : (
+            isLastTab && (
+              <Button type="submit" loading={saveMutation.isPending} disabled={!currentTabValid} className="w-full">
+                <Save size={16} /> Buat Proyek
+              </Button>
+            )
+          )}
         </div>
       </form>
     </div>

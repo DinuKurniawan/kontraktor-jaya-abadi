@@ -145,7 +145,7 @@ export function ArticlesPage() {
           <Reveal as="main" className="min-w-0">
             {isLoading ? (
               <div className="grid gap-6 sm:grid-cols-2">
-                {Array.from({ length: 6 }, (_, index) => <div key={index} className="overflow-hidden rounded-2xl bg-white p-3 shadow-soft"><Skeleton className="aspect-video w-full bg-cream-deep" rounded="rounded-xl" /><div className="mt-4 space-y-3"><Skeleton className="h-3 w-1/3 bg-cream-deep" /><Skeleton className="h-5 w-full bg-cream-deep" /><Skeleton className="h-4 w-4/5 bg-cream-deep" /></div></div>)}
+                {Array.from({ length: 6 }, (_, index) => <div key={index} className="overflow-hidden rounded-2xl bg-white p-3 shadow-soft"><Skeleton className="h-[250px] w-full bg-cream-deep" rounded="rounded-xl" /><div className="mt-4 space-y-3"><Skeleton className="h-3 w-1/3 bg-cream-deep" /><Skeleton className="h-5 w-full bg-cream-deep" /><Skeleton className="h-4 w-4/5 bg-cream-deep" /></div></div>)}
               </div>
             ) : isError ? (
               <p className="rounded-2xl border border-danger/20 bg-danger/5 px-5 py-10 text-center text-sm text-danger">Gagal memuat artikel. Coba muat ulang halaman.</p>

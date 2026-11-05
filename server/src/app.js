@@ -37,6 +37,8 @@ import serviceScopesRoutes from "./modules/service-scopes/route.js";
 import servicePackagesRoutes, { publicRouter as servicePackagesPublicRouter } from "./modules/service-packages/route.js";
 import mediaRoutes from "./modules/media/route.js";
 import userRoutes from "./modules/users/route.js";
+import realtimeRoutes from "./modules/realtime/route.js";
+import { realtimeBroadcaster } from "./middleware/realtime-broadcaster.js";
 import { errorHandler, notFound } from "./middleware/error-handler.js";
 import { sendSuccess } from "./utils/response.js";
 import { UPLOAD_DIR } from "./config/uploads.js";
@@ -76,6 +78,12 @@ const api = express.Router();
 api.get("/health", (_req, res) => {
   sendSuccess(res, { data: { status: "ok", message: "Server Jaya Abadi berjalan" } });
 });
+
+// SSE endpoint untuk streaming update data real-time
+api.use("/realtime", realtimeRoutes);
+
+// Broadcast event otomatis saat ada operasi POST, PUT, PATCH, DELETE yang sukses
+api.use(realtimeBroadcaster);
 
 // Modul fitur
 api.use("/auth", authRoutes);

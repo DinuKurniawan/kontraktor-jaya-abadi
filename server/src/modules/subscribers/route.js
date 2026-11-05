@@ -31,5 +31,44 @@ router.get("/", async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+/** POST /api/admin/subscribers — buat manual pelanggan */
+router.post("/", async (req, res, next) => {
+  try {
+    const { email } = emailSchema.parse(req.body);
+    const subscriber = await prisma.subscriber.upsert({
+      where: { email: email.toLowerCase() },
+      update: {},
+      create: { email: email.toLowerCase() },
+    });
+    res.status(201).json({ success: true, data: subscriber });
+  } catch (e) {
+    if (e instanceof z.ZodError) return res.status(400).json({ success: false, message: "Email tidak valid" });
+    next(e);
+  }
+});
+
+/** PUT /api/admin/subscribers/:id — ubah email pelanggan */
+router.put("/:id", async (req, res, next) => {
+  try {
+    const { email } = emailSchema.parse(req.body);
+    const updated = await prisma.subscriber.update({
+      where: { id: req.params.id },
+      data: { email: email.toLowerCase() },
+    });
+    res.json({ success: true, data: updated });
+  } catch (e) {
+    if (e instanceof z.ZodError) return res.status(400).json({ success: false, message: "Email tidak valid" });
+    next(e);
+  }
+});
+
+/** DELETE /api/admin/subscribers/:id — hapus pelanggan */
+router.delete("/:id", async (req, res, next) => {
+  try {
+    await prisma.subscriber.delete({ where: { id: req.params.id } });
+    res.json({ success: true, message: "Pelanggan berhasil dihapus" });
+  } catch (e) { next(e); }
+});
+
 export default router;
 export { publicRouter };

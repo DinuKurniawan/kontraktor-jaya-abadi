@@ -18,14 +18,17 @@ import EmptyState from "../../components/ui/EmptyState.jsx";
 import ConfirmDialog from "../../components/ui/ConfirmDialog.jsx";
 import { toast } from "../../components/ui/Toast.jsx";
 import ImagePicker from "../../components/admin/ImagePicker.jsx";
+import Pagination from "../../components/ui/Pagination.jsx";
 import { GALLERY_CATEGORIES, GALLERY_CAT_LABEL } from "../../lib/gallery.js";
 
 const CATEGORIES = GALLERY_CATEGORIES.map(([c]) => c);
 const CAT_LABEL = GALLERY_CAT_LABEL;
+const PAGE_SIZE = 8;
 
 export default function Gallery() {
   const qc = useQueryClient();
   const [filter, setFilter] = useState("");
+  const [page, setPage] = useState(1);
   const [modal, setModal] = useState(null);
   const [upload, setUpload] = useState(null); // form unggah banyak
   const [selected, setSelected] = useState([]);
@@ -40,6 +43,13 @@ export default function Gallery() {
     () => (data?.data ?? []).filter((g) => !filter || g.category === filter),
     [data, filter],
   );
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const activePage = Math.min(page, totalPages);
+  const pagedRows = useMemo(() => {
+    const start = (activePage - 1) * PAGE_SIZE;
+    return rows.slice(start, start + PAGE_SIZE);
+  }, [rows, activePage]);
   const invalidate = () => qc.invalidateQueries({ queryKey: ["gallery"] });
 
   const createMutation = useMutation({
@@ -66,11 +76,11 @@ export default function Gallery() {
     onError: (err) => toast.error(err.response?.data?.message ?? "Gagal menyimpan urutan"),
   });
 
-  const move = (i, dir) => {
-    const t = i + dir;
-    if (t < 0 || t >= rows.length) return;
+  const move = (targetIndex, dir) => {
+    const nextIndex = targetIndex + dir;
+    if (nextIndex < 0 || nextIndex >= rows.length) return;
     const next = [...rows];
-    [next[i], next[t]] = [next[t], next[i]];
+    [next[targetIndex], next[nextIndex]] = [next[nextIndex], next[targetIndex]];
     reorderMutation.mutate(next.map((r) => r.id));
   };
 
@@ -89,7 +99,7 @@ export default function Gallery() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-1.5" role="tablist" aria-label="Filter kategori galeri">
           {[["", "Semua"], ...CATEGORIES.map((c) => [c, CAT_LABEL[c]])].map(([v, label]) => (
-            <button key={v} type="button" role="tab" aria-selected={filter === v} onClick={() => { setFilter(v); setSelected([]); }}
+            <button key={v} type="button" role="tab" aria-selected={filter === v} onClick={() => { setFilter(v); setPage(1); setSelected([]); }}
               className={`rounded-full px-3.5 py-2 text-sm font-semibold transition ${filter === v ? "bg-primary text-white" : "bg-white text-text-muted hover:text-primary"}`}>
               {label}
             </button>
@@ -109,32 +119,41 @@ export default function Gallery() {
       ) : rows.length === 0 ? (
         <Card><EmptyState icon={Images} title="Belum ada foto" description="Unggah foto kegiatan, proyek, kantor, atau penghargaan." /></Card>
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {rows.map((g, i) => (
-            <Card key={g.id} bodyClassName="!p-0">
-              <div className="group relative">
-                <img src={g.image} alt={g.caption ?? "Galeri"} className="aspect-[4/3] w-full rounded-t-2xl object-cover" loading="lazy" />
-                {/* Kotak pilih untuk hapus massal */}
-                <label className="absolute left-2 top-2 cursor-pointer rounded-md bg-black/50 p-1.5">
-                  <input type="checkbox" checked={selected.includes(g.id)} onChange={() => toggle(g.id)} aria-label={`Pilih ${g.caption ?? "foto"}`} className="h-4 w-4 accent-primary" />
-                </label>
-                {!g.isPublished && <span className="absolute left-10 top-2"><Badge variant="neutral">Draft</Badge></span>}
-                <div className="absolute right-2 top-2 flex flex-col gap-1">
-                  <button type="button" onClick={() => move(i, -1)} disabled={i === 0 || reorderMutation.isPending} aria-label="Naikkan" className="rounded-lg bg-black/50 p-1.5 text-white transition hover:bg-primary disabled:opacity-30"><ArrowUp size={14} /></button>
-                  <button type="button" onClick={() => move(i, 1)} disabled={i === rows.length - 1 || reorderMutation.isPending} aria-label="Turunkan" className="rounded-lg bg-black/50 p-1.5 text-white transition hover:bg-primary disabled:opacity-30"><ArrowDown size={14} /></button>
-                </div>
-                <div className="p-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">{CAT_LABEL[g.category]}</p>
-                  <p className="truncate text-sm font-medium text-text">{g.caption ?? <span className="text-text-muted">Tanpa keterangan</span>}</p>
-                  <div className="mt-2 flex gap-1.5">
-                    <button type="button" onClick={() => setModal({ ...g, caption: g.caption ?? "" })} className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-border py-1.5 text-xs font-semibold text-text transition hover:bg-primary-soft hover:text-primary"><Pencil size={12} /> Edit</button>
-                    <button type="button" onClick={() => deleteMutation.mutate(g.id)} aria-label="Hapus foto" className="rounded-lg border border-border p-2 text-text-muted transition hover:bg-danger-soft hover:text-danger"><Trash2 size={13} /></button>
+        <>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {pagedRows.map((g, pageIndex) => {
+              const globalIndex = (activePage - 1) * PAGE_SIZE + pageIndex;
+              return (
+                <Card key={g.id} bodyClassName="!p-0">
+                  <div className="group relative">
+                    <img src={g.image} alt={g.caption ?? "Galeri"} className="aspect-[4/3] w-full rounded-t-2xl object-cover" loading="lazy" />
+                    {/* Kotak pilih untuk hapus massal */}
+                    <label className="absolute left-2 top-2 cursor-pointer rounded-md bg-black/50 p-1.5">
+                      <input type="checkbox" checked={selected.includes(g.id)} onChange={() => toggle(g.id)} aria-label={`Pilih ${g.caption ?? "foto"}`} className="h-4 w-4 accent-primary" />
+                    </label>
+                    {!g.isPublished && <span className="absolute left-10 top-2"><Badge variant="neutral">Draft</Badge></span>}
+                    <div className="absolute right-2 top-2 flex flex-col gap-1">
+                      <button type="button" onClick={() => move(globalIndex, -1)} disabled={globalIndex === 0 || reorderMutation.isPending} aria-label="Naikkan" className="rounded-lg bg-black/50 p-1.5 text-white transition hover:bg-primary disabled:opacity-30"><ArrowUp size={14} /></button>
+                      <button type="button" onClick={() => move(globalIndex, 1)} disabled={globalIndex === rows.length - 1 || reorderMutation.isPending} aria-label="Turunkan" className="rounded-lg bg-black/50 p-1.5 text-white transition hover:bg-primary disabled:opacity-30"><ArrowDown size={14} /></button>
+                    </div>
+                    <div className="p-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-wide text-primary">{CAT_LABEL[g.category]}</p>
+                      <p className="truncate text-sm font-medium text-text">{g.caption ?? <span className="text-text-muted">Tanpa keterangan</span>}</p>
+                      <div className="mt-2 flex gap-1.5">
+                        <button type="button" onClick={() => setModal({ ...g, caption: g.caption ?? "" })} className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-border py-1.5 text-xs font-semibold text-text transition hover:bg-primary-soft hover:text-primary"><Pencil size={12} /> Edit</button>
+                        <button type="button" onClick={() => deleteMutation.mutate(g.id)} aria-label="Hapus foto" className="rounded-lg border border-border p-2 text-text-muted transition hover:bg-danger-soft hover:text-danger"><Trash2 size={13} /></button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+                </Card>
+              );
+            })}
+          </div>
+
+          <div className="pt-2">
+            <Pagination page={activePage} totalPages={totalPages} onChange={setPage} />
+          </div>
+        </>
       )}
 
       {/* Modal unggah banyak: pecah jadi POST per foto */}

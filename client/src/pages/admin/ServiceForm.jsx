@@ -108,6 +108,9 @@ export default function ServiceForm() {
     mutationFn: (payload) => (isEdit ? api.put(`/admin/services/${id}`, payload) : api.post("/admin/services", payload)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["services"] });
+      if (isEdit) {
+        queryClient.invalidateQueries({ queryKey: ["service", id] });
+      }
       toast.success(isEdit ? "Layanan berhasil diperbarui" : "Layanan berhasil dibuat");
       navigate("/admin/layanan");
     },

@@ -111,6 +111,9 @@ export default function PostForm() {
     mutationFn: (payload) => (isEdit ? api.put(`/admin/posts/${id}`, payload) : api.post("/admin/posts", payload)),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["posts"] });
+      if (isEdit) {
+        queryClient.invalidateQueries({ queryKey: ["post", id] });
+      }
       toast.success(isEdit ? "Artikel berhasil diperbarui" : "Artikel berhasil dibuat");
       navigate("/admin/artikel");
     },
