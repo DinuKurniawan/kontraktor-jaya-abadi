@@ -34,6 +34,7 @@ import FeaturedProjectsStrip from "../../components/public/projects/FeaturedProj
 import ProjectFilterBar from "../../components/public/projects/ProjectFilterBar.jsx";
 import ProjectCardV2 from "../../components/public/projects/ProjectCardV2.jsx";
 import ProjectListItem from "../../components/public/projects/ProjectListItem.jsx";
+import ProjectGallery from "../../components/public/projects/ProjectGallery.jsx";
 import ProjectsMap from "../../components/public/projects/ProjectsMap.jsx";
 import ProjectsCta from "../../components/public/projects/ProjectsCta.jsx";
 import { useSiteSettings } from "../../components/public/home/HeroSection.jsx";
@@ -266,9 +267,79 @@ function Lightbox({ images, index, onClose, onMove }) {
         }}
         className="max-w-4xl touch-pan-y select-none"
       >
-        <img src={img(current.url)} alt={current.caption ?? ""} className="max-h-[80vh] rounded-xl object-contain" />
+        <img src={img(current.url)} alt={current.caption ?? ""} className="max-h-[80vh] w-full rounded-xl object-contain" />
         {current.caption && <figcaption className="mt-2 text-center text-sm text-white/70">{current.caption}</figcaption>}
       </figure>
+    </div>
+  );
+}
+
+// ProjectHero — overlay teks di atas gambar (landscape), grid samping (portrait desktop).
+function ProjectHero({ image, title, location, category, status, onClickImage }) {
+  const [ratio, setRatio] = useState(16 / 9);
+  const landscape = ratio >= 1.2;
+
+  const handleLoad = (e) => {
+    const { naturalWidth: w, naturalHeight: h } = e.currentTarget;
+    if (w && h) setRatio(w / h);
+  };
+
+  // Badge + judul + lokasi — satu wadah rata kiri, gap seragam
+  const overlay = (
+    <div className="flex flex-col items-start gap-3 text-left">
+      <div className="flex flex-wrap items-center justify-start gap-2">
+        {category && <span className="rounded-full bg-white/15 px-3 py-1.5 text-xs font-bold text-cream backdrop-blur-sm">{category}</span>}
+        {status && (
+          <span className={`rounded-full border px-3 py-1.5 text-xs font-bold backdrop-blur-sm ${STATUS_BADGE[status] ?? STATUS_BADGE.PLANNING}`}>
+            {STATUS_LABEL[status] ?? status}
+          </span>
+        )}
+      </div>
+      <h1 className="w-full max-w-[70%] break-words font-jakarta text-[clamp(1.5rem,3.5vw,2.75rem)] font-extrabold leading-tight text-white line-clamp-2 text-left">{title}</h1>
+      {location && (
+        <p className="flex items-center justify-start gap-1.5 text-sm font-semibold text-cream/90 sm:text-base">
+          <MapPin size={17} className="shrink-0 text-brand" /> {location}
+        </p>
+      )}
+    </div>
+  );
+
+  if (!image) {
+    return (
+      <div className="relative mt-4 overflow-hidden rounded-3xl bg-ink shadow-soft-lg">
+        <div className="flex aspect-video items-center justify-center text-sm text-ink-light">Foto proyek belum tersedia</div>
+        <div className="absolute inset-x-0 bottom-0 p-5 md:p-8">{overlay}</div>
+      </div>
+    );
+  }
+
+  // Mode A — landscape: gambar penuh lebar, overlay di bawah
+  if (landscape) {
+    return (
+      <button type="button" onClick={onClickImage} className="group relative mt-4 block w-full overflow-hidden rounded-3xl shadow-soft-lg" aria-label="Perbesar gambar hero">
+        <img src={image} alt={title} loading="eager" fetchPriority="high" onLoad={handleLoad} className="block h-full w-full transition-transform duration-300 group-hover:scale-[1.02]" style={{ aspectRatio: ratio }} />
+        <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,.8) 0%, rgba(0,0,0,.35) 40%, transparent 55%)" }} />
+        <div className="absolute inset-x-0 bottom-0 z-10 p-5 md:p-8">{overlay}</div>
+      </button>
+    );
+  }
+
+  // Mode B — portrait/persegi
+  return (
+    <div className="mt-4 overflow-hidden rounded-3xl shadow-soft-lg">
+      {/* Mobile: overlay di atas gambar */}
+      <button type="button" onClick={onClickImage} className="group relative block w-full md:hidden" aria-label="Perbesar gambar hero">
+        <img src={image} alt={title} loading="eager" fetchPriority="high" onLoad={handleLoad} className="block h-full w-full" style={{ aspectRatio: ratio }} />
+        <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,.85) 0%, rgba(0,0,0,.4) 45%, transparent 65%)" }} />
+        <div className="absolute inset-x-0 bottom-0 z-10 p-5">{overlay}</div>
+      </button>
+      {/* Desktop: grid samping — teks kiri, gambar kanan */}
+      <div className="hidden bg-ink md:grid md:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="flex flex-col items-start justify-end p-10">{overlay}</div>
+        <button type="button" onClick={onClickImage} className="group block" aria-label="Perbesar gambar hero">
+          <img src={image} alt={title} loading="eager" fetchPriority="high" onLoad={handleLoad} className="block h-full max-h-[70vh] w-auto transition-transform duration-300 group-hover:scale-[1.02]" style={{ aspectRatio: ratio }} />
+        </button>
+      </div>
     </div>
   );
 }
@@ -611,33 +682,18 @@ export function ProjectDetailPage() {
         jsonLd={jsonLd}
       />
       <Container className="pt-8 sm:pt-10">
+        <Link to="/proyek" className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-soft transition hover:text-brand" aria-label="Kembali ke daftar proyek">
+          <ChevronLeft size={16} /> Kembali
+        </Link>
         <Breadcrumb items={[{ label: "Proyek", to: "/proyek" }, { label: project.title }]} />
-        <div className="relative mt-4 min-h-[26rem] overflow-hidden rounded-3xl bg-cream-deep shadow-soft-lg sm:min-h-[34rem]">
-          {project.coverImage ? (
-            <img src={img(project.coverImage)} alt={project.title} className="absolute inset-0 h-full w-full object-cover" />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-sm text-ink-light">Foto proyek belum tersedia</div>
-          )}
-          <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/35 to-ink/10" />
-          <div className="absolute inset-x-0 bottom-0 p-6 sm:p-10">
-            <div className="flex flex-wrap items-center gap-2">
-              {project.category?.name && (
-                <span className="rounded-full bg-cream/95 px-3 py-1.5 text-xs font-bold text-ink shadow-sm">{project.category.name}</span>
-              )}
-              {project.status && (
-                <span className={`rounded-full border px-3 py-1.5 text-xs font-bold ${STATUS_BADGE[project.status] ?? STATUS_BADGE.PLANNING}`}>
-                  {STATUS_LABEL[project.status] ?? project.status}
-                </span>
-              )}
-            </div>
-            <h1 className="mt-4 max-w-4xl font-jakarta text-3xl font-extrabold leading-tight text-white sm:text-5xl">{project.title}</h1>
-            {project.location && (
-              <p className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-cream/90 sm:text-base">
-                <MapPin size={17} className="text-brand" /> {project.location}
-              </p>
-            )}
-          </div>
-        </div>
+        <ProjectHero
+          image={project.coverImage ? img(project.coverImage) : null}
+          title={project.title}
+          location={project.location}
+          category={project.category?.name}
+          status={project.status}
+          onClickImage={() => setLightbox(0)}
+        />
       </Container>
 
       <Container className="py-8 sm:py-10">
@@ -694,21 +750,13 @@ export function ProjectDetailPage() {
           )}
 
           {galleryImages.length > 0 && (
-            <section className="mt-10" aria-labelledby="galeri-proyek">
-              <h2 id="galeri-proyek" className="font-jakarta text-2xl font-extrabold text-ink">Galeri <span className="text-brand">proyek</span></h2>
-              <button type="button" onClick={() => setLightbox(0)} className="group mt-5 block w-full overflow-hidden rounded-2xl" aria-label="Perbesar gambar utama proyek">
-                <img src={img(galleryImages[0].url)} alt={project.title} className="aspect-[16/9] w-full object-cover transition duration-500 group-hover:scale-105" />
-              </button>
-              {galleryImages.length > 1 && (
-                <div className="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-6">
-                  {galleryImages.slice(0, 8).map((photo, i) => (
-                    <button key={`${photo.url}-${i}`} type="button" onClick={() => setLightbox(i)} className="overflow-hidden rounded-xl" aria-label={`Lihat foto ${i + 1}`}>
-                      <img src={img(photo.url)} alt="" loading="lazy" className="aspect-[4/3] w-full object-cover transition hover:scale-105" />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </section>
+            <div className="mt-10">
+              <ProjectGallery
+                images={galleryImages.map((photo) => ({ ...photo, url: img(photo.url) }))}
+                title={project.title}
+                onOpen={setLightbox}
+              />
+            </div>
           )}
 
           {videoId && (
