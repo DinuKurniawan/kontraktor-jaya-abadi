@@ -111,7 +111,26 @@ export function useRealtime() {
 
   useEffect(() => {
     let reconnectTimeout;
+    let pollInterval;
     let isActive = true;
+    let connected = false;
+
+    // Fallback polling: dipakai saat SSE tidak tersedia (mis. Vercel serverless,
+    // yang tidak mendukung koneksi streaming long-lived antar-invocation).
+    function startPolling() {
+      if (pollInterval) return;
+      pollInterval = setInterval(() => {
+        Object.values(RESOURCE_QUERY_MAP).forEach((keys) => {
+          keys.forEach((key) => queryClient.invalidateQueries({ queryKey: key }));
+        });
+      }, 20000);
+    }
+
+    function stopPolling() {
+      if (!pollInterval) return;
+      clearInterval(pollInterval);
+      pollInterval = null;
+    }
 
     function connect() {
       if (!isActive) return;
@@ -121,6 +140,8 @@ export function useRealtime() {
         esRef.current = es;
 
         es.addEventListener("change", (e) => {
+          connected = true;
+          stopPolling();
           try {
             const data = JSON.parse(e.data);
             const { resource } = data;
@@ -142,13 +163,15 @@ export function useRealtime() {
 
         es.onerror = () => {
           es.close();
+          if (!isActive) return;
+          // Bila belum pernah menerima event, aktifkan polling sebagai pengganti SSE.
+          if (!connected) startPolling();
           // Coba reconnect setelah 5 detik jika koneksi terputus
-          if (isActive) {
-            reconnectTimeout = setTimeout(connect, 5000);
-          }
+          reconnectTimeout = setTimeout(connect, 5000);
         };
       } catch (err) {
         if (isActive) {
+          startPolling();
           reconnectTimeout = setTimeout(connect, 5000);
         }
       }
@@ -159,6 +182,7 @@ export function useRealtime() {
     return () => {
       isActive = false;
       clearTimeout(reconnectTimeout);
+      stopPolling();
       if (esRef.current) {
         esRef.current.close();
       }

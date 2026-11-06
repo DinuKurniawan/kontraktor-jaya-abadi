@@ -5,6 +5,14 @@ import { realtimeEmitter } from "../../lib/events.js";
 const router = express.Router();
 
 router.get("/stream", (req, res) => {
+  // Vercel serverless tidak mendukung koneksi streaming long-lived: setiap
+  // invocation punya batas durasi dan tidak ada memori bersama antar-instance.
+  // Kembalikan 204 agar client otomatis beralih ke polling.
+  if (process.env.VERCEL) {
+    res.status(204).end();
+    return;
+  }
+
   // Set header wajib untuk SSE
   res.writeHead(200, {
     "Content-Type": "text/event-stream",

@@ -16,7 +16,9 @@ export function verifyToken(token) {
 
 export const cookieOptions = {
   httpOnly: true,
-  sameSite: "lax",
+  // Client dan API di-deploy sebagai dua project Vercel berbeda domain,
+  // sehingga cookie harus SameSite=None + Secure agar tetap terkirim.
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   secure: process.env.NODE_ENV === "production", // hanya https di production
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari
   path: "/",

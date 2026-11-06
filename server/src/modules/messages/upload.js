@@ -1,13 +1,16 @@
 // Upload lampiran pesan publik — terpisah dari folder/record Media admin.
 import crypto from "node:crypto";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import multer from "multer";
 import ApiError from "../../utils/api-error.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-export const MESSAGE_UPLOAD_DIR = path.resolve(__dirname, "../../../uploads/messages");
+export const MESSAGE_UPLOAD_DIR = process.env.VERCEL
+  ? path.join(os.tmpdir(), "uploads", "messages")
+  : path.resolve(__dirname, "../../../uploads/messages");
 fs.mkdirSync(MESSAGE_UPLOAD_DIR, { recursive: true });
 
 const ALLOWED_TYPES = {

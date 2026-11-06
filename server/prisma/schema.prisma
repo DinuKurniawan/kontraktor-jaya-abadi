@@ -2,7 +2,10 @@
 // Tabel dipetakan ke snake_case lewat @@map
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // Binary target Linux agar client berjalan di Vercel (rhel-openssl-3.0.x)
+  // tanpa menghapus target native Windows untuk pengembangan lokal.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
