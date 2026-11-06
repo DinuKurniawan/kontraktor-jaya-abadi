@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import prisma from "../../config/prisma.js";
 import ApiError from "../../utils/api-error.js";
 import { paginate, paginationMeta } from "../../utils/paginate.js";
+import { emitChange } from "../../lib/events.js";
 
 const BUDGET_RANGE_TO_PRISMA = {
   KURANG_100JT: "KURANG_100JT",
@@ -27,7 +28,7 @@ async function generateTicketCode() {
 
 // Hitung pesan belum dibaca (untuk badge sidebar)
 export async function unreadCount() {
-  return prisma.message.count({ where: { status: "BARU" } });
+  return prisma.message.count({ where: { isRead: false } });
 }
 
 function buildWhere(query = {}) {
@@ -59,7 +60,7 @@ export async function listMessages(query) {
   const where = buildWhere(query);
 
   const [rows, total] = await prisma.$transaction([
-    prisma.message.findMany({ where, orderBy: { createdAt: "desc" }, skip, take: limit, select: { id: true, name: true, email: true, phone: true, subject: true, ticketCode: true, status: true, budgetRange: true, projectLocation: true, service: { select: { id: true, title: true } }, isRead: true, createdAt: true } }),
+    prisma.message.findMany({ where, orderBy: { createdAt: "desc" }, skip, take: limit, select: { id: true, name: true, email: true, phone: true, subject: true, body: true, ticketCode: true, status: true, budgetRange: true, projectLocation: true, service: { select: { id: true, title: true } }, isRead: true, createdAt: true } }),
     prisma.message.count({ where }),
   ]);
 
@@ -83,6 +84,8 @@ export async function getMessage(id) {
   if (!message.isRead) {
     await prisma.message.update({ where: { id }, data: { isRead: true } });
     message.isRead = true;
+    // GET detail tidak melewati broadcaster; pancarkan perubahan read secara eksplisit.
+    emitChange("messages", "patch", { id, isRead: true });
   }
   return normalizeMessage(message);
 }
@@ -91,7 +94,9 @@ export async function getMessage(id) {
 export async function setRead(id, isRead) {
   const message = await prisma.message.findUnique({ where: { id }, select: { id: true } });
   if (!message) throw new ApiError(404, "Pesan tidak ditemukan");
-  return prisma.message.update({ where: { id }, data: { isRead } });
+  const updated = await prisma.message.update({ where: { id }, data: { isRead } });
+  // Endpoint PATCH juga dipancarkan middleware; detail ini menjaga pemanggilan service internal tetap realtime.
+  return updated;
 }
 
 export async function updateAdminFields(id, payload) {
