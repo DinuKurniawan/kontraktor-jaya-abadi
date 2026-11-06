@@ -37,8 +37,9 @@ Tangkapan layar belum disimpan di repositori. Daftar gambar yang disarankan ada 
 - [Pemecahan Masalah](#25-pemecahan-masalah)
 - [Roadmap](#26-roadmap)
 - [Kontribusi](#27-kontribusi)
-- [Changelog Ringkas](#28-changelog-ringkas)
-- [Lisensi dan Kontak](#29-lisensi-dan-kontak)
+- [Realtime SSE dan Notifikasi](#28-realtime-sse-dan-notifikasi)
+- [Changelog Ringkas](#29-changelog-ringkas)
+- [Lisensi dan Kontak](#30-lisensi-dan-kontak)
 
 ## 3. Tentang Proyek
 
@@ -108,8 +109,8 @@ Semua modul admin di bawah memerlukan login. Saat ini backend hanya menerapkan p
 
 | Modul | Fungsi | Fitur khusus | Role yang boleh mengakses |
 | --- | --- | --- | --- |
-| Dashboard | Statistik ringkas dan pesan terbaru | Unread count, ringkasan status proyek | Semua user login |
-| Proyek | CRUD portofolio | Publish, featured, bulk action, galeri, koordinat, SEO | Semua user login |
+| Dashboard | Statistik ringkas dan pesan terbaru | Unread count, ringkasan status proyek, dropdown notifikasi lonceng real-time | Semua user login |
+| Proyek | CRUD portofolio | Wizard validasi tab, publish, featured, bulk action, galeri, koordinat, SEO | Semua user login |
 | Layanan | CRUD layanan | Reorder, publish, hero image, brosur, harga, SEO | Semua user login |
 | Paket Layanan | CRUD paket per layanan | Harga, fitur JSON, popular, reorder | Semua user login |
 | Ruang Lingkup | CRUD scope layanan | Ikon dan reorder | Semua user login |
@@ -128,10 +129,10 @@ Semua modul admin di bawah memerlukan login. Saat ini backend hanya menerapkan p
 | Harga Estimasi | CRUD harga kalkulator | Tipe bangunan, rentang harga, publish | Semua user login |
 | Sejarah | CRUD milestone | Tahun, publish, reorder | Semua user login |
 | Nilai-Nilai | CRUD core value | Ikon, publish, reorder | Semua user login |
-| Galeri | CRUD galeri | Kategori, publish, reorder | Semua user login |
+| Galeri | CRUD galeri | Kategori, pagination 8 item, publish, reorder | Semua user login |
 | Kantor Cabang | CRUD kantor | Satu kantor utama, jam 7 hari, koordinat, peta, publish | Semua user login |
 | Pesan Masuk | Membaca dan memproses konsultasi | Status cepat, filter, catatan autosave, lampiran, WhatsApp, CSV | Semua user login |
-| Subscriber | Daftar newsletter | Daftar dan ekspor CSV di sisi client | Semua user login |
+| Subscriber | CRUD pelanggan newsletter | Tambah/edit/hapus, daftar dan ekspor CSV di sisi client | Semua user login |
 | Media | Upload dan kelola media | Maks. 10 file, 5 MB/file, kompresi WebP, thumbnail | Semua user login |
 | Pengaturan Situs | Key-value settings | Kontak, statistik, konten umum, response time | Semua user login |
 | Pengguna | CRUD akun CMS | Aktif/nonaktif, role, ganti password | **SUPER_ADMIN** |
@@ -831,6 +832,7 @@ Tidak ada script `lint` atau `test` di manifest saat ini. TODO: tambahkan test r
 | Method | Path | Auth | Role | Deskripsi |
 | --- | --- | --- | --- | --- |
 | GET | `/api/health` | Tidak | — | Health check. |
+| GET | `/api/realtime/stream` | Tidak | — | Kanal SSE `text/event-stream` untuk event perubahan data (`change`). |
 | GET | `/api/public/services`, `/api/public/services/:slug` | Tidak | — | Daftar/detail layanan terbit. |
 | GET | `/api/public/projects`, `/api/public/projects/:slug` | Tidak | — | Daftar/detail proyek terbit. |
 | GET | `/api/public/projects/map`, `/api/public/projects/stats` | Tidak | — | Titik peta dan statistik proyek. |
@@ -1193,7 +1195,81 @@ Modul CRUD yang diminta pada CMS sudah tersedia. Modul yang tidak ditemukan dan 
 6. Untuk modul CRUD baru, ikuti pola `server/src/modules/categories/`: `route.js`, `controller.js`, `service.js`, `validation.js`, lalu mount di `server/src/app.js`.
 7. Tambahkan halaman admin lazy-loaded, nav sidebar, invalidation query, dan dokumentasi API.
 
-## 28. Changelog Ringkas
+## 28. Realtime SSE dan Notifikasi
+
+Aplikasi menyinkronkan data admin dan publik tanpa reload halaman memakai
+**Server-Sent Events (SSE)**.
+
+### Alur teknis
+
+```mermaid
+sequenceDiagram
+    participant A as Admin UI
+    participant P as Publik UI
+    participant API as Express API
+    participant Bus as realtimeEmitter
+    participant SSE as GET /api/realtime/stream
+
+    A->>API: POST/PUT/PATCH/DELETE
+    API->>API: realtimeBroadcaster (res.finish 2xx)
+    API->>Bus: emitChange(resource, action)
+    Bus-->>SSE: event "change"
+    SSE-->>A: { resource, action, details, timestamp }
+    SSE-->>P: { resource, action, details, timestamp }
+    A->>A: invalidateQueries(RESOURCE_QUERY_MAP[resource])
+    P->>P: invalidateQueries(RESOURCE_QUERY_MAP[resource])
+```
+
+| Komponen | Lokasi | Peran |
+| --- | --- | --- |
+| Event bus | `server/src/lib/events.js` | `realtimeEmitter` + `emitChange(resource, action, details)` |
+| Broadcaster | `server/src/middleware/realtime-broadcaster.js` | Memetakan path request ke nama resource dan memancarkan event pada respons 2xx |
+| Endpoint SSE | `server/src/modules/realtime/route.js` | `GET /api/realtime/stream`, heartbeat 25 detik, cleanup saat disconnect |
+| Penerima client | `client/src/hooks/useRealtime.js` | `EventSource`, auto-reconnect, dan `RESOURCE_QUERY_MAP` untuk invalidasi TanStack Query |
+
+### Resource yang tersinkron
+
+`projects`, `services`, `service-categories`, `service-packages`, `categories`,
+`posts`, `tags`, `testimonials`, `team`, `partners`, `certificates`, `faqs`,
+`features`, `process-steps`, `before-after`, `estimate-prices`, `milestones`,
+`core-values`, `gallery`, `hero-slides`, `branches`, `messages`, `subscribers`,
+`media`, `settings`, dan `users`.
+
+Setiap event meng-invalidasi seluruh query key terkait di admin maupun publik —
+misalnya `projects` menginvalidasi `projects`, `project`, `public-projects`,
+`public-project`, `public-featured-projects`, `public-projects-map`,
+`public-project-stats`, `public-related-projects`, dan `dashboard`.
+
+### Notifikasi lonceng admin
+
+`client/src/components/admin/AdminTopbar.jsx` menyediakan dropdown notifikasi:
+
+- Badge angka pesan belum dibaca (`GET /api/admin/messages/unread-count`).
+- Preview 5 pesan terbaru (nama, subjek, isi, waktu) dari `GET /api/admin/messages?limit=5`.
+- Pesan belum dibaca: dot merah + label **Baru** + highlight latar.
+- Pesan sudah dibaca: label hijau **Dibaca** dengan ikon centang.
+- Dropdown menutup saat klik di luar area, klik item, atau membuka menu profil.
+- Real-time: pesan baru masuk langsung muncul di urutan teratas preview, dan
+  saat pesan dibuka badge unread langsung turun tanpa refresh.
+
+> Catatan implementasi: `GET /api/admin/messages/:id` menandai pesan sebagai
+> dibaca (efek samping GET). Karena broadcaster hanya memantau metode non-GET,
+> service memancarkan `emitChange("messages", "patch")` secara eksplisit agar
+> badge dan preview ikut tersinkron.
+
+### Pengujian manual cepat
+
+```powershell
+# 1. Kirim pesan dari form publik
+Invoke-RestMethod -Method Post -Uri http://localhost:4000/api/public/messages `
+  -ContentType "application/json" `
+  -Body '{"name":"Tes","phone":"08123456789","subject":"Uji","body":"Pesan uji notifikasi realtime minimal 10 karakter."}'
+
+# 2. Amati lonceng admin: badge bertambah dan pesan muncul di preview tanpa refresh
+# 3. Buka pesan di /admin/pesan: badge berkurang, label berubah menjadi "Dibaca"
+```
+
+## 29. Changelog Ringkas
 
 Riwayat git yang tersedia:
 
@@ -1208,8 +1284,12 @@ Tahap fitur yang telah selesai di working tree:
 - Publik: beranda, Tentang, layanan, proyek, blog/artikel, kontak.
 - Pengayaan: form konsultasi tiga langkah, OfficeMap, WhatNext, ContactFaq, ContactCta, JSON-LD.
 - Finishing: Reveal, skeleton, responsive viewport QA, rate limit, status pesan, ekspor CSV.
+- Realtime: SSE broadcaster + `useRealtime` untuk 26 resource admin/publik.
+- Notifikasi: dropdown lonceng admin dengan badge unread, preview pesan, dan status baca real-time.
+- UX: wizard validasi form proyek, grid layanan seragam, pagination galeri 8 item, tinggi gambar kartu artikel 250 px.
+- Media: gambar sertifikat & legalitas resolusi tinggi di kartu publik dan admin.
 
-## 29. Lisensi dan Kontak
+## 30. Lisensi dan Kontak
 
 Lisensi resmi **belum ditentukan**. Sampai file `LICENSE` ditambahkan, semua hak atas kode dan konten tetap pada pemilik proyek.
 
