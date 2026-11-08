@@ -193,7 +193,7 @@ export async function saveFiles(files, { purpose = "generic" } = {}) {
       created.push(
         prisma.media.create({
           data: {
-            url: absoluteUrl(`/uploads/${webp}`),
+            url: `/uploads/${webp}`,
             filename: file.originalname,
             mimeType: "image/webp",
             size: stat.size,

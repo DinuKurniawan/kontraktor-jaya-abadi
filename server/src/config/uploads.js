@@ -8,9 +8,15 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const LOCAL_UPLOADS = path.resolve(__dirname, "../../uploads");
+
 export const UPLOAD_DIR = process.env.VERCEL
   ? path.join(os.tmpdir(), "uploads")
-  : path.resolve(__dirname, "../../uploads");
+  : LOCAL_UPLOADS;
+
+export const STATIC_UPLOAD_DIRS = process.env.VERCEL
+  ? [UPLOAD_DIR, LOCAL_UPLOADS, path.resolve(process.cwd(), "uploads")]
+  : [UPLOAD_DIR];
 
 // Pastikan folder ada sebelum multer menulis (Vercel tidak menyediakan folder ini).
 try {

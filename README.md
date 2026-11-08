@@ -759,7 +759,7 @@ baru dipastikan normal.
 | `JWT_SECRET` | Ya untuk produksi | `acak-minimal-32-karakter` | Secret JWT; development memiliki fallback. |
 | `CLIENT_URL` | Ya | `http://localhost:5173` | Origin CORS utama. |
 | `PORT` | Opsional | `4000` | Port Express, default `4000`. |
-| `SERVER_URL` | Opsional | `http://localhost:4000` | Prefix URL respons Media. |
+| `SERVER_URL` | Opsional | `http://localhost:4000` | Prefix URL absolut respons Media. |
 | `SITE_URL` | Opsional | `http://localhost:5173` | URL sitemap/robots. |
 | `SEED_ADMIN_PASSWORD` | Wajib saat seed | `password-kuat` | Password admin awal. |
 | `NODE_ENV` | Opsional | `production` | Mengaktifkan secure cookie dan pesan error production. |

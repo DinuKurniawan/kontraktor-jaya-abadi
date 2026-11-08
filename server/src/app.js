@@ -41,7 +41,7 @@ import realtimeRoutes from "./modules/realtime/route.js";
 import { realtimeBroadcaster } from "./middleware/realtime-broadcaster.js";
 import { errorHandler, notFound } from "./middleware/error-handler.js";
 import { sendSuccess } from "./utils/response.js";
-import { UPLOAD_DIR } from "./config/uploads.js";
+import { STATIC_UPLOAD_DIRS } from "./config/uploads.js";
 
 const app = express();
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
@@ -59,10 +59,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // File statis hasil upload (multer menulis ke folder uploads/)
-app.use("/uploads", (req, res, next) => {
-  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-  next();
-}, express.static(UPLOAD_DIR));
+app.use(
+  "/uploads",
+  (req, res, next) => {
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+    next();
+  },
+  ...STATIC_UPLOAD_DIRS.map((dir) => express.static(dir))
+);
 
 // Rate limit dasar untuk semua route /api
 app.use(

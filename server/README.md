@@ -136,7 +136,7 @@ Bentrok otomatis diberi suffix `-2`, `-3`, dst.
   `prisma.<relasi>.count({ where: ... })` dan tolak dengan `ApiError(400, ...)`
   bila masih dipakai.
 - File upload mengikuti pola modul `media` (`uploadMedia` wrapper di atas multer,
-  URL relatif `/uploads/...` di DB, URL absolut via `SERVER_URL` di respons).
+  URL relatif `/uploads/...` di DB dan respons; klien menambahkan `VITE_API_URL`).
 
 ## Checklist modul baru
 

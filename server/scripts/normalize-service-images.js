@@ -7,7 +7,6 @@ import prisma from "../src/config/prisma.js";
 import { UPLOAD_DIR } from "../src/config/uploads.js";
 
 const APPLY = process.argv.includes("--apply");
-const SERVER_URL = (process.env.SERVER_URL || "http://localhost:4000").replace(/\/+$/, "");
 const MIN_WIDTH = 800;
 const PRESETS = {
   image: { width: 1200, height: 900, ratio: 4 / 3 },
@@ -59,7 +58,7 @@ try {
         const thumb = base.replace(/\.webp$/, "-thumb.webp");
         await fs.writeFile(path.join(UPLOAD_DIR, base), normalized);
         await fs.writeFile(path.join(UPLOAD_DIR, thumb), await sharp(normalized).resize({ width: 480, withoutEnlargement: true }).webp({ quality: 72 }).toBuffer());
-        const url = `${SERVER_URL}/uploads/${base}`;
+        const url = `/uploads/${base}`;
         await prisma.$transaction([
           prisma.media.create({ data: { url, filename: `service-${service.id}-${field}.webp`, mimeType: "image/webp", size: after.size } }),
           prisma.service.update({ where: { id: service.id }, data: { [field]: url } }),
