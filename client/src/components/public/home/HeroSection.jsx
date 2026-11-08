@@ -54,12 +54,20 @@ function Photo({ src, alt, className = "", eager = false }) {
           fetchPriority={eager ? "high" : undefined}
           onLoad={() => setLoaded(true)}
           onError={() => setLoaded(true)}
-          className={`h-full w-full object-cover transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"}`}
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"}`}
         />
       )}
     </div>
   );
 }
+
+const DEFAULT_SLIDE = {
+  id: "default-slide",
+  title: "Membangun Impian Bersama Anda",
+  subtitle: "Jasa konstruksi, renovasi, dan desain untuk rumah & bangunan komersial — rapi, tepat waktu, RAB transparan.",
+  ctaUrl: "/kontak",
+  ctaLabel: "Konsultasi Gratis",
+};
 
 export default function HeroSection() {
   const { data: slides = [], isLoading } = useQuery({
@@ -78,11 +86,11 @@ export default function HeroSection() {
     return () => clearInterval(t);
   }, [slides.length]);
 
-  const slide = slides.length ? slides[index % slides.length] : null;
-  const word = (slide?.title ?? "").split(" ");
+  const slide = slides.length ? slides[index % slides.length] : DEFAULT_SLIDE;
+  const word = (slide?.title ?? DEFAULT_SLIDE.title).split(" ");
   const lastWord = word.pop();
-  const years = s?.stat_years_experience;
-  const projects = s?.stat_completed_projects;
+  const years = s?.stat_years_experience ?? "20";
+  const projects = s?.stat_completed_projects ?? "200";
   const videoId = youtubeId(s?.profile_video);
 
   return (
@@ -99,74 +107,74 @@ export default function HeroSection() {
       />
       <div className="relative mx-auto max-w-6xl px-5">
         <div className="grid items-center gap-12 py-14 lg:grid-cols-2 lg:py-20">
-          {/* Kolom teks */}
-          <div>
-            {isLoading ? (
-              <div className="space-y-4" aria-hidden>
-                <div className="h-14 w-4/5 animate-pulse rounded-2xl bg-cream-deep" />
-                <div className="h-4 w-2/3 animate-pulse rounded-full bg-cream-deep" />
-                <div className="h-12 w-40 animate-pulse rounded-full bg-cream-deep" />
+                    {/* Ketinggian dijamin stabil oleh min-h langgeng pada h1 & subjudul;
+              jadi penghubung tataletak tidak berubah saat placeholder → data API */}
+          <div className="min-h-[560px] sm:min-h-[460px] lg:min-h-[618px]">
+            <span className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-cream">
+              <ScrollText size={13} /> Kontraktor sejak {years}
+            </span>
+            {/* min-h mengecewakan perubahan jumlah baris antara teks placeholder */
+             /* (title/subtitle API, rotasi slide) — box h1/subjudul tetap, tidak
+                menggeser konten di bawahnya. Nilai = max baris aktual semua slide. */}
+            <h1 className="mt-5 min-h-[4.32em] font-jakarta text-4xl font-extrabold leading-[1.08] text-ink sm:min-h-[3.24em] sm:text-5xl lg:min-h-[5.4em] lg:text-6xl">
+              {word.join(" ")}{" "}
+              <span className="text-brand underline decoration-brand/40 decoration-[6px] underline-offset-8">{lastWord}</span>
+            </h1>
+            <p className="mt-5 min-h-[4.875em] max-w-md leading-relaxed text-ink-soft sm:min-h-[3.25em]">{slide?.subtitle ?? DEFAULT_SLIDE.subtitle}</p>
+
+            {/* Lencana kepercayaan */}
+            <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2" aria-label="Jaminan kami">
+              {BADGES.map(({ icon: Icon, label }) => (
+                <li key={label} className="flex items-center gap-1.5 text-sm font-semibold text-ink-soft">
+                  <Icon size={16} className="text-brand" /> {label}
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <PillButton variant="primary" to="/kontak">Konsultasi Gratis</PillButton>
+              <PillButton variant="outline" to="/proyek">Lihat Proyek</PillButton>
+              {videoId && (
+                <button
+                  type="button"
+                  onClick={() => setVideoOpen(true)}
+                  className="group inline-flex items-center gap-2.5 rounded-full py-2 pl-2 pr-4 text-sm font-semibold text-ink transition hover:text-brand"
+                >
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand text-white shadow-soft transition group-hover:scale-105">
+                    <Play size={16} className="ml-0.5" />
+                  </span>
+                  Putar profil perusahaan
+                </button>
+              )}
+            </div>
+
+            {/* Titik indikator slide: ukuran tombol tetap 28x24px, tidak mengubah lebar saat aktif */}
+            {slides.length > 1 && (
+              <div className="mt-7 flex gap-2" role="tablist" aria-label="Slide hero">
+                {slides.map((sl, i) => (
+                  <button
+                    key={sl.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={i === index % slides.length}
+                    aria-label={`Slide ${i + 1}`}
+                    onClick={() => setIndex(i)}
+                    className="flex h-6 w-7 items-center justify-center p-0"
+                  >
+                    <span
+                      className={`h-2 w-full rounded-full transition-colors ${
+                        i === index % slides.length ? "bg-brand" : "bg-ink/20 hover:bg-ink/40"
+                      }`}
+                    />
+                  </button>
+                ))}
               </div>
-            ) : (
-              <>
-                <span className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-cream">
-                  <ScrollText size={13} /> Kontraktor sejak {years ?? "2006"}
-                </span>
-                <h1 className="mt-5 font-jakarta text-4xl font-extrabold leading-[1.08] text-ink sm:text-5xl lg:text-6xl">
-                  {word.join(" ")}{" "}
-                  <span className="text-brand underline decoration-brand/40 decoration-[6px] underline-offset-8">{lastWord}</span>
-                </h1>
-                {slide?.subtitle && <p className="mt-5 max-w-md leading-relaxed text-ink-soft">{slide.subtitle}</p>}
-
-                {/* Lencana kepercayaan */}
-                <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2" aria-label="Jaminan kami">
-                  {BADGES.map(({ icon: Icon, label }) => (
-                    <li key={label} className="flex items-center gap-1.5 text-sm font-semibold text-ink-soft">
-                      <Icon size={16} className="text-brand" /> {label}
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="mt-8 flex flex-wrap items-center gap-3">
-                  <PillButton variant="primary" to="/kontak">Konsultasi Gratis</PillButton>
-                  <PillButton variant="outline" to="/proyek">Lihat Proyek</PillButton>
-                  {videoId && (
-                    <button
-                      type="button"
-                      onClick={() => setVideoOpen(true)}
-                      className="group inline-flex items-center gap-2.5 rounded-full py-2 pl-2 pr-4 text-sm font-semibold text-ink transition hover:text-brand"
-                    >
-                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand text-white shadow-soft transition group-hover:scale-105">
-                        <Play size={16} className="ml-0.5" />
-                      </span>
-                      Putar profil perusahaan
-                    </button>
-                  )}
-                </div>
-
-                {/* Titik indikator slide */}
-                {slides.length > 1 && (
-                  <div className="mt-7 flex gap-2" role="tablist" aria-label="Slide hero">
-                    {slides.map((sl, i) => (
-                      <button
-                        key={sl.id}
-                        type="button"
-                        role="tab"
-                        aria-selected={i === index % slides.length}
-                        aria-label={`Slide ${i + 1}`}
-                        onClick={() => setIndex(i)}
-                        className={`h-2 rounded-full transition-all ${i === index % slides.length ? "w-7 bg-brand" : "w-2 bg-ink/20 hover:bg-ink/40"}`}
-                      />
-                    ))}
-                  </div>
-                )}
-              </>
             )}
           </div>
 
-          {/* Kolom kolase + kartu melayang */}
-          <div className="relative mx-auto w-full max-w-lg">
-            <div className="grid grid-cols-5 grid-rows-2 gap-3 sm:gap-4">
+          {/* Kolom kolase + kartu melayang: aspect-ratio eksplisit agar tidak melompat */}
+          <div className="relative mx-auto aspect-[4/3] w-full max-w-lg sm:aspect-[4/3]">
+            <div className="grid h-full w-full grid-cols-5 grid-rows-2 gap-3 sm:gap-4">
               <div className="col-span-5 row-span-2 overflow-hidden rounded-3xl shadow-[0_20px_50px_rgba(28,25,23,0.18)] sm:col-span-4">
                 <Photo eager src={img(slide?.image)} alt={slide?.title ?? "Proyek Jaya Abadi"} />
               </div>
@@ -183,19 +191,15 @@ export default function HeroSection() {
               )}
             </div>
 
-            {/* Kartu kecil melayang — animasi float */}
-            {years && (
-              <div className="animate-float absolute -left-3 top-8 rounded-2xl bg-white/95 px-4 py-3 shadow-soft-lg backdrop-blur sm:-left-8">
-                <p className="font-jakarta text-2xl font-extrabold text-brand">{years}+</p>
-                <p className="text-xs font-semibold text-ink-soft">tahun pengalaman</p>
-              </div>
-            )}
-            {projects && (
-              <div className="animate-float [animation-delay:1.6s] absolute -bottom-5 right-2 rounded-2xl bg-white/95 px-4 py-3 shadow-soft-lg backdrop-blur sm:-right-4">
-                <p className="font-jakarta text-2xl font-extrabold text-ink">{projects}+</p>
-                <p className="text-xs font-semibold text-ink-soft">proyek selesai</p>
-              </div>
-            )}
+            {/* Kartu kecil melayang — posisi absolut pada bounding box tetap */}
+            <div className="animate-float absolute -left-3 top-8 rounded-2xl bg-white/95 px-4 py-3 shadow-soft-lg backdrop-blur sm:-left-8">
+              <p className="font-jakarta text-2xl font-extrabold text-brand tabular-nums">{years}+</p>
+              <p className="text-xs font-semibold text-ink-soft">tahun pengalaman</p>
+            </div>
+            <div className="animate-float [animation-delay:1.6s] absolute -bottom-5 right-2 rounded-2xl bg-white/95 px-4 py-3 shadow-soft-lg backdrop-blur sm:-right-4">
+              <p className="font-jakarta text-2xl font-extrabold text-ink tabular-nums">{projects}+</p>
+              <p className="text-xs font-semibold text-ink-soft">proyek selesai</p>
+            </div>
           </div>
         </div>
 

@@ -24,9 +24,8 @@ const STAT_ICONS = [CalendarClock, Building2, Users, Award];
 
 function CountUp({ target, label, icon: Icon }) {
   const ref = useRef(null);
-  const [value, setValue] = useState(0);
-  const [active, setActive] = useState(false); // terlihat / fallback
   const goal = Math.max(0, parseInt(target, 10) || 0);
+  const [value, setValue] = useState(0);
 
   useEffect(() => {
     const el = ref.current;
@@ -56,11 +55,12 @@ function CountUp({ target, label, icon: Icon }) {
   }, [goal]);
 
   return (
-    <div ref={ref} className="flex flex-col items-center gap-2 px-4 text-center">
+    <div ref={ref} className="flex min-h-[8.75rem] flex-col items-center gap-2 px-4 text-center">
       {Icon && <Icon size={26} className="text-brand/80" strokeWidth={1.8} />}
-      <p className="font-jakarta text-4xl font-extrabold text-brand sm:text-5xl">
-        {value}
-        {goal > 10 ? "+" : ""}
+      <p className="relative font-jakarta text-4xl font-extrabold text-brand tabular-nums sm:text-5xl">
+        {/* Reserve final-number width from first paint; animated text never changes layout width. */}
+        <span aria-hidden className="invisible">{goal}{goal > 10 ? "+" : ""}</span>
+        <span className="absolute inset-0 flex items-center justify-center">{value}{goal > 10 ? "+" : ""}</span>
       </p>
       <p className="text-sm text-cream/70">{label}</p>
     </div>
@@ -85,7 +85,7 @@ export function StatsStrip() {
   return (
     <section className="bg-ink">
       <Container className="py-14">
-        <div className="grid grid-cols-2 gap-y-8 lg:grid-cols-4 lg:divide-x lg:divide-white/10">
+        <div className="grid min-h-[14rem] grid-cols-2 gap-y-8 lg:min-h-[9rem] lg:grid-cols-4 lg:divide-x lg:divide-white/10">
           {list.map(([num, label], i) => (
             <CountUp key={label ?? i} target={num} label={label} icon={STAT_ICONS[i % 4]} />
           ))}
@@ -369,8 +369,19 @@ export function TestimonialHighlight() {
                 </button>
                 <div className="ml-2 flex gap-1.5">
                   {rows.map((r, idx) => (
-                    <button key={r.id} type="button" onClick={() => setI(idx)} aria-label={`Ulasan ${idx + 1}`}
-                      className={`h-2 rounded-full transition-all ${idx === i % rows.length ? "w-6 bg-brand" : "w-2 bg-ink/20 hover:bg-ink/40"}`} />
+                    <button
+                      key={r.id}
+                      type="button"
+                      onClick={() => setI(idx)}
+                      aria-label={`Ulasan ${idx + 1}`}
+                      className="flex h-6 w-6 items-center justify-center p-0"
+                    >
+                      <span
+                        className={`h-2 w-full rounded-full transition-colors ${
+                          idx === i % rows.length ? "bg-brand" : "bg-ink/20 hover:bg-ink/40"
+                        }`}
+                      />
+                    </button>
                   ))}
                 </div>
               </div>

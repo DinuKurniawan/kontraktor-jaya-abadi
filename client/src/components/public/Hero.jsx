@@ -162,8 +162,14 @@ export default function Hero() {
                 aria-selected={i === index}
                 aria-label={`Slide ${i + 1}: ${s.title}`}
                 onClick={() => setIndex(i)}
-                className={`h-2 rounded-full transition-all ${i === index ? "w-7 bg-brand" : "w-2 bg-ink/20 hover:bg-ink/40"}`}
-              />
+                className="flex h-6 w-7 items-center justify-center p-0"
+              >
+                <span
+                  className={`h-2 w-full rounded-full transition-colors ${
+                    i === index ? "bg-brand" : "bg-ink/20 hover:bg-ink/40"
+                  }`}
+                />
+              </button>
             ))}
           </div>
         )}
