@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
   try {
     if (rawApi) {
       const u = new URL(rawApi);
-      if (!/localhost|127\.0\.0\.1/.test(u.hostname)) apiOrigin = u.origin;
+      apiOrigin = u.origin;
     }
   } catch {}
 
@@ -22,15 +22,17 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       tailwindcss(),
-      // Preconnect otomatis ke origin API jika disetel ke production
+      // Preconnect otomatis & injeksi CSP dinamis mengikuti VITE_API_URL
       {
-        name: "api-preconnect",
+        name: "api-preconnect-and-csp",
         transformIndexHtml(html) {
-          if (!apiOrigin) return html;
-          return html.replace(
-            "</head>",
-            `    <link rel="preconnect" href="${apiOrigin}" crossorigin />\n  </head>`
-          );
+          const apiSource = apiOrigin ? ` ${apiOrigin}` : "";
+          const preconnect = apiOrigin && !/localhost|127\.0\.0\.1/.test(apiOrigin)
+            ? `    <link rel="preconnect" href="${apiOrigin}" crossorigin />\n`
+            : "";
+          // Catatan: frame-ancestors TIDAK valid di <meta>, hanya valid di header HTTP.
+          const csp = `    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://picsum.photos https://fastly.picsum.photos https://*.picsum.photos https://images.unsplash.com https://*.tile.openstreetmap.org https://i.ytimg.com${apiSource}; font-src 'self' data:; connect-src 'self'${apiSource} https://nominatim.openstreetmap.org; frame-src https://www.google.com https://www.youtube.com https://www.youtube-nocookie.com; base-uri 'self'; form-action 'self'; object-src 'none'" />\n`;
+          return html.replace("</head>", `${preconnect}${csp}  </head>`);
         },
       },
     ],

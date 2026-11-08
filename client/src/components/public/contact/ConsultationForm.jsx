@@ -3,6 +3,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { z } from "zod";
+
+// Disable Zod JIT to avoid eval() under strict CSP.
+// ponytail: eval disabled, acceptable because schemas are static.
+z.config({ jitless: true });
 import { useForm } from "react-hook-form";
 import { AlertCircle, ArrowLeft, ArrowRight, Check, CheckCircle2, FileText, Loader2, MessageCircle, RotateCcw, Send, ShieldCheck, Upload, X } from "lucide-react";
 import api from "../../../lib/axios.js";

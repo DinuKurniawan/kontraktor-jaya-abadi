@@ -1,0 +1,3 @@
+# Placeholder — no AI catalog (ai-catalog.json) or ARD manifest (ard.json) published.
+# Jaya Abadi does not operate an MCP server, A2A agent, or agent skill.
+# These paths intentionally return 404 when requested directly.

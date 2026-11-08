@@ -3,7 +3,12 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HelmetProvider } from "react-helmet-async";
+import { z } from "zod";
 import "./index.css";
+
+// CSP publik tidak mengizinkan eval. Zod 4 default JIT memakai Function().
+// shortcut: jitless global, cukup sampai CSP butuh nonce/script dinamis.
+z.config({ jitless: true });
 import App from "./App.jsx";
 import { ToastHost } from "./components/ui/Toast.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
