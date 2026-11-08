@@ -37,9 +37,9 @@ export default {
         },
       },
       fontFamily: {
-        sans: ["Inter", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["Poppins", "Inter", "sans-serif"],
-        jakarta: ['"Plus Jakarta Sans"', "Inter", "ui-sans-serif", "sans-serif"],
+        sans: ["Inter", '"Inter Fallback"', "ui-sans-serif", "system-ui", "sans-serif"],
+        display: ["Poppins", '"Poppins Fallback"', "Inter", "sans-serif"],
+        jakarta: ['"Plus Jakarta Sans"', '"Plus Jakarta Sans Fallback"', "ui-sans-serif", "system-ui", "sans-serif"],
       },
       boxShadow: {
         soft: "0 8px 24px rgba(67, 97, 216, 0.08)",
