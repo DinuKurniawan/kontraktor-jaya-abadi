@@ -1,0 +1,36 @@
+# Jaya Abadi
+
+> Kontraktor bangunan dan renovasi terpercaya di Jabodetabek — rapi, tepat waktu, RAB transparan, garansi pekerjaan.
+
+## Layanan
+
+- [Konsultasi & Daftar Layanan](https://server-two-zeta-88.vercel.app/layanan) — Solusi konstruksi lengkap: konstruksi bangunan baru, renovasi, desain & RAB, finishing.
+- [Konstruksi Bangunan](https://server-two-zeta-88.vercel.app/layanan/konstruksi-bangunan) — Bangunan baru rumah tinggal, gedung, ruko dari fondasi hingga serah terima.
+- [Renovasi](https://server-two-zeta-88.vercel.app/layanan/renovasi) — Renovasi interior/eksterior, struktur, sistem MEP dengan perencanaan terukur.
+- [Desain & RAB](https://server-two-zeta-88.vercel.app/layanan/desain-rab) — Desain arsitektur, struktur, MEP dan RAB detail transparan tanpa biaya tersembunyi.
+- [Finishing](https://server-two-zeta-88.vercel.app/layanan/finishing) — Pengecatan, lantai, plafon, saniter, listrik, aksesoris akhir bangunan.
+
+## Proyek
+
+- [Portofolio Proyek](https://server-two-zeta-88.vercel.app/proyek) — Kumpulan proyek selesai & berjalan: rumah tinggal, gedung komersial, infrastruktur publik.
+- [Filter: Rumah Tinggal](https://server-two-zeta-88.vercel.app/proyek?kategori=rumah-tinggal) — Proyek tipe rumah tinggal.
+- [Filter: Gedung Komersial](https://server-two-zeta-88.vercel.app/proyek?kategori=gedung-komersial) — Proyek tipe gedung/ruko/perkantoran.
+- [Filter: Renovasi](https://server-two-zeta-88.vercel.app/proyek?kategori=renovasi) — Proyek tipe renovasi.
+- [Filter: Infrastruktur](https://server-two-zeta-88.vercel.app/proyek?kategori=infrastruktur) — Proyek tipe infrastruktur publik.
+
+## Artikel
+
+- [Artikel & Wawasan Konstruksi](https://server-two-zeta-88.vercel.app/artikel) — Tips, panduan, dan kabar terbaru seputar konstruksi, renovasi, desain, RAB, regulasi.
+- [Artikel Populer](https://server-two-zeta-88.vercel.app/artikel?urutan=terpopuler) — Artikel paling dibaca.
+- [Kategori: Tips Konstruksi](https://server-two-zeta-88.vercel.app/artikel?kategori=tips-konstruksi) — Panduan praktis membangun & merenovasi.
+- [Kategori: Panduan RAB](https://server-two-zeta-88.vercel.app/artikel?kategori=panduan-rab) — Cara membaca & memahami RAB kontraktor.
+- [Kategori: Regulasi Bangunan](https://server-two-zeta-88.vercel.app/artikel?kategori=regulasi-bangunan) — Izin, PBG, SLF, SNI, ketentuan teknis.
+
+## Kontak
+
+- [Hubungi Jaya Abadi](https://server-two-zeta-88.vercel.app/kontak) — Form konsultasi 3 langkah, telepon, WhatsApp, email, alamat kantor & peta cabang.
+- [WhatsApp Langsung](https://wa.me/6281234567890) — Chat langsung ke tim konsultasi (jam kerja Senin–Sabtu 08:00–17:00 WIB).
+
+## Estimasi Biaya
+
+- [Kalkulator Estimasi Biaya](https://server-two-zeta-88.vercel.app/#estimasi) — Hitung perkiraan biaya bangunan berdasarkan tipe, luas, dan tingkat finishing (tersedia di beranda).

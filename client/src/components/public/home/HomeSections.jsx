@@ -340,7 +340,7 @@ export function TestimonialHighlight() {
             {/* Kutipan besar + tanda kutip dekoratif */}
             <div key={t.id} className="relative mt-6 animate-fade-in">
               <span aria-hidden className="absolute -left-2 -top-7 font-jakarta text-8xl leading-none text-brand/20 sm:-left-4">“</span>
-              <blockquote className="pl-4 font-jakarta text-2xl font-bold leading-snug text-ink sm:text-3xl sm:pl-6">
+              <blockquote className="pl-4 font-jakarta text-2xl font-bold leading-snug text-ink/95 sm:text-3xl sm:pl-6">
                 {t.content}
               </blockquote>
             </div>

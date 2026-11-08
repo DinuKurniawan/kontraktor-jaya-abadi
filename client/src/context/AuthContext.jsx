@@ -1,17 +1,22 @@
 import { createContext, useContext } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "react-router-dom";
 import api from "../lib/axios.js";
 
 const AuthContext = createContext(null);
 
 // Sumber kebenaran sesi: query /auth/me via TanStack Query (dipakai ProtectedRoute)
+// Hanya fetch pada rute /admin (kecuali /admin/login) untuk menghindari noise 401 di console halaman publik
 export function AuthProvider({ children }) {
   const queryClient = useQueryClient();
+  const pathname = useLocation().pathname;
+  const isAdminRoute = pathname.startsWith("/admin") && !pathname.startsWith("/admin/login");
 
   const { data, isLoading } = useQuery({
     queryKey: ["me"],
     queryFn: async () => (await api.get("/auth/me")).data.data,
-    retry: false, // 401 = belum login, bukan error jaringan
+    retry: false,
+    enabled: isAdminRoute,
     staleTime: 5 * 60 * 1000,
   });
 
