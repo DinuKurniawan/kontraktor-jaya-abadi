@@ -75,7 +75,7 @@ export default function ServiceCta({ services, activeSlug }) {
             <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white text-brand shadow-soft-lg"><Phone size={20} /></span>
             <span className="font-jakarta text-2xl font-extrabold tracking-tight sm:text-3xl">{phone}</span>
           </a>
-          <p className="mt-2 text-xs text-white/70">Senin–Sabtu, 08.00–17.00 WIB</p>
+          <p className="mt-2 text-xs text-white/90">Senin–Sabtu, 08.00–17.00 WIB</p>
         </div>
 
         {/* Kanan: form singkat */}

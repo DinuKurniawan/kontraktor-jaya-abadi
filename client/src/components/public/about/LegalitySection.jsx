@@ -50,14 +50,14 @@ export default function LegalitySection() {
     <section id="legalitas" className="scroll-mt-32 bg-ink py-16 sm:py-20">
       <Container>
         <div className="mx-auto max-w-3xl text-center">
-          <p className="text-xs font-bold uppercase tracking-widest text-brand">Legalitas</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-brand-light">Legalitas</p>
           <h2 className="mt-2 font-jakarta text-3xl font-extrabold text-cream">Resmi, berizin, <span className="text-brand">terdaftar</span></h2>
         </div>
 
         <div className="mt-10 grid items-start gap-8 lg:grid-cols-5">
           {/* Kiri: kartu legalitas */}
           <div className="lg:col-span-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-brand/15 px-3 py-1 text-xs font-bold text-brand">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-brand/20 px-3 py-1 text-xs font-bold text-brand-light">
               <BadgeCheck size={14} /> Terverifikasi
             </span>
             <div className="mt-4 space-y-3">

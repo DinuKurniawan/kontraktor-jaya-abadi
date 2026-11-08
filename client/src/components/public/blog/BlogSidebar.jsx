@@ -51,7 +51,7 @@ export default function BlogSidebar({ categories = [], tags = [], activeTag = ""
           <div className="mt-4 divide-y divide-ink/10">
             {popular.map((post, index) => (
               <Link key={post.id} to={`/artikel/${post.slug}`} className="flex gap-3 py-3 first:pt-0 last:pb-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand">
-                <span className="pt-1 font-jakarta text-lg font-extrabold text-brand/60">{String(index + 1).padStart(2, "0")}</span>
+                <span className="pt-1 font-jakarta text-lg font-extrabold text-brand">{String(index + 1).padStart(2, "0")}</span>
                 <div className="min-w-0 flex-1">
                   <p className="line-clamp-2 text-sm font-bold leading-snug text-ink transition-colors hover:text-brand">{post.title}</p>
                   <p className="mt-1 inline-flex items-center gap-1 text-[11px] text-ink-light"><CalendarDays size={12} /> {formatDate(post.publishedAt)}</p>
@@ -83,7 +83,7 @@ export default function BlogSidebar({ categories = [], tags = [], activeTag = ""
             <TagIcon size={17} className="text-brand" />
             <h2 className="font-jakarta text-lg font-extrabold text-ink">Tag populer</h2>
           </div>
-          <div className="mt-4 flex flex-wrap items-center gap-2" aria-label="Filter tag artikel">
+          <div role="group" className="mt-4 flex flex-wrap items-center gap-2" aria-label="Filter tag artikel">
             {sortedTags.map((item, index) => (
               <button
                 key={item.id ?? item.slug}
@@ -119,7 +119,7 @@ export default function BlogSidebar({ categories = [], tags = [], activeTag = ""
       <section className="rounded-2xl bg-brand p-5 text-white shadow-soft-lg">
         <MessageCircle size={22} className="text-white/80" />
         <h2 className="mt-3 font-jakarta text-lg font-extrabold">Punya rencana proyek?</h2>
-        <p className="mt-2 text-sm leading-relaxed text-white/80">Ceritakan kebutuhan Anda. Tim Jaya Abadi siap membantu memberi arahan.</p>
+        <p className="mt-2 text-sm leading-relaxed text-white/90">Ceritakan kebutuhan Anda. Tim Jaya Abadi siap membantu memberi arahan.</p>
         <a href={waUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-brand transition hover:bg-cream">Konsultasi via WhatsApp <ArrowRight size={15} /></a>
       </section>
     </aside>

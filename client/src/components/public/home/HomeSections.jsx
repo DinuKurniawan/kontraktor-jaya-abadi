@@ -328,9 +328,9 @@ export function TestimonialHighlight() {
             <div className="flex items-center gap-4">
               <p className="font-jakarta text-5xl font-extrabold text-ink sm:text-6xl">{avg.replace(".", ",")}</p>
               <div>
-                <div className="flex gap-0.5" aria-label={`Rata-rata ${avg} dari 5`}>
+                <div role="img" className="flex gap-0.5" aria-label={`Rata-rata ${avg} dari 5`}>
                   {[1, 2, 3, 4, 5].map((n) => (
-                    <Star key={n} size={16} className={n <= Math.round(avg) ? "fill-brand text-brand" : "fill-cream-deep text-cream-deep"} />
+                    <Star key={n} size={16} aria-hidden="true" className={n <= Math.round(avg) ? "fill-brand text-brand" : "fill-cream-deep text-cream-deep"} />
                   ))}
                 </div>
                 <p className="mt-1 text-sm text-ink-light">{rows.length} ulasan klien</p>
@@ -454,7 +454,7 @@ export function LatestArticles() {
           <div className="grid gap-8 lg:grid-cols-2">
             {first && (
               <Link to={`/artikel/${first.slug}`} className="group block rounded-2xl bg-white p-3 shadow-soft">
-                <ArticleCard title={first.title} category={first.category?.name} date={fmt(first.publishedAt)} readTime={first.readTime} image={img(first.coverImage)} />
+                <ArticleCard as="div" title={first.title} category={first.category?.name} date={fmt(first.publishedAt)} readTime={first.readTime} image={img(first.coverImage)} />
               </Link>
             )}
             <div className="flex flex-col gap-4">
@@ -537,7 +537,7 @@ export function CtaBanner() {
   };
   const field = "w-full rounded-full bg-white px-5 py-3 text-sm text-ink outline-none placeholder:text-ink-light";
   const choice = (active) =>
-    `rounded-full px-4 py-2 text-sm font-semibold transition ${active ? "bg-brand text-white" : "bg-white/15 text-cream hover:bg-white/25"}`;
+    `rounded-full px-4 py-2 text-sm font-semibold transition ${active ? "bg-brand text-white" : "bg-ink/5 text-ink hover:bg-ink/10"}`;
   const phone = s?.company_phone ?? "(021) 555-0123";
 
   return (
@@ -567,7 +567,7 @@ export function CtaBanner() {
         {/* Kanan: wizard 3 langkah */}
         <div className="rounded-3xl bg-white p-6 shadow-soft-lg sm:p-8">
           {/* Progress */}
-          <div className="mb-6 flex items-center gap-2" aria-label={`Langkah ${step} dari 3`}>
+          <div role="group" className="mb-6 flex items-center gap-2" aria-label={`Langkah ${step} dari 3`}>
             {[1, 2, 3].map((n) => (
               <div key={n} className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${n <= step ? "bg-brand" : "bg-cream-deep"}`} />
             ))}

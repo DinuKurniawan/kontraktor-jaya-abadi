@@ -34,7 +34,7 @@ export default function WhyUsSection() {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/45 to-ink/10" />
           <div className="relative">
-            <p className="text-xs font-bold uppercase tracking-widest text-brand">Kenapa Kami</p>
+            <p className="text-xs font-bold uppercase tracking-widest text-brand-light">Kenapa Kami</p>
             <h2 className="mt-2 max-w-md font-jakarta text-3xl font-extrabold leading-tight text-white sm:text-4xl">
               Kualitas yang bisa diandalkan, dari fondasi hingga serah terima
             </h2>

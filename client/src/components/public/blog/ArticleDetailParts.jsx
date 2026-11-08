@@ -18,7 +18,7 @@ export function ReadingProgress() {
     return () => { window.removeEventListener("scroll", update); window.removeEventListener("resize", update); };
   }, []);
 
-  return <div className="fixed inset-x-0 top-0 z-[60] h-1 bg-brand/15" aria-label={`Progres membaca ${Math.round(progress)} persen`}><div className="h-full bg-brand transition-[width] duration-150" style={{ width: `${progress}%` }} /></div>;
+  return <div role="progressbar" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100} className="fixed inset-x-0 top-0 z-[60] h-1 bg-brand/15" aria-label={`Progres membaca ${Math.round(progress)} persen`}><div className="h-full bg-brand transition-[width] duration-150" style={{ width: `${progress}%` }} /></div>;
 }
 
 export function prepareArticleContent(content) {
@@ -69,7 +69,7 @@ export function ShareButtons({ url, title, copied, onCopy }) {
   const encodedUrl = encodeURIComponent(url);
   const encodedTitle = encodeURIComponent(title);
   return (
-    <div className="flex flex-wrap items-center gap-2" aria-label="Bagikan artikel">
+    <div role="group" className="flex flex-wrap items-center gap-2" aria-label="Bagikan artikel">
       <span className="mr-1 text-xs font-bold text-ink-light">Bagikan:</span>
       <a href={`https://wa.me/?text=${encodedTitle}%20${encodedUrl}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-full bg-[#25D366]/12 px-3.5 py-2 text-xs font-bold text-[#128C4A] transition hover:bg-[#25D366]/25"><MessageCircle size={14} /> WhatsApp</a>
       <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`} target="_blank" rel="noreferrer" className="rounded-full bg-[#1877F2]/12 px-3.5 py-2 text-xs font-bold text-[#1877F2] transition hover:bg-[#1877F2]/25">Facebook</a>

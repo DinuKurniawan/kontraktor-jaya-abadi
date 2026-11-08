@@ -84,7 +84,7 @@ export default function BlogFilterBar({
       </div>
 
       {hasFilters && (
-        <div className="mt-4 flex flex-wrap items-center gap-2" aria-label="Filter aktif">
+        <div role="group" className="mt-4 flex flex-wrap items-center gap-2" aria-label="Filter aktif">
           <span className="mr-1 text-xs font-bold text-ink-light">Filter aktif:</span>
           {activeCategory && <button type="button" onClick={() => onCategoryChange?.("")} className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1.5 text-xs font-semibold text-brand">{activeCategory.name} <X size={13} /></button>}
           {activeTag && <button type="button" onClick={() => onTagChange?.("")} className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1.5 text-xs font-semibold text-brand">#{activeTag.name} <X size={13} /></button>}

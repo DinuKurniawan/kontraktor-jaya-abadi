@@ -66,7 +66,7 @@ export default function FeaturedPostsHero() {
                 <span className="inline-flex items-center gap-1.5"><CalendarDays size={14} /> {fmt(post.publishedAt)}</span>
                 {post.readTime && <span className="inline-flex items-center gap-1.5"><Clock3 size={14} /> {post.readTime} mnt baca</span>}
               </div>
-              <Link to={`/artikel/${post.slug}`} className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-ink transition hover:bg-brand hover:text-white">
+              <Link to={`/artikel/${post.slug}`} aria-label={`Baca selengkapnya tentang ${post.title}`} className="mt-5 inline-flex items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-ink transition hover:bg-brand hover:text-white">
                 Baca selengkapnya <ArrowRight size={16} />
               </Link>
             </div>
@@ -74,9 +74,9 @@ export default function FeaturedPostsHero() {
         </article>
 
         {posts.length > 1 && (
-          <div className="mt-4 flex items-center justify-center gap-2" aria-label="Indikator artikel unggulan">
+          <div role="group" className="mt-4 flex items-center justify-center gap-2" aria-label="Indikator artikel unggulan">
             {posts.map((item, index) => (
-              <button key={item.id} type="button" onClick={() => setActive(index)} aria-label={`Tampilkan artikel unggulan ${index + 1}`} aria-current={index === active ? "true" : undefined} className={`h-2 rounded-full transition-all ${index === active ? "w-8 bg-brand" : "w-2 bg-ink/20 hover:bg-brand/60"}`} />
+              <button key={item.id} type="button" onClick={() => setActive(index)} aria-label={`Tampilkan artikel unggulan ${index + 1}`} aria-current={index === active ? "true" : undefined} className="flex h-2 w-8 items-center"><span className={`h-2 w-8 origin-left rounded-full transition-transform duration-300 ${index === active ? "scale-x-100 bg-brand" : "scale-x-[0.25] bg-ink/20 hover:bg-brand/60"}`} /></button>
             ))}
           </div>
         )}

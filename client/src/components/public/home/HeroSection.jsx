@@ -63,10 +63,11 @@ function Photo({ src, alt, className = "", eager = false }) {
 
 const DEFAULT_SLIDE = {
   id: "default-slide",
-  title: "Membangun Impian Bersama Anda",
-  subtitle: "Jasa konstruksi, renovasi, dan desain untuk rumah & bangunan komersial — rapi, tepat waktu, RAB transparan.",
-  ctaUrl: "/kontak",
-  ctaLabel: "Konsultasi Gratis",
+  title: "Membangun Hunian & Bisnis Anda dengan Standar Tertinggi",
+  subtitle: "Lebih dari 200 proyek konstruksi, renovasi, dan interior selesai tepat jadwal.",
+  image: "https://picsum.photos/seed/ja-hero-1/1200/800",
+  ctaUrl: "/proyek",
+  ctaLabel: "Lihat Karya Kami",
 };
 
 export default function HeroSection() {
@@ -79,9 +80,10 @@ export default function HeroSection() {
   const [videoOpen, setVideoOpen] = useState(false);
 
   useEffect(() => setIndex(0), [slides.length]);
-  // Rotasi hanya bila ada >1 slide
+  // Rotasi hanya bila ada >1 slide dan pengguna tidak minta kurangi gerak
   useEffect(() => {
     if (slides.length <= 1) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const t = setInterval(() => setIndex((i) => (i + 1) % slides.length), AUTOPLAY_MS);
     return () => clearInterval(t);
   }, [slides.length]);
@@ -150,13 +152,12 @@ export default function HeroSection() {
 
             {/* Titik indikator slide: ukuran tombol tetap 28x24px, tidak mengubah lebar saat aktif */}
             {slides.length > 1 && (
-              <div className="mt-7 flex gap-2" role="tablist" aria-label="Slide hero">
+              <div className="mt-7 flex gap-2" role="group" aria-label="Slide hero">
                 {slides.map((sl, i) => (
                   <button
                     key={sl.id}
                     type="button"
-                    role="tab"
-                    aria-selected={i === index % slides.length}
+                    aria-current={i === index % slides.length ? "true" : undefined}
                     aria-label={`Slide ${i + 1}`}
                     onClick={() => setIndex(i)}
                     className="flex h-6 w-7 items-center justify-center p-0"

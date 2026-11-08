@@ -24,7 +24,6 @@ export default function ProjectListItem({ project }) {
     <Link
       to={`/proyek/${slug}`}
       className="group flex gap-3 rounded-2xl border border-ink/10 bg-white p-3 transition hover:border-brand/40 hover:shadow-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand sm:gap-5 sm:p-4"
-      aria-label={`Lihat detail ${title}`}
     >
       {/* Foto kecil di kiri */}
       <div className="relative w-28 shrink-0 self-start overflow-hidden rounded-xl bg-cream-deep sm:w-44 lg:w-56">

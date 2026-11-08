@@ -29,6 +29,11 @@ function AnimatedRupiah({ value }) {
   const [v, setV] = useState(value);
   const from = useRef(value);
   useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setV(value);
+      from.current = value;
+      return;
+    }
     const start = performance.now();
     const a = from.current;
     let raf;
@@ -92,7 +97,7 @@ export default function CostEstimator({ modal = false, onClose }) {
     <div className={`grid gap-10 lg:grid-cols-2 ${modal ? "rounded-2xl bg-ink p-5 sm:p-6" : ""}`}>
         {/* Kiri: kontrol */}
         <div>
-          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand"><Calculator size={14} /> Kalkulator Estimasi</p>
+          <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-brand-light"><Calculator size={14} /> Kalkulator Estimasi</p>
           <h2 className="mt-2 font-jakarta text-3xl font-extrabold text-cream sm:text-4xl">Hitung perkiraan biaya bangunan Anda</h2>
 
           <fieldset className="mt-7">
@@ -110,7 +115,7 @@ export default function CostEstimator({ modal = false, onClose }) {
 
           <div className="mt-6">
             <label htmlFor="est-area" className="text-sm font-semibold text-cream/80">
-              Luas bangunan: <span className="font-jakarta font-bold text-brand">{area} m²</span>
+              Luas bangunan: <span className="font-jakarta font-bold text-brand-light">{area} m²</span>
             </label>
             <input id="est-area" type="range" min={20} max={1000} step={10} value={area}
               onChange={(e) => setArea(+e.target.value)}

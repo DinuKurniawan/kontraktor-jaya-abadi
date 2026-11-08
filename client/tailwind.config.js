@@ -22,9 +22,11 @@ export default {
 
         // ===== Design token website publik (krem hangat + oranye konstruksi) =====
         brand: {
-          DEFAULT: "#F26B3A", // oranye aksen: kata sorotan, tombol utama
-          dark: "#D9501F",
+          DEFAULT: "#B4400F", // oranye aksen WCAG AA (>= 4.5:1 di atas krem/putih dan di bawah teks putih)
+          dark: "#9A3412",
           soft: "#FDE8DE", // oranye pucat untuk chip/latar
+          strong: "#9A3412", // oranye pekat untuk teks kecil di atas krem
+          light: "#FF8A5B", // oranye terang untuk teks di atas latar gelap (bg-ink) — 7.53:1
         },
         cream: {
           DEFAULT: "#FBF5F0", // latar hangat halaman publik
@@ -32,8 +34,8 @@ export default {
         },
         ink: {
           DEFAULT: "#1C1917", // hitam hangat: judul & tombol pill
-          soft: "#57534E", // body text
-          light: "#A8A29E", // caption/meta
+          soft: "#57534E", // body text (>= 4.5:1)
+          light: "#6F6862", // caption/meta WCAG AA (>= 4.58:1 di atas cream-deep, >= 5.07:1 di atas cream)
         },
       },
       fontFamily: {

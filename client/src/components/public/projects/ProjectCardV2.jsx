@@ -27,7 +27,6 @@ export default function ProjectCardV2({ project }) {
     <Link
       to={`/proyek/${slug}`}
       className="group flex h-full flex-col rounded-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
-      aria-label={`Lihat detail ${title}`}
     >
       <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-cream-deep">
         {coverImage ? (

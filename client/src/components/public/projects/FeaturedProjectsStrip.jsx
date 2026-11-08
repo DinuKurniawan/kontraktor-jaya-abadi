@@ -176,7 +176,7 @@ export default function FeaturedProjectsStrip() {
                 onClick={() => goTo(i)}
                 className="flex h-6 w-6 items-center justify-center"
               >
-                <span className={`rounded-full transition-all ${index === i ? "h-2 w-6 bg-brand" : "h-2 w-2 bg-ink/20 hover:bg-ink/40"}`} />
+                <span className={`h-2 w-6 origin-left rounded-full transition-transform duration-300 ${index === i ? "scale-x-100 bg-brand" : "scale-x-[0.3333] bg-ink/20 hover:bg-ink/40"}`} />
               </button>
             ))}
           </div>

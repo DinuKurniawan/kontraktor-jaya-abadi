@@ -275,7 +275,7 @@ export function ArticleDetailPage() {
         <div className="mt-10 grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_16rem]">
           <main className="min-w-0">
             <article className="prose-jaya text-[1rem] sm:text-[1.05rem]" dangerouslySetInnerHTML={{ __html: preparedContent.html }} />
-            {(post.tags ?? []).length > 0 && <div className="mt-8 flex flex-wrap items-center gap-2 border-t border-ink/10 pt-5" aria-label="Tag artikel"><span className="mr-1 text-xs font-bold text-ink-light">Tag:</span>{post.tags.map((tag) => <Link key={tag.id ?? tag.slug} to={`/artikel?tag=${tag.slug}`} className="rounded-full bg-cream-deep px-3 py-1.5 text-xs font-semibold text-ink-soft transition hover:bg-brand-soft hover:text-brand">#{tag.name}</Link>)}</div>}
+            {(post.tags ?? []).length > 0 && <div role="group" className="mt-8 flex flex-wrap items-center gap-2 border-t border-ink/10 pt-5" aria-label="Tag artikel"><span className="mr-1 text-xs font-bold text-ink-light">Tag:</span>{post.tags.map((tag) => <Link key={tag.id ?? tag.slug} to={`/artikel?tag=${tag.slug}`} className="rounded-full bg-cream-deep px-3 py-1.5 text-xs font-semibold text-ink-soft transition hover:bg-brand-soft hover:text-brand">#{tag.name}</Link>)}</div>}
             <AuthorBox author={post.author} />
             <ArticleNavigation previous={post.previous} next={post.next} />
             <ArticleNewsletter />

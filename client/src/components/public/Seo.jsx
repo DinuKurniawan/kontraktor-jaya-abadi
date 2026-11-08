@@ -14,6 +14,7 @@ export default function Seo({ title, description, path = "/", image, type = "web
 
   return (
     <Helmet>
+      <html lang="id" />
       <title>{fullTitle}</title>
       <meta name="description" content={desc} />
       <link rel="canonical" href={canonical} />

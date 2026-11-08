@@ -309,7 +309,7 @@ export function ServiceDetailPage() {
                 <div className="mt-6 grid gap-4 sm:grid-cols-2">
                   {service.testimonials.slice(0, 4).map((t) => (
                     <figure key={t.id} className="rounded-2xl bg-white p-5 shadow-soft">
-                      <div className="flex gap-0.5" aria-label={`${t.rating ?? 5} dari 5 bintang`}>
+                      <div role="img" className="flex gap-0.5" aria-label={`${t.rating ?? 5} dari 5 bintang`}>
                         {[1, 2, 3, 4, 5].map((i) => <Star key={i} size={13} className={i <= (t.rating ?? 5) ? "fill-brand text-brand" : "text-ink/15"} />)}
                       </div>
                       <blockquote className="mt-2 text-sm leading-relaxed text-ink-soft">“{t.content}”</blockquote>

@@ -55,7 +55,6 @@ export default function BlogBanner({ total, value = "", onChange, suggestions = 
               onKeyDown={(event) => event.key === "Escape" && setOpen(false)}
               placeholder="Cari topik konstruksi, renovasi, atau interior…"
               aria-label="Cari artikel dan wawasan"
-              aria-expanded={open && visibleSuggestions.length > 0}
               className="w-full rounded-2xl border border-ink/10 bg-white py-4 pl-14 pr-5 text-base text-ink shadow-soft-lg outline-none transition placeholder:text-ink-light focus:border-brand focus:ring-2 focus:ring-brand/20"
             />
           </div>

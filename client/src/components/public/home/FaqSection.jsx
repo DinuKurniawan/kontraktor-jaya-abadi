@@ -71,7 +71,7 @@ export default function FaqSection() {
             Belum menemukan jawaban? Tim kami siap membantu via WhatsApp — balasan cepat di jam kerja.
           </p>
           <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer"
-            className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#25D366] px-6 py-3 font-jakarta font-bold text-white shadow-soft transition hover:brightness-105">
+            className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#0E7A3F] px-6 py-3 font-jakarta font-bold text-white shadow-soft transition hover:bg-[#0B6B36]">
             <MessageCircle size={16} /> Tanya via WhatsApp
           </a>
         </div>

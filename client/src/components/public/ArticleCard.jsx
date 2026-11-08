@@ -10,10 +10,10 @@ function HighlightedTitle({ title, query }) {
     : part);
 }
 
-export default function ArticleCard({ title, category, date, readTime, image, onClick, highlightQuery = "" }) {
+export default function ArticleCard({ title, category, date, readTime, image, onClick, highlightQuery = "", as: Component = "button" }) {
   return (
-    <button
-      type="button"
+    <Component
+      type={Component === "button" ? "button" : undefined}
       onClick={onClick}
       className="group flex h-auto w-full flex-col items-start text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
     >
@@ -31,6 +31,6 @@ export default function ArticleCard({ title, category, date, readTime, image, on
           {[date, readTime ? `${readTime} mnt baca` : null].filter(Boolean).join("  ·  ")}
         </p>
       </div>
-    </button>
+    </Component>
   );
 }

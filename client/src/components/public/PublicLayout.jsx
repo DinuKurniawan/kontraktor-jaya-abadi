@@ -32,15 +32,34 @@ const MENU = [
   { to: "/kontak", label: "Kontak" },
 ];
 
+// Satu listener scroll untuk seluruh layout: dibatasi requestAnimationFrame supaya
+// setState tidak memicu render (dan pembacaan layout) di tiap event scroll.
+const scrollListeners = new Set();
+let scrollTicking = false;
+function onScrollFrame() {
+  scrollTicking = false;
+  const y = window.scrollY;
+  scrollListeners.forEach((fn) => fn(y));
+}
+function subscribeScroll(fn) {
+  scrollListeners.add(fn);
+  if (scrollListeners.size === 1) window.addEventListener("scroll", onScrollTick, { passive: true });
+  fn(window.scrollY); // sinkronkan kondisi awal (mis. kembali ke halaman yang sudah di-scroll)
+  return () => {
+    scrollListeners.delete(fn);
+    if (scrollListeners.size === 0) window.removeEventListener("scroll", onScrollTick);
+  };
+}
+function onScrollTick() {
+  if (scrollTicking) return;
+  scrollTicking = true;
+  requestAnimationFrame(onScrollFrame);
+}
+
 // Tombol kembali ke atas — muncul setelah scroll 600px, hormati reduced-motion
 function BackToTop() {
   const [show, setShow] = useState(false);
-  useEffect(() => {
-    const onScroll = () => setShow(window.scrollY > 600);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  useEffect(() => subscribeScroll((y) => setShow(y > 600)), []);
   if (!show) return null;
   return (
     <button
@@ -71,7 +90,7 @@ function Logo({ light = false }) {
         J
       </span>
       <span className={`font-jakarta text-lg font-extrabold tracking-tight ${light ? "text-cream" : "text-ink"}`}>
-        Jaya <span className="text-brand">Abadi</span>
+        Jaya <span className={light ? "text-brand-light" : "text-brand"}>Abadi</span>
       </span>
     </Link>
   );
@@ -83,12 +102,7 @@ function Navbar() {
   const location = useLocation();
 
   // Transparan di atas, putih shadow setelah scroll
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 24);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  useEffect(() => subscribeScroll((y) => setScrolled(y > 24)), []);
 
   // Tutup drawer mobile saat pindah halaman
   useEffect(() => setOpen(false), [location.pathname]);
@@ -100,7 +114,7 @@ function Navbar() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${
+      className={`fixed inset-x-0 top-0 z-40 transition-colors duration-300 ${
         scrolled || open ? "bg-cream/90 shadow-[0_6px_24px_rgba(28,25,23,0.06)] backdrop-blur-md" : "bg-transparent"
       }`}
     >
@@ -292,10 +306,16 @@ function ScrollToTop() {
 export default function PublicLayout() {
   return (
     <div className="min-h-screen bg-cream font-jakarta text-ink">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-xl focus:bg-brand focus:px-4 focus:py-2.5 focus:font-bold focus:text-white focus:shadow-soft-lg"
+      >
+        Lewati ke konten utama
+      </a>
       <ScrollToTop />
       <Navbar />
       {/* padding atas untuk navbar fixed */}
-      <main className="pt-16 sm:pt-20">
+      <main id="main-content" tabIndex={-1} className="pt-16 outline-none sm:pt-20">
         <Outlet />
       </main>
       <Footer />

@@ -92,7 +92,7 @@ export default function ProjectsBanner() {
         </p>
 
         {/* Baris statistik */}
-        <dl className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <div className="mt-10 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {STATS.map(([key, label, Icon]) => (
             <div
               key={key}
@@ -106,15 +106,15 @@ export default function ProjectsBanner() {
                 </>
               ) : (
                 <div className="flex flex-col-reverse">
-                  <dt className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-ink-light">{label}</dt>
-                  <dd className="font-jakarta text-3xl font-extrabold leading-none text-brand sm:text-4xl">
+                  <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-ink-light">{label}</p>
+                  <p className="font-jakarta text-3xl font-extrabold leading-none text-brand sm:text-4xl">
                     {isError ? "—" : <CountUp target={stats?.[key] ?? 0} />}
-                  </dd>
+                  </p>
                 </div>
               )}
             </div>
           ))}
-        </dl>
+        </div>
       </Container>
     </header>
   );
