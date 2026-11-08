@@ -164,9 +164,9 @@ const FEATURED_TABS = [
 ];
 
 const STATUS_BADGE = {
-  COMPLETED: "bg-emerald-100 text-emerald-800",
-  ONGOING: "bg-amber-100 text-amber-800",
-  PLANNING: "bg-sky-100 text-sky-800",
+  COMPLETED: "bg-emerald-700 text-white",
+  ONGOING: "bg-amber-700 text-white",
+  PLANNING: "bg-sky-700 text-white",
 };
 const STATUS_LABEL = { COMPLETED: "Selesai", ONGOING: "Berjalan", PLANNING: "Perencanaan" };
 

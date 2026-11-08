@@ -49,9 +49,9 @@ const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
 
 const LIMIT = 12;
 const STATUS_BADGE = {
-  COMPLETED: "border-emerald-300/40 bg-emerald-500/90 text-white",
-  ONGOING: "border-orange-300/40 bg-brand text-white",
-  PLANNING: "border-white/30 bg-white/20 text-white",
+  COMPLETED: "border-emerald-700/20 bg-emerald-700 text-white",
+  ONGOING: "border-amber-700/20 bg-amber-700 text-white",
+  PLANNING: "border-gray-400/20 bg-gray-200 text-gray-800",
 };
 
 const num = (value) => Number(value).toLocaleString("id-ID");

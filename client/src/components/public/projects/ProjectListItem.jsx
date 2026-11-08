@@ -12,9 +12,9 @@ const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
 const num = (v) => Number(v).toLocaleString("id-ID");
 
 const STATUS_BADGE = {
-  COMPLETED: "border-emerald-600/20 bg-emerald-50 text-emerald-700",
-  ONGOING: "border-brand/25 bg-orange-50 text-brand",
-  PLANNING: "border-ink/15 bg-ink/[0.06] text-ink-soft",
+  COMPLETED: "border-emerald-700/20 bg-emerald-700 text-white",
+  ONGOING: "border-amber-700/20 bg-amber-700 text-white",
+  PLANNING: "border-gray-400/20 bg-gray-200 text-gray-800",
 };
 
 export default function ProjectListItem({ project }) {

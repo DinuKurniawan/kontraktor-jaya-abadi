@@ -13,9 +13,16 @@
       ]
     },
     {
-      "source": "/.well-known/*.txt",
+      "source": "/.well-known/ai-catalog.json",
       "headers": [
-        { "key": "Content-Type", "value": "text/plain; charset=utf-8" },
+        { "key": "Content-Type", "value": "application/json" },
+        { "key": "Cache-Control", "value": "public, max-age=86400, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/.well-known/ard.json",
+      "headers": [
+        { "key": "Content-Type", "value": "application/json" },
         { "key": "Cache-Control", "value": "public, max-age=86400, must-revalidate" }
       ]
     },
@@ -38,7 +45,6 @@
   ],
   "rewrites": [
     { "source": "/llms.txt", "destination": "/llms.txt" },
-    { "source": "/.well-known/*", "destination": "/.well-known/placeholder.txt" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
