@@ -1,6 +1,7 @@
 import { chromium } from "playwright";
 import lighthouse from "lighthouse";
-import { launch } from "chrome-launcher";
+import { Launcher } from "chrome-launcher";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -19,6 +20,13 @@ async function launchBrowser() {
   } catch {
     return await chromium.launch({ channel: "chrome", headless: true });
   }
+}
+
+// ponytail: pakai binary Chromium Playwright bila ada agar CI deterministik;
+// fallback sistem Chrome bila binary Playwright belum terunduh (dev lokal).
+function chromiumPath() {
+  const p = chromium.executablePath();
+  return existsSync(p) ? p : undefined;
 }
 
 let chrome;
@@ -48,7 +56,7 @@ try {
   }
   await browser.close();
 
-  chrome = await launch({ chromeFlags: ["--headless", "--no-sandbox"] });
+  chrome = await new Launcher({ chromePath: chromiumPath(), chromeFlags: ["--headless", "--no-sandbox", "--disable-dev-shm-usage"] }).launch();
   const lighthouseResults = {};
   for (const route of routes) {
     const result = await lighthouse(`${base}${route}`, {

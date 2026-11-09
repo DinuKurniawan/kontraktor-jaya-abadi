@@ -19,14 +19,20 @@ async function launchBrowser() {
 }
 
 try {
-  browser = await launchBrowser();
-  const page = await browser.newPage();
-  for (const route of routes) {
-    await page.goto(`http://127.0.0.1:4174${route}`, { waitUntil: "networkidle" });
-    const html = await page.content();
-    const target = route === "/" ? resolve(root, "dist/index.html") : resolve(root, `dist${route}/index.html`);
-    await mkdir(dirname(target), { recursive: true });
-    await writeFile(target, `<!doctype html>\n${html.slice(html.indexOf("<html"))}`, "utf8");
+  try {
+    browser = await launchBrowser();
+    const page = await browser.newPage();
+    for (const route of routes) {
+      await page.goto(`http://127.0.0.1:4174${route}`, { waitUntil: "networkidle" });
+      const html = await page.content();
+      const target = route === "/" ? resolve(root, "dist/index.html") : resolve(root, `dist${route}/index.html`);
+      await mkdir(dirname(target), { recursive: true });
+      await writeFile(target, `<!doctype html>\n${html.slice(html.indexOf("<html"))}`, "utf8");
+    }
+  } catch (err) {
+    // ponytail: environment tanpa browser (contoh Vercel SPA build) — skip prerender,
+    // tetap keluar kode 0 agar build Vite tidak gagal.
+    console.warn("prerender skipped: browser unavailable —", err.message);
   }
 } finally {
   await browser?.close();
