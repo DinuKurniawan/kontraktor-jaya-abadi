@@ -144,11 +144,10 @@ export function ProjectsPage() {
     <div className="overflow-x-clip">
       <Seo path="/proyek" title="Proyek" description="Portofolio bangunan yang kami selesaikan dan yang sedang berjalan." />
       <ProjectsBanner />
-      {/* Proyek unggulan hanya di halaman 1 tanpa filter aktif */}
+      {/* Proyek unggulan hanya di halaman 1 tanpa filter aktif.
+          Tanpa Reveal: elemen LCP di atas lipatan tidak boleh menunggu animasi opacity. */}
       {page === 1 && !q && !kategori && !status && !layanan && !tahun && (
-        <Reveal as="section" delay={80}>
-          <FeaturedProjectsStrip />
-        </Reveal>
+        <FeaturedProjectsStrip />
       )}
       <Container className="py-14">
         <Reveal as="section" aria-label="Filter proyek" delay={120}>
