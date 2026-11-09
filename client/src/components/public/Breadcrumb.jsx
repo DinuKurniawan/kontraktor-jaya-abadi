@@ -5,7 +5,7 @@ import { ChevronRight } from "lucide-react";
 export default function Breadcrumb({ items }) {
   return (
     <nav aria-label="Breadcrumb" className="font-jakarta text-xs">
-      <ol className="flex flex-wrap items-center gap-1 text-ink-light">
+      <ol className="flex flex-wrap items-center gap-1 text-ink-soft">
         <li>
           <Link to="/" className="transition hover:text-ink">Beranda</Link>
         </li>

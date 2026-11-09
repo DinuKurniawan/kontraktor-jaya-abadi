@@ -61,7 +61,7 @@ export default function BlogSidebar({ categories = [], tags = [], activeTag = ""
             ))}
           </div>
         )}
-        <Link to="/artikel?urutan=terpopuler" className="mt-5 inline-flex items-center gap-1.5 text-xs font-bold text-brand-strong hover:text-brand-dark">Lihat semua populer <ArrowRight size={14} /></Link>
+        <Link to="/artikel?urutan=terpopuler" className="mt-5 inline-flex items-center gap-1.5 text-xs font-bold text-ink hover:text-ink-soft">Lihat semua populer <ArrowRight size={14} /></Link>
       </section>
 
       {categoryList.length > 0 && (
@@ -69,7 +69,7 @@ export default function BlogSidebar({ categories = [], tags = [], activeTag = ""
           <h2 className="font-jakarta text-lg font-extrabold text-ink">Kategori artikel</h2>
           <div className="mt-3 space-y-1">
             {categoryList.map((category) => (
-              <Link key={category.id ?? category.slug} to={`/artikel?kategori=${category.slug}`} className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold text-ink-soft transition hover:bg-white hover:text-brand">
+              <Link key={category.id ?? category.slug} to={`/artikel?kategori=${category.slug}`} className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold text-ink-soft transition hover:bg-white hover:text-ink">
                 <span>{category.name}</span><span className="text-xs text-ink-light">{category.count}</span>
               </Link>
             ))}
@@ -90,7 +90,7 @@ export default function BlogSidebar({ categories = [], tags = [], activeTag = ""
                 type="button"
                 onClick={() => onTagChange?.(activeTag === item.slug ? "" : item.slug)}
                 aria-pressed={activeTag === item.slug}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition hover:bg-brand hover:text-white ${activeTag === item.slug ? "bg-brand text-white" : TAG_STYLES[index % TAG_STYLES.length]}`}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition hover:bg-ink hover:text-white ${activeTag === item.slug ? "bg-brand-dark text-white" : TAG_STYLES[index % TAG_STYLES.length]}`}
               >
                 #{item.name} <span className="ml-1 opacity-60">{item.count ?? 0}</span>
               </button>
@@ -100,13 +100,13 @@ export default function BlogSidebar({ categories = [], tags = [], activeTag = ""
       )}
 
       <section className="rounded-2xl bg-ink p-5 text-cream shadow-soft-lg">
-        <div className="flex items-center gap-2 text-brand-light">
+        <div className="flex items-center gap-2 text-cream">
           <Mail size={18} />
           <h2 className="font-jakarta text-lg font-extrabold text-white">Tips konstruksi</h2>
         </div>
-        <p className="mt-2 text-sm leading-relaxed text-white/80">Dapatkan wawasan dan inspirasi terbaru langsung di inbox Anda.</p>
+        <p className="mt-2 text-sm leading-relaxed text-cream/90">Dapatkan wawasan dan inspirasi terbaru langsung di inbox Anda.</p>
         {subscribed ? (
-          <p className="mt-4 text-sm font-semibold text-brand-light">Terima kasih! Email Anda sudah terdaftar.</p>
+          <p className="mt-4 text-sm font-semibold text-cream">Terima kasih! Email Anda sudah terdaftar.</p>
         ) : (
           <form className="mt-4 space-y-2" onSubmit={(event) => { event.preventDefault(); subscribe.mutate(); }}>
             <label htmlFor="sidebar-newsletter-email" className="sr-only">Email newsletter</label>
@@ -116,11 +116,11 @@ export default function BlogSidebar({ categories = [], tags = [], activeTag = ""
         )}
       </section>
 
-      <section className="rounded-2xl bg-brand-dark p-5 text-white shadow-soft-lg">
-        <MessageCircle size={22} className="text-white/80" />
-        <h2 className="mt-3 font-jakarta text-lg font-extrabold">Punya rencana proyek?</h2>
-        <p className="mt-2 text-sm leading-relaxed text-white">Ceritakan kebutuhan Anda. Tim Jaya Abadi siap membantu memberi arahan.</p>
-        <a href={waUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-brand transition hover:bg-cream text-ink">Konsultasi via WhatsApp <ArrowRight size={15} /></a>
+      <section className="rounded-2xl bg-ink p-5 text-cream shadow-soft-lg">
+        <MessageCircle size={22} className="text-cream/90" />
+        <h2 className="mt-3 font-jakarta text-lg font-extrabold text-white">Punya rencana proyek?</h2>
+        <p className="mt-2 text-sm leading-relaxed text-cream">Ceritakan kebutuhan Anda. Tim Jaya Abadi siap membantu memberi arahan.</p>
+        <a href={waUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-ink transition hover:bg-cream-deep">Konsultasi via WhatsApp <ArrowRight size={15} /></a>
       </section>
     </aside>
   );
