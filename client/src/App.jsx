@@ -1,13 +1,13 @@
 // Peta rute — semua halaman di React.lazy (code-split per halaman, Suspense skeleton)
 import { Component, Suspense, lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
-import AdminLayout from "./components/admin/AdminLayout.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 import RoleRoute from "./routes/RoleRoute.jsx";
 import Skeleton from "./components/ui/Skeleton.jsx";
 import { useRealtime } from "./hooks/useRealtime.js";
 
 const L = (importer) => lazy(importer);
+const AdminLayout = L(() => import("./components/admin/AdminLayout.jsx"));
 
 // Publik
 const PublicLayout = L(() => import("./components/public/PublicLayout.jsx"));
