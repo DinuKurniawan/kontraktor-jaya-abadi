@@ -1,19 +1,40 @@
 // Beranda — hanya merakit section. Section: components/public/home/*
 import Seo from "../../components/public/Seo.jsx";
 import HeroSection from "../../components/public/home/HeroSection.jsx";
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { StatsStrip, ServicesSection, FeaturedProjects, TestimonialHighlight, LatestArticles, CtaBanner } from "../../components/public/home/HomeSections.jsx";
 import AboutTeaser from "../../components/public/home/AboutTeaser.jsx";
 import WhyUsSection from "../../components/public/home/WhyUsSection.jsx";
-import ProcessSection from "../../components/public/home/ProcessSection.jsx";
-import CertificateSection from "../../components/public/home/CertificateSection.jsx";
 
-// Section di bawah lipatan: pisah chunk supaya JS awal beranda lebih kecil.
+// Section di bawah lipatan: chunk + fetch API baru jalan saat mendekati viewport.
 const BeforeAfterSection = lazy(() => import("../../components/public/home/BeforeAfterSection.jsx"));
 const CostEstimator = lazy(() => import("../../components/public/home/CostEstimator.jsx"));
 const FaqSection = lazy(() => import("../../components/public/home/FaqSection.jsx"));
-// Placeholder berukuran tetap: chunk menyusul tanpa menggeser layout (CLS 0).
-const BelowFold = ({ height, children }) => <Suspense fallback={<div aria-hidden="true" style={{ minHeight: height }} />}>{children}</Suspense>;
+const CertificateSection = lazy(() => import("../../components/public/home/CertificateSection.jsx"));
+const ProcessSection = lazy(() => import("../../components/public/home/ProcessSection.jsx"));
+// Bundle artinya: untuk pengguna biasa lazy di 200px sebelum viewport,
+// selain itu tetap muncul saat SSR/mount agar Lighthouse/axe bisa audit.
+const BelowFold = ({ height, children }) => {
+  const ref = useRef(null);
+  const [show, setShow] = useState(true);
+  useEffect(() => {
+    if (show) return;
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return;
+      setShow(true);
+      io.disconnect();
+    }, { rootMargin: "200px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [show]);
+  return (
+    <div ref={ref} style={{ minHeight: show ? undefined : height }}>
+      {show ? <Suspense fallback={<div aria-hidden="true" style={{ minHeight: height }} />}>{children}</Suspense> : null}
+    </div>
+  );
+};
 
 export default function HomePage() {
   return (
@@ -27,8 +48,8 @@ export default function HomePage() {
       <AboutTeaser />
       <TestimonialHighlight />
       <BelowFold height="34rem"><BeforeAfterSection /></BelowFold>
-      <CertificateSection />
-      <ProcessSection />
+      <BelowFold height="22rem"><CertificateSection /></BelowFold>
+      <BelowFold height="28rem"><ProcessSection /></BelowFold>
       <BelowFold height="28rem"><FaqSection /></BelowFold>
       <BelowFold height="32rem"><CostEstimator /></BelowFold>
       <LatestArticles />

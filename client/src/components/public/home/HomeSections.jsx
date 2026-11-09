@@ -287,8 +287,8 @@ export function TestimonialHighlight() {
     queryFn: async () => (await api.get("/public/testimonials")).data.data,
   });
   const { data: photo } = useQuery({
-    queryKey: ["public-projects-photo-1"],
-    queryFn: async () => (await api.get("/public/projects", { params: { featured: "true", limit: 4 } })).data,
+    queryKey: ["public-projects-featured", ""],
+    queryFn: async () => (await api.get("/public/projects", { params: { featured: "true", limit: 5 } })).data,
   });
   const rows = data ?? [];
   const photos = photo?.data ?? [];
@@ -500,8 +500,8 @@ const GUARANTEES = [
 
 export function CtaBanner() {
   const { data } = useQuery({
-    queryKey: ["public-projects-photo-3"],
-    queryFn: async () => (await api.get("/public/projects", { params: { featured: "true", limit: 3 } })).data,
+    queryKey: ["public-projects-featured", ""],
+    queryFn: async () => (await api.get("/public/projects", { params: { featured: "true", limit: 5 } })).data,
   });
   const { data: s } = useSiteSettings();
   const bg = data?.data?.[0]?.coverImage;

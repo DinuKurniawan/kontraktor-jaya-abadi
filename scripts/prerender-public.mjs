@@ -24,6 +24,22 @@ try {
     const page = await browser.newPage();
     for (const route of routes) {
       await page.goto(`http://127.0.0.1:4174${route}`, { waitUntil: "networkidle" });
+      // Pemicu IntersectionObserver agar bagian di bawah lipatan ikut dirender.
+      await page.evaluate(() => {
+        const step = window.innerHeight || 800;
+        const max = document.body.scrollHeight;
+        const scrollAndObserve = () => {
+          if (window.scrollY + window.innerHeight >= max) {
+            window.scrollTo(0, 0);
+            return;
+          }
+          window.scrollTo(0, window.scrollY + step);
+          setTimeout(scrollAndObserve, 100);
+        };
+        scrollAndObserve();
+      });
+      // Tunggu sebentar agar observer/komponen selesai mount.
+      await page.waitForTimeout(500);
       const html = await page.content();
       const target = route === "/" ? resolve(root, "dist/index.html") : resolve(root, `dist${route}/index.html`);
       await mkdir(dirname(target), { recursive: true });

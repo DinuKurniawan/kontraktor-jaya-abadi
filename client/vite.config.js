@@ -209,10 +209,12 @@ export default defineConfig(({ mode }) => {
     build: {
       rollupOptions: {
         output: {
+          experimentalMinChunkSize: 10000,
           manualChunks(id) {
             if (id.includes("node_modules/react/") || id.includes("node_modules/react-dom/")) return "vendor-react";
             if (id.includes("node_modules/react-router") || id.includes("node_modules/react-router-dom")) return "vendor-router";
-            if (id.includes("node_modules/@tanstack/react-query")) return "vendor-query";
+            if (id.includes("node_modules/@tanstack/")) return "vendor-query";
+            if (id.includes("node_modules/lucide-react")) return "vendor-icons";
           },
         },
       },
