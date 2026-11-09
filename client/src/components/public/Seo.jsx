@@ -10,6 +10,7 @@ export default function Seo({ title, description, path = "/", image, type = "web
   const fullTitle = title ? `${title} — ${SITE_NAME}` : SITE_NAME;
   const desc = description ?? DEFAULT_DESC;
   const canonical = `${SITE}${path === "/" ? "" : path}`;
+  const articleMeta = type === "article" ? { "article:published_time": jsonLd?.datePublished, "article:modified_time": jsonLd?.dateModified, "article:author": jsonLd?.author?.name, "article:section": jsonLd?.articleSection, "article:tag": jsonLd?.keywords } : null;
   const ogImage = image ?? DEFAULT_IMAGE;
 
   return (
@@ -27,6 +28,7 @@ export default function Seo({ title, description, path = "/", image, type = "web
       <meta property="og:description" content={desc} />
       <meta property="og:url" content={canonical} />
       <meta property="og:image" content={ogImage} />
+      {articleMeta && Object.entries(articleMeta).map(([property, content]) => content ? <meta key={property} property={property} content={String(content)} /> : null)}
 
       {/* Twitter */}
       <meta name="twitter:card" content="summary_large_image" />

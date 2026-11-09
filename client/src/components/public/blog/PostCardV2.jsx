@@ -29,7 +29,7 @@ export default function PostCardV2({ post, highlightQuery = "" }) {
       <Link to={`/artikel/${post.slug}`} className="block focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-brand">
         <div className="h-[250px] w-full overflow-hidden bg-cream-deep">
           {post.coverImage && (
-            <img src={imageUrl(post.coverImage)} alt={post.title} width={800} height={450} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+            <img src={imageUrl(post.coverImage)} alt={post.title} width={800} height={450} loading="lazy" decoding="async" sizes="(min-width: 1024px) 31vw, (min-width: 640px) 50vw, 100vw" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
           )}
         </div>
       </Link>

@@ -30,7 +30,7 @@ import coreValuesRoutes, { publicRouter as coreValuesPublicRouter } from "./modu
 import galleryRoutes, { publicRouter as galleryPublicRouter } from "./modules/gallery/route.js";
 import branchesRoutes, { publicRouter as branchesPublicRouter } from "./modules/branches/route.js";
 import publicRoutes from "./modules/public-router.js";
-import { sitemap, robots } from "./modules/seo.js";
+import { sitemap, robots, rss } from "./modules/seo.js";
 import dashboardRoutes from "./modules/dashboard/route.js";
 import projectsRoutes from "./modules/projects/route.js";
 import servicesRoutes from "./modules/services/route.js";
@@ -155,8 +155,10 @@ api.use("/public/settings", settingsPublicRouter);
 api.use("/public/hero-slides", heroSlidesPublicRouter);
 api.use("/public", publicRoutes);
 
-// SEO: sitemap & robots di root (sebelum handler 404 API)
+// SEO: sitemap, robots & RSS feed di root (sebelum handler 404 API)
 app.get("/sitemap.xml", sitemap);
+app.get("/rss.xml", rss);
+app.get("/feed.xml", rss);
 app.get("/robots.txt", robots);
 api.use("/public/categories", categoriesPublicRouter);
 app.use("/api", api);

@@ -3,6 +3,7 @@ import prisma from "../../config/prisma.js";
 import ApiError from "../../utils/api-error.js";
 import { slugifyUnique } from "../../utils/slugify.js";
 import { paginate, paginationMeta } from "../../utils/paginate.js";
+import { sanitizeHtml } from "../../utils/sanitize-html.js";
 
 const INCLUDE = {
   author: { select: { id: true, name: true, position: true, photo: true } },
@@ -43,11 +44,13 @@ export async function createPost({ authorId, tagIds, ...payload }) {
   const slug = await slugifyUnique({ model: "post", text: payload.title });
   const isPublished = payload.isPublished === true;
   const publishedAt = isPublished ? (payload.publishedAt ?? new Date()) : null;
+  const content = sanitizeHtml(payload.content);
   return prisma.post.create({
     data: {
       ...payload,
+      content,
       slug,
-      readTime: computeReadTime(payload.content),
+      readTime: computeReadTime(content),
       authorId,
       publishedAt,
       ...(tagIds ? { tags: { create: tagIds.map((tagId) => ({ tag: { connect: { id: tagId } } })) } } : {}),
@@ -61,7 +64,10 @@ export async function updatePost(id, { tagIds, ...payload }) {
 
   const data = { ...payload };
   if (payload.title) data.slug = await slugifyUnique({ model: "post", text: payload.title, excludeId: id });
-  if (payload.content !== undefined) data.readTime = computeReadTime(payload.content);
+  if (payload.content !== undefined) {
+    data.content = sanitizeHtml(payload.content);
+    data.readTime = computeReadTime(data.content);
+  }
 
   // Baru terbit → catat tanggal terbit pertama
   const willPublish = payload.isPublished ?? current.isPublished;

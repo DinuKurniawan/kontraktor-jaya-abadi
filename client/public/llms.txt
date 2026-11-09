@@ -25,6 +25,8 @@
 - [Kategori: Tips Konstruksi](/artikel?kategori=tips-konstruksi) — Panduan praktis membangun & merenovasi.
 - [Kategori: Panduan RAB](/artikel?kategori=panduan-rab) — Cara membaca & memahami RAB kontraktor.
 - [Kategori: Regulasi Bangunan](/artikel?kategori=regulasi-bangunan) — Izin, PBG, SLF, SNI, ketentuan teknis.
+- [RSS Feed Artikel](/rss.xml) — Feed sindikasi artikel konstruksi terbaru (RSS 2.0).
+- [Sitemap XML](/sitemap.xml) — Peta situs publik lengkap.
 
 ## Kontak
 

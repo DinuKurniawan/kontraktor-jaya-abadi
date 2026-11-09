@@ -90,6 +90,7 @@ export function ArticlesPage() {
   });
 
   const rows = data?.data ?? [];
+  const resultLabel = isLoading ? "Memuat artikel" : `${Number(data?.meta?.total ?? 0).toLocaleString("id-ID")} artikel ditemukan`;
   const facetCategories = data?.facets?.categories ?? [];
   const facetBySlug = Object.fromEntries(facetCategories.map((item) => [item.slug, item]));
 
@@ -114,7 +115,23 @@ export function ArticlesPage() {
 
   return (
     <>
-      <Seo path="/artikel" title="Artikel" description="Tips, panduan, dan kabar terbaru seputar konstruksi." />
+      <Seo
+        path="/artikel"
+        title="Artikel"
+        description="Tips, panduan, dan kabar terbaru seputar konstruksi."
+        noindex={Boolean(search || category || tag || sort !== "terbaru" || page > 1)}
+        jsonLd={rows.length ? {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: "Daftar Artikel & Wawasan Konstruksi Jaya Abadi",
+          itemListElement: rows.slice(0, 9).map((post, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            name: post.title,
+            url: `/artikel/${post.slug}`,
+          })),
+        } : undefined}
+      />
       <Reveal><BlogBanner
         total={data?.meta?.total}
         value={search}
@@ -142,6 +159,7 @@ export function ArticlesPage() {
         </Reveal>
 
         <div className="mt-10 grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_18rem]">
+          <div className="sr-only" aria-live="polite" aria-atomic="true">{resultLabel}</div>
           <Reveal as="main" className="min-w-0">
             {isLoading ? (
               <div className="grid gap-6 sm:grid-cols-2">
@@ -245,6 +263,8 @@ export function ArticleDetailPage() {
           dateModified: post.updatedAt || post.publishedAt,
           author: { "@type": "Person", name: authorName },
           publisher: { "@type": "Organization", name: "Jaya Abadi" },
+          articleSection: post.category?.name,
+          inLanguage: "id-ID",
           keywords: (post.tags ?? []).map((tag) => tag.name).join(", "),
           mainEntityOfPage: { "@type": "WebPage", "@id": url },
         }}
@@ -268,12 +288,12 @@ export function ArticleDetailPage() {
         </header>
 
         <div className="mt-8 overflow-hidden rounded-3xl bg-cream-deep shadow-soft-lg">
-          {post.coverImage && <img src={img(post.coverImage)} alt={post.title} className="aspect-[16/7] w-full object-cover" />}
+          {post.coverImage && <img src={img(post.coverImage)} alt={post.title} width={1600} height={700} fetchPriority="high" decoding="async" sizes="(min-width: 1024px) 1152px, 100vw" className="aspect-[16/7] w-full object-cover" />}
         </div>
         <div className="mt-6"><ShareButtons url={url} title={post.title} copied={copied} onCopy={copyLink} /></div>
 
         <div className="mt-10 grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_16rem]">
-          <main className="min-w-0">
+          <main className="min-w-0" aria-busy={isLoading}>
             <article className="prose-jaya text-[1rem] sm:text-[1.05rem]" dangerouslySetInnerHTML={{ __html: preparedContent.html }} />
             {(post.tags ?? []).length > 0 && <div role="group" className="mt-8 flex flex-wrap items-center gap-2 border-t border-ink/10 pt-5" aria-label="Tag artikel"><span className="mr-1 text-xs font-bold text-ink-light">Tag:</span>{post.tags.map((tag) => <Link key={tag.id ?? tag.slug} to={`/artikel?tag=${tag.slug}`} className="rounded-full bg-cream-deep px-3 py-1.5 text-xs font-semibold text-ink-soft transition hover:bg-brand-soft hover:text-brand">#{tag.name}</Link>)}</div>}
             <AuthorBox author={post.author} />

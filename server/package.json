@@ -8,6 +8,7 @@
     "start": "node src/server.js",
     "postinstall": "prisma generate",
     "seed": "node prisma/seed.js",
+    "test:sanitize": "node src/utils/sanitize-html.test.js",
     "services:normalize-images": "node scripts/normalize-service-images.js",
     "db:prod:update": "prisma migrate deploy"
   },

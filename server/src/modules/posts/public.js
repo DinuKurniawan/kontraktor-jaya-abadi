@@ -1,6 +1,7 @@
 // Endpoint publik posts (tanpa login) — hanya artikel terbit & publishedAt <= sekarang
 import prisma from "../../config/prisma.js";
 import { paginate, paginationMeta } from "../../utils/paginate.js";
+import { sanitizeHtml } from "../../utils/sanitize-html.js";
 
 const publishedWhere = () => ({ isPublished: true, publishedAt: { lte: new Date() } });
 
@@ -41,10 +42,11 @@ function normalizePost(post) {
 }
 
 function searchWhere(search) {
-  if (!search) return {};
+  const value = String(search ?? "").trim().slice(0, 120);
+  if (!value) return {};
   return {
     OR: ["title", "excerpt", "content"].map((field) => ({
-      [field]: { contains: search, mode: "insensitive" },
+      [field]: { contains: value, mode: "insensitive" },
     })),
   };
 }
@@ -63,12 +65,15 @@ export async function listPublishedPosts(query = {}) {
     searchFields: [],
     defaultLimit: 9,
   });
-  Object.assign(where, publishedWhere(), searchWhere(query.search), tagWhere(query.tag));
-  if (query.category) where.category = { slug: query.category };
+  const search = String(query.search ?? "").trim().slice(0, 120);
+  const category = String(query.category ?? "").trim().slice(0, 120);
+  const tag = String(query.tag ?? "").trim().slice(0, 120);
+  Object.assign(where, publishedWhere(), searchWhere(search), tagWhere(tag));
+  if (category) where.category = { slug: category };
 
   // Facet kategori mengikuti pencarian/tag aktif, tetapi tidak dikunci oleh kategori
   // agar pilihan kategori lain tetap dapat ditampilkan di filter publik.
-  const facetWhere = { ...publishedWhere(), ...searchWhere(query.search), ...tagWhere(query.tag) };
+  const facetWhere = { ...publishedWhere(), ...searchWhere(search), ...tagWhere(tag) };
   const [rows, total, categoryGroups] = await prisma.$transaction([
     prisma.post.findMany({ where, select: POST_SELECT, orderBy: ORDER[query.sort] ?? ORDER.terbaru, skip, take: limit }),
     prisma.post.count({ where }),
@@ -175,6 +180,7 @@ export async function getPublishedPost(slug) {
 
   return {
     ...normalizePost(detail),
+    content: sanitizeHtml(detail.content),
     related: relatedRows.map(normalizePost),
     previous,
     next,

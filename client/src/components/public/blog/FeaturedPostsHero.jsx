@@ -20,7 +20,7 @@ export default function FeaturedPostsHero() {
   const posts = (data ?? []).slice(0, 3);
 
   useEffect(() => {
-    if (posts.length < 2) return undefined;
+    if (posts.length < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
     const timer = window.setInterval(() => setActive((index) => (index + 1) % posts.length), 7000);
     return () => window.clearInterval(timer);
   }, [posts.length]);
@@ -54,7 +54,7 @@ export default function FeaturedPostsHero() {
         </div>
 
         <article className="relative aspect-[16/9] overflow-hidden rounded-3xl bg-ink shadow-soft-lg sm:aspect-[16/7.5]" aria-live="polite">
-          {post.coverImage && <img src={img(post.coverImage)} alt="" className="absolute inset-0 h-full w-full object-cover" />}
+          {post.coverImage && <img src={img(post.coverImage)} alt="" width={1600} height={700} fetchPriority="high" decoding="async" sizes="100vw" className="absolute inset-0 h-full w-full object-cover" />}
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/45 to-black/5" />
           <div className="absolute inset-x-0 bottom-0 p-6 text-white sm:p-10">
             <div className="max-w-3xl">

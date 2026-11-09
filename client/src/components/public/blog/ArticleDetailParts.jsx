@@ -8,22 +8,53 @@ export function ReadingProgress() {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    let ticking = false;
     const update = () => {
+      ticking = false;
       const max = document.documentElement.scrollHeight - window.innerHeight;
-      setProgress(max > 0 ? Math.min(100, Math.max(0, (window.scrollY / max) * 100)) : 0);
+      const next = max > 0 ? Math.min(100, Math.max(0, (window.scrollY / max) * 100)) : 0;
+      setProgress((prev) => (Math.abs(prev - next) > 0.5 ? next : prev));
+    };
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
     };
     update();
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
-    return () => { window.removeEventListener("scroll", update); window.removeEventListener("resize", update); };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, []);
 
   return <div role="progressbar" aria-valuenow={Math.round(progress)} aria-valuemin={0} aria-valuemax={100} className="fixed inset-x-0 top-0 z-[60] h-1 bg-brand/15" aria-label={`Progres membaca ${Math.round(progress)} persen`}><div className="h-full bg-brand transition-[width] duration-150" style={{ width: `${progress}%` }} /></div>;
 }
 
 export function prepareArticleContent(content) {
-  if (typeof DOMParser === "undefined") return { html: content || "", headings: [] };
+  if (typeof DOMParser === "undefined") return { html: "", headings: [] };
   const parsed = new DOMParser().parseFromString(content || "", "text/html");
+  parsed.body.querySelectorAll("script, style, iframe, object, embed, form, base, meta, link").forEach((node) => node.remove());
+  parsed.body.querySelectorAll("*").forEach((node) => {
+    [...node.attributes].forEach((attribute) => {
+      const name = attribute.name.toLowerCase();
+      const value = attribute.value.trim();
+      const unsafeUri = /^(javascript|vbscript|data):/i.test(value) && !(name === "src" && /^data:image\//i.test(value));
+      if (name.startsWith("on") || unsafeUri || name === "style" || name === "srcset") node.removeAttribute(attribute.name);
+    });
+    if (node.tagName === "A") {
+      const external = /^(https?:)?\/\//i.test(node.getAttribute("href") ?? "");
+      node.setAttribute("rel", "noopener noreferrer");
+      if (external) node.setAttribute("target", "_blank");
+    }
+    if (node.tagName === "IMG") {
+      node.setAttribute("loading", "lazy");
+      node.setAttribute("decoding", "async");
+      if (!node.getAttribute("alt")) node.setAttribute("alt", "");
+    }
+  });
   const used = new Set();
   const headings = [...parsed.body.querySelectorAll("h2, h3")].map((heading, index) => {
     const text = heading.textContent?.trim() || `Bagian ${index + 1}`;
@@ -42,7 +73,8 @@ export function ArticleToc({ headings = [] }) {
   const [open, setOpen] = useState(false);
   if (!headings.length) return null;
   const goTo = (id) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.history.replaceState(null, "", `#${id}`);
+    document.getElementById(id)?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
     setOpen(false);
   };
 
