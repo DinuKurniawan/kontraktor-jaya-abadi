@@ -8,7 +8,7 @@ import Container from "../Container.jsx";
 import PillButton from "../PillButton.jsx";
 import { imageProps, img } from "../../../lib/image.js";
 
-const FALLBACK_IMAGE = "https://picsum.photos/seed/ja-project-cta/1600/720";
+const FALLBACK_IMAGE = "https://picsum.photos/seed/ja-project-cta/800/360.webp";
 
 const GUARANTEES = [
   [ShieldCheck, "Garansi pekerjaan"],
@@ -25,7 +25,7 @@ export default function ProjectsCta({ backgroundImage = "" }) {
     <section className="relative isolate overflow-hidden bg-ink" aria-labelledby="projects-cta-title">
       <img
         src={img(backgroundImage) || FALLBACK_IMAGE}
-        {...imageProps(backgroundImage || FALLBACK_IMAGE, { width: 1200, height: 540 })}
+        {...imageProps(backgroundImage || FALLBACK_IMAGE, { width: 800, height: 360 })}
         alt=""
         aria-hidden="true"
         className="absolute inset-0 h-full w-full object-cover"

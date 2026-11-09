@@ -5,9 +5,9 @@
 import { Mail, MessageCircle, Phone } from "lucide-react";
 import { useSiteSettings } from "../home/HeroSection.jsx";
 import Container from "../Container.jsx";
+import { imageProps, img } from "../../../lib/image.js";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
-const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
 
 export default function AboutCta() {
   const { data: s } = useSiteSettings();
@@ -15,11 +15,12 @@ export default function AboutCta() {
   const phone = s?.phone ?? "(021) 555-2006";
   const email = s?.email ?? "info@jayaabadi.co.id";
   // Foto banner: about_image, fallback picsum agar section tak pernah polos
-  const bg = s?.about_image ? img(s.about_image) : "https://picsum.photos/seed/ja-cta/1600/700";
+  const bg = s?.about_image ? img(s.about_image) : "https://picsum.photos/seed/ja-cta/800/350.webp";
+  const { src, srcSet, width, height, sizes, loading, fetchPriority, decoding } = imageProps(bg, { width: 800, height: 350 });
 
   return (
     <section className="relative overflow-hidden">
-      <img src={bg} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover" />
+      <img src={src} srcSet={srcSet} sizes={sizes} width={width} height={height} loading={loading} fetchPriority={fetchPriority} decoding={decoding} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover" />
       <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-ink/90 via-ink/75 to-ink/50" />
       <Container className="relative py-20 text-center sm:py-24">
         <h2 className="mx-auto max-w-2xl font-jakarta text-3xl font-extrabold text-white sm:text-4xl">

@@ -177,7 +177,7 @@ function BentoProjectCard({ p }) {
       to={`/proyek/${p.slug}`}
       className="group relative block h-[18.75rem] overflow-hidden rounded-2xl shadow-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
     >
-      <img {...imageProps(p.coverImage, { width: 520, height: 600 })} alt={p.title}
+      <img {...imageProps(p.coverImage, { width: 320, height: 360 })} alt={p.title}
         className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" />
       <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/30 to-transparent transition group-hover:from-ink/95" />
       {p.status && (
@@ -392,7 +392,7 @@ export function TestimonialHighlight() {
           {cur && (
             <div className="hidden lg:col-span-2 lg:block">
               <div className="overflow-hidden rounded-2xl shadow-soft-lg">
-                <img key={cur.id} {...imageProps(cur.coverImage, { width: 640, height: 800 })} alt={cur.title}
+                <img key={cur.id} {...imageProps(cur.coverImage, { width: 400, height: 500 })} alt={cur.title}
                   className="aspect-[4/5] w-full animate-fade-in object-cover" />
               </div>
               <p className="mt-2 text-center text-xs text-ink-light">Proyek: {cur.title}</p>
