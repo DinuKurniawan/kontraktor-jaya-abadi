@@ -11,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, MapPin, Ruler } from "lucide-react";
 import api from "../../../lib/axios.js";
 import Container from "../Container.jsx";
+import { imageProps } from "../../../lib/image.js";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
@@ -27,8 +28,42 @@ export default function FeaturedProjectsStrip() {
 
   const rows = data?.data ?? [];
 
+  if (isLoading) {
+    return (
+      <section className="bg-cream py-14 sm:py-16" aria-labelledby="proyek-unggulan-loading" aria-busy="true">
+        <Container>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest text-brand">Pilihan kami</p>
+              <h2 id="proyek-unggulan-loading" className="mt-2 font-jakarta text-3xl font-extrabold text-ink sm:text-4xl">
+                Proyek <span className="text-brand">Unggulan</span>
+              </h2>
+            </div>
+          </div>
+          <div className="mt-8 flex gap-5 overflow-hidden pb-2">
+            {[0, 1].map((n) => (
+              <div
+                key={n}
+                className="flex h-[700px] w-[645px] max-w-[85vw] shrink-0 flex-col overflow-hidden rounded-3xl bg-white shadow-soft animate-pulse"
+              >
+                <div className="aspect-[16/10] w-full bg-cream-deep" />
+                <div className="flex flex-1 flex-col gap-3 p-6">
+                  <div className="h-3 w-24 rounded bg-ink/10" />
+                  <div className="h-6 w-3/4 rounded bg-ink/10" />
+                  <div className="h-4 w-1/2 rounded bg-ink/10" />
+                  <div className="h-10 w-full rounded bg-ink/5" />
+                  <div className="mt-auto h-9 w-32 rounded-full bg-ink/10" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Container>
+      </section>
+    );
+  }
+
   // Tidak ada unggulan (atau gagal memuat) → tidak merender apa pun
-  if (isLoading || isError || rows.length === 0) return null;
+  if (isError || rows.length === 0) return null;
 
   const goTo = (i) => {
     const el = trackRef.current;
@@ -114,8 +149,8 @@ export default function FeaturedProjectsStrip() {
               <div className="relative aspect-[16/10] w-full overflow-hidden bg-cream-deep">
                 <img
                   src={img(p.coverImage)}
+                  {...imageProps(p.coverImage, { width: 645, height: 403, priority: i === 0 })}
                   alt={p.title}
-                  loading="lazy"
                   className="w-full h-full object-cover object-center"
                   style={p.coverImagePosition ? { objectPosition: p.coverImagePosition } : undefined}
                 />

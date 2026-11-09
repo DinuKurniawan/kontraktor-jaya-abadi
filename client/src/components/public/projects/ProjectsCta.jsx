@@ -6,10 +6,9 @@ import { BadgeCheck, FileText, MessageCircle, ShieldCheck } from "lucide-react";
 import { useSiteSettings } from "../home/HeroSection.jsx";
 import Container from "../Container.jsx";
 import PillButton from "../PillButton.jsx";
+import { imageProps, img } from "../../../lib/image.js";
 
-const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const FALLBACK_IMAGE = "https://picsum.photos/seed/ja-project-cta/1600/720";
-const img = (path) => (!path ? "" : path.startsWith("http") ? path : `${SERVER}${path}`);
 
 const GUARANTEES = [
   [ShieldCheck, "Garansi pekerjaan"],
@@ -26,9 +25,9 @@ export default function ProjectsCta({ backgroundImage = "" }) {
     <section className="relative isolate overflow-hidden bg-ink" aria-labelledby="projects-cta-title">
       <img
         src={img(backgroundImage) || FALLBACK_IMAGE}
+        {...imageProps(backgroundImage || FALLBACK_IMAGE, { width: 1200, height: 540 })}
         alt=""
         aria-hidden="true"
-        loading="lazy"
         className="absolute inset-0 h-full w-full object-cover"
       />
       <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-ink/95 via-ink/85 to-ink/60" />

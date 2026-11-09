@@ -9,9 +9,8 @@ import { Link } from "react-router-dom";
 import { ArrowUpRight, MapPin } from "lucide-react";
 import { STATUS_LABEL } from "../../../pages/public/project-labels.js";
 import ImageWithFallback from "../../ui/ImageWithFallback.jsx";
+import { imageProps, img } from "../../../lib/image.js";
 
-const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
-const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
 const num = (v) => Number(v).toLocaleString("id-ID");
 
 const STATUS_BADGE = {
@@ -32,10 +31,8 @@ export default function ProjectCardV2({ project }) {
         {coverImage ? (
           <ImageWithFallback
             src={img(coverImage)}
+            {...imageProps(coverImage, { width: 400, height: 300 })}
             alt={title}
-            width={800}
-            height={600}
-            loading="lazy"
             className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
           />
         ) : (
