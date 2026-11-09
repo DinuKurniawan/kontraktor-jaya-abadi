@@ -47,12 +47,24 @@ import { STATIC_UPLOAD_DIRS } from "./config/uploads.js";
 
 const app = express();
 const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
-const EXTRA_ORIGINS = ["http://localhost:4173", "http://localhost:4174"]; // preview build
+const EXTRA_ORIGINS = [
+  "http://localhost:4173",
+  "http://localhost:4174",
+  "https://jaya.codeunchs.my.id",
+  "https://jayaabadi.codeunchs.my.id",
+]; // preview + production domains
+const ALLOWED_ORIGINS = new Set([
+  ...CLIENT_URL.split(",").map((origin) => origin.trim().replace(/\/$/, "")),
+  ...EXTRA_ORIGINS,
+]);
 
 // Middleware dasar
 app.use(helmet());
 app.use(cors({
-  origin: (origin, cb) => cb(null, !origin || origin === CLIENT_URL || EXTRA_ORIGINS.includes(origin)),
+  origin: (origin, cb) => {
+    if (!origin || ALLOWED_ORIGINS.has(origin.replace(/\/$/, ""))) return cb(null, true);
+    return cb(new Error(`CORS origin not allowed: ${origin}`));
+  },
   credentials: true,
 }));
 app.use(compression());
