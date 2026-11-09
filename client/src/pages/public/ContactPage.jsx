@@ -60,7 +60,7 @@ export default function ContactPage() {
 
   return (
     <>
-      <Seo path="/kontak" title="Kontak Jaya Abadi" description="Hubungi Jaya Abadi untuk konsultasi konstruksi, renovasi, interior, dan pengawasan proyek di Jabodetabek." image={getContactCtaImage(s, mainBranch)} jsonLd={jsonLd} />
+      <Seo path="/kontak" title="Kontak Jaya Abadi" description="Hubungi Jaya Abadi untuk konsultasi konstruksi, renovasi, interior, dan pengawasan proyek di Jabodetabek." image={getContactCtaImage(s, mainBranch)} jsonLd={localBusiness} />
       <Reveal><ContactBanner branch={mainBranch} /></Reveal>
       <Reveal delay={60}>{contactDataLoading ? <ContactSectionSkeleton /> : <QuickChannels branch={mainBranch} settings={s} responseTime={responseTime} />}</Reveal>
 
