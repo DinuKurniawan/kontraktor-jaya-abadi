@@ -19,7 +19,7 @@ function ContactSectionSkeleton() {
 }
 
 function ContactInfoSkeleton() {
-  return <div className="space-y-4" aria-busy="true" aria-label="Memuat informasi kontak">{[0, 1, 2, 3, 4].map((item) => <div key={item} className="rounded-2xl bg-white p-4 shadow-soft"><div className="flex gap-4"><Skeleton className="h-11 w-11 shrink-0" rounded="rounded-xl" /><div className="min-w-0 flex-1"><Skeleton className="h-3 w-20" /><Skeleton className="mt-3 h-4 w-40" /></div></div></div>)}</div>;
+  return <div className="space-y-4" role="status" aria-busy="true" aria-label="Memuat informasi kontak">{[0, 1, 2, 3, 4].map((item) => <div key={item} className="rounded-2xl bg-white p-4 shadow-soft"><div className="flex gap-4"><Skeleton className="h-11 w-11 shrink-0" rounded="rounded-xl" /><div className="min-w-0 flex-1"><Skeleton className="h-3 w-20" /><Skeleton className="mt-3 h-4 w-40" /></div></div></div>)}</div>;
 }
 
 export default function ContactPage() {
