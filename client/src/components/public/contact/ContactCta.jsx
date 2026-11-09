@@ -5,7 +5,7 @@ import Container from "../Container.jsx";
 
 const SITE = import.meta.env.VITE_SITE_URL || "http://localhost:5173";
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
-const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1800&q=80";
+const FALLBACK_IMAGE = "https://images.unsplash.com/photo-1503387762-592deb58ef4e?auto=format&fit=crop&w=1800&q=70";
 const DAY_NAMES = { Senin: "Monday", Selasa: "Tuesday", Rabu: "Wednesday", Kamis: "Thursday", Jumat: "Friday", Sabtu: "Saturday", Minggu: "Sunday" };
 const DEFAULT_AREAS = ["Jakarta", "Bogor", "Depok", "Tangerang", "Bekasi"];
 

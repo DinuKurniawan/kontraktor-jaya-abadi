@@ -24,6 +24,7 @@ export default function FeaturedProjectsStrip() {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["public-featured-projects"],
     queryFn: async () => (await api.get("/public/projects", { params: { featured: true, limit: 8 } })).data,
+    staleTime: 5 * 60_000,
   });
 
   const rows = data?.data ?? [];

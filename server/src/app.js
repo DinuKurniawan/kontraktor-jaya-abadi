@@ -1,10 +1,12 @@
 // Konfigurasi aplikasi Express — dipasang menuju server.js
 import express from "express";
+import path from "node:path";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
+import compression from "compression";
 
 import authRoutes from "./modules/auth/route.js";
 import categoriesRoutes, { publicRouter as categoriesPublicRouter } from "./modules/categories/route.js";
@@ -53,6 +55,7 @@ app.use(cors({
   origin: (origin, cb) => cb(null, !origin || origin === CLIENT_URL || EXTRA_ORIGINS.includes(origin)),
   credentials: true,
 }));
+app.use(compression());
 app.use(morgan("dev"));
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
@@ -67,6 +70,16 @@ app.use(
     next();
   },
   ...STATIC_UPLOAD_DIRS.map((dir) => express.static(dir))
+);
+
+// Serve client public assets (hero image, favicon, fonts) dengan header CORP
+app.use(
+  express.static(path.resolve(process.cwd(), "client/public"), {
+    setHeaders: (res) => {
+      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+    },
+  })
 );
 
 // Rate limit dasar untuk semua route /api

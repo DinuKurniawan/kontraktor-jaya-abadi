@@ -95,6 +95,7 @@ export default function ProjectFilterBar({ facets, meta, shown, page = 1, limit 
   const { data: services } = useQuery({
     queryKey: ["public-services"],
     queryFn: async () => (await api.get("/public/services")).data.data,
+    staleTime: 5 * 60_000,
   });
   const serviceOptions = services ?? [];
 

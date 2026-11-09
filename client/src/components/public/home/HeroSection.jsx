@@ -10,9 +10,15 @@ import { BadgeCheck, FileText, Play, ScrollText, ShieldCheck } from "lucide-reac
 import api from "../../../lib/axios.js";
 import Modal from "../../ui/Modal.jsx";
 import PillButton from "../PillButton.jsx";
+import { imageProps } from "../../../lib/image.js";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
-const img = (path) => (!path ? "" : path.startsWith("http") ? path : `${SERVER}${path}`);
+const img = (path) => {
+  if (!path) return "";
+  if (/^https?:\/\//i.test(path)) return path;
+  if (path.startsWith("/")) return path;
+  return `${SERVER}${path}`;
+};
 
 const AUTOPLAY_MS = 6000;
 
@@ -43,18 +49,14 @@ function Photo({ src, alt, className = "", eager = false }) {
   const [loaded, setLoaded] = useState(false);
   return (
     <div className={`relative h-full w-full overflow-hidden bg-cream-deep ${className}`}>
-      {!loaded && <div className="absolute inset-0 animate-pulse bg-cream-deep" aria-hidden />}
+      {!loaded && !eager && <div className="absolute inset-0 animate-pulse bg-cream-deep" aria-hidden />}
       {src && (
         <img
-          src={src}
+          {...imageProps(src, { width: eager ? 800 : 400, height: eager ? 600 : 300, priority: eager })}
           alt={alt}
-          width={800}
-          height={800}
-          loading={eager ? "eager" : "lazy"}
-          fetchPriority={eager ? "high" : undefined}
           onLoad={() => setLoaded(true)}
           onError={() => setLoaded(true)}
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"}`}
+          className={`absolute inset-0 h-full w-full object-cover ${eager ? "" : `transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}`}
         />
       )}
     </div>
@@ -65,7 +67,7 @@ const DEFAULT_SLIDE = {
   id: "default-slide",
   title: "Membangun Hunian & Bisnis Anda dengan Standar Tertinggi",
   subtitle: "Lebih dari 200 proyek konstruksi, renovasi, dan interior selesai tepat jadwal.",
-  image: "https://picsum.photos/seed/ja-hero-1/1200/800",
+  image: "/hero-default.webp",
   ctaUrl: "/proyek",
   ctaLabel: "Lihat Karya Kami",
 };

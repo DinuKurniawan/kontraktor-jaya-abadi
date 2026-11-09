@@ -3,9 +3,14 @@
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 
 // Path relatif (/uploads/x.webp) → URL absolut server API.
-export const img = (p) => (!p ? "" : /^https?:\/\//i.test(p) ? p : `${SERVER}${p}`);
+export const img = (p) => {
+  if (!p) return "";
+  if (/^https?:\/\//i.test(p)) return p;
+  if (p.startsWith("/")) return p;
+  return `${SERVER}${p}`;
+};
 
-const PICSUM = /^(https?:\/\/picsum\.photos\/seed\/[^/]+)\/\d+\/\d+/;
+const PICSUM = /^(https?:\/\/(?:fastly\.)?picsum\.photos\/seed\/[^/]+)\/\d+\/\d+/;
 const UPLOAD = /\/uploads\/[^/?#]+\.webp(\?.*)?$/i;
 const UNSPLASH = /^https?:\/\/images\.unsplash\.com\//;
 

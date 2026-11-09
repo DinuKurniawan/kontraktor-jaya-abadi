@@ -160,15 +160,19 @@ export async function getPublishedProject(slug) {
     orderBy: defaultOrder,
   });
 
-  // Sebelumnya/berikutnya menurut urutan tampil (featured, year desc, createdAt desc)
-  const siblings = await prisma.project.findMany({
-    where: { isPublished: true },
-    orderBy: defaultOrder,
-    select: { id: true, slug: true, title: true },
-  });
-  const i = siblings.findIndex((p) => p.id === project.id);
-  const prev = i > 0 ? siblings[i - 1] : null;
-  const next = i < siblings.length - 1 ? siblings[i + 1] : null;
+  // Ambil tetangga langsung; jangan memuat seluruh daftar proyek.
+  const [prev, next] = await Promise.all([
+    prisma.project.findFirst({
+      where: { isPublished: true, OR: [{ year: { gt: project.year } }, { year: project.year, createdAt: { gt: project.createdAt } }] },
+      orderBy: defaultOrder,
+      select: { id: true, slug: true, title: true },
+    }),
+    prisma.project.findFirst({
+      where: { isPublished: true, OR: [{ year: { lt: project.year } }, { year: project.year, createdAt: { lt: project.createdAt } }] },
+      orderBy: [{ year: "desc" }, { createdAt: "desc" }],
+      select: { id: true, slug: true, title: true },
+    }),
+  ]);
 
   const { categoryId, ...rest } = project;
   return {

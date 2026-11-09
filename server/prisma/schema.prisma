@@ -160,6 +160,9 @@ model Project {
   @@index([status])
   @@index([categoryId])
   @@index([isPublished, isFeatured])
+  @@index([isPublished])
+  @@index([serviceId])
+  @@index([year])
   @@map("projects")
 }
 

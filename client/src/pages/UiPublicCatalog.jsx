@@ -10,7 +10,7 @@ import TestimonialCard from "../components/public/TestimonialCard.jsx";
 import Breadcrumb from "../components/public/Breadcrumb.jsx";
 import PublicSkeleton from "../components/public/PublicSkeleton.jsx";
 
-const IMG = "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=70";
+const IMG = "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&q=70&auto=format";
 
 export default function UICatalog() {
   return (

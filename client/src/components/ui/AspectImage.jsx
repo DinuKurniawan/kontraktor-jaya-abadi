@@ -1,6 +1,7 @@
 // Gambar dengan rasio tetap dan placeholder aman saat sumber gagal dimuat.
 import { useEffect, useRef, useState } from "react";
 import { ImageOff } from "lucide-react";
+import { imageProps } from "../../lib/image.js";
 
 const RATIO_VALUES = {
   "4/3": "4 / 3",
@@ -49,11 +50,8 @@ export default function AspectImage({
       ) : (
         <img
           ref={imgRef}
-          src={src}
+          {...imageProps(src, { width: 640, height: ratio === "4/5" ? 800 : ratio === "1/1" ? 640 : ratio === "16/9" ? 360 : 480, priority })}
           alt={alt}
-          loading={priority ? undefined : "lazy"}
-          decoding="async"
-          fetchPriority={priority ? "high" : undefined}
           onLoad={() => setLoaded(true)}
           onError={() => setFailed(true)}
           className={`absolute inset-0 h-full w-full transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}

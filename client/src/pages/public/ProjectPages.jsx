@@ -2,7 +2,7 @@
 // dan detail (hero, info ikon, galeri + lightbox, bagikan, deskripsi, serupa)
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import {
   Building2,
   CalendarDays,
@@ -33,21 +33,22 @@ import ProjectsBanner from "../../components/public/projects/ProjectsBanner.jsx"
 import FeaturedProjectsStrip from "../../components/public/projects/FeaturedProjectsStrip.jsx";
 import ProjectFilterBar from "../../components/public/projects/ProjectFilterBar.jsx";
 import ProjectCardV2 from "../../components/public/projects/ProjectCardV2.jsx";
-import ProjectListItem from "../../components/public/projects/ProjectListItem.jsx";
 import ProjectGallery from "../../components/public/projects/ProjectGallery.jsx";
 import ProjectsMap from "../../components/public/projects/ProjectsMap.jsx";
 import ProjectsCta from "../../components/public/projects/ProjectsCta.jsx";
+import ProjectsVirtualResults from "../../components/public/projects/ProjectsVirtualResults.jsx";
 import { useSiteSettings } from "../../components/public/home/HeroSection.jsx";
 import PillButton from "../../components/public/PillButton.jsx";
-import Pagination from "../../components/public/Pagination.jsx";
 import Breadcrumb from "../../components/public/Breadcrumb.jsx";
 import Seo from "../../components/public/Seo.jsx";
+import { imageProps } from "../../lib/image.js";
 import { STATUS_LABEL } from "./project-labels.js";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
 
 const LIMIT = 12;
+const SCROLL_KEY = "proyek-scroll";
 const STATUS_BADGE = {
   COMPLETED: "border-emerald-700/20 bg-emerald-700 text-white",
   ONGOING: "border-amber-700/20 bg-amber-700 text-white",
@@ -80,28 +81,16 @@ async function fetchProjects(filters) {
 
 export function ProjectsPage() {
   const [params, setParams] = useSearchParams();
-  const queryClient = useQueryClient();
   const q = params.get("q") ?? "";
   const layanan = params.get("layanan") ?? "";
   const tahun = params.get("tahun") ?? "";
   const kategori = params.get("kategori") ?? "";
   const status = params.get("status") ?? "";
   const urutan = params.get("urutan") ?? "terbaru";
-  const page = Math.max(1, Number(params.get("halaman")) || 1);
   const resultsRef = useRef(null);
-  const previousPageRef = useRef(page);
   const rawView = params.get("tampilan");
   const tampilan = ["grid", "daftar", "peta"].includes(rawView) ? rawView : "grid";
-
-  // Ganti halaman lewat URL (halaman=1 dihilangkan agar URL bersih)
-  const setPage = (next) => {
-    setParams((prev) => {
-      const p = new URLSearchParams(prev);
-      if (next > 1) p.set("halaman", String(next));
-      else p.delete("halaman");
-      return p;
-    });
-  };
+  const noFilters = !q && !kategori && !status && !layanan && !tahun;
 
   // Hapus semua filter (dipakai empty state) — mode tampilan dipertahankan
   const resetFilters = () => setParams((prev) => {
@@ -111,47 +100,77 @@ export function ProjectsPage() {
     return next;
   }, { replace: true });
 
-  const filters = { page, q, layanan, tahun, kategori, status, urutan };
-  const { data, isLoading, isError, isFetching } = useQuery({
+  const filters = { q, layanan, tahun, kategori, status, urutan };
+  const { data, isLoading, isError, isFetching, fetchNextPage, hasNextPage, isFetchingNextPage } = useInfiniteQuery({
     queryKey: projectQueryKey(filters),
-    // Pertahankan hasil lama saat berpindah halaman agar tidak berkedip kosong
-    placeholderData: keepPreviousData,
-    queryFn: () => fetchProjects(filters),
+    staleTime: 60_000,
+    initialPageParam: 1,
+    queryFn: ({ pageParam }) => fetchProjects({ ...filters, page: pageParam }),
+    getNextPageParam: (last) => (last.meta.page < last.meta.totalPages ? last.meta.page + 1 : undefined),
   });
 
-  const rows = data?.data ?? [];
-  const meta = data?.meta;
-  const facets = data?.facets;
+  const pages = data?.pages ?? [];
+  const rows = pages.flatMap((p) => p.data);
+  const meta = pages[0]?.meta;
+  const facets = pages[0]?.facets;
 
-  // Siapkan halaman berikutnya saat metadata halaman aktif sudah tersedia.
+  // Infinite scroll: sentinel di bawah hasil memuat halaman berikutnya.
+  const sentinelRef = useRef(null);
   useEffect(() => {
-    if (tampilan === "peta" || !meta || page >= meta.totalPages) return;
-    const nextFilters = { ...filters, page: page + 1 };
-    queryClient.prefetchQuery({
-      queryKey: projectQueryKey(nextFilters),
-      queryFn: () => fetchProjects(nextFilters),
-    });
-  }, [queryClient, page, q, layanan, tahun, kategori, status, urutan, tampilan, meta]);
+    const el = sentinelRef.current;
+    if (!el || tampilan === "peta" || !hasNextPage) return undefined;
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) fetchNextPage();
+    }, { rootMargin: "600px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [tampilan, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // Fokuskan kembali perhatian pengguna ke awal hasil ketika halaman berubah.
+  // Pulihkan posisi scroll + jumlah halaman saat kembali dari halaman detail.
+  const restoreRef = useRef(null);
+  if (restoreRef.current === null) {
+    const saved = JSON.parse(sessionStorage.getItem(SCROLL_KEY) || "null");
+    restoreRef.current = { y: saved?.y ?? 0, pages: Math.max(saved?.pages ?? 1, Number(params.get("halaman")) || 1) };
+    sessionStorage.removeItem(SCROLL_KEY);
+  }
+
   useEffect(() => {
-    if (previousPageRef.current === page) return;
-    previousPageRef.current = page;
-    resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [page]);
+    if (tampilan === "peta" || !data) return;
+    if (pages.length < restoreRef.current.pages && hasNextPage && !isFetchingNextPage) fetchNextPage();
+  }, [tampilan, data, pages.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  useEffect(() => {
+    const { y, pages: target } = restoreRef.current;
+    if (!y || !rows.length || pages.length < target) return;
+    restoreRef.current = { y: 0, pages: target };
+    requestAnimationFrame(() => window.scrollTo(0, y));
+  }, [rows.length, pages.length]);
+
+  // Simpan posisi scroll berjalan agar bisa dipulihkan setelah navigasi balik.
+  useEffect(() => {
+    let frame = 0;
+    const save = () => {
+      frame = 0;
+      sessionStorage.setItem(SCROLL_KEY, JSON.stringify({ y: Math.round(window.scrollY), pages: pages.length }));
+    };
+    const onScroll = () => { if (!frame) frame = requestAnimationFrame(save); };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [pages.length]);
 
   return (
     <div className="overflow-x-clip">
       <Seo path="/proyek" title="Proyek" description="Portofolio bangunan yang kami selesaikan dan yang sedang berjalan." />
       <ProjectsBanner />
-      {/* Proyek unggulan hanya di halaman 1 tanpa filter aktif.
+      {/* Proyek unggulan hanya tanpa filter aktif.
           Tanpa Reveal: elemen LCP di atas lipatan tidak boleh menunggu animasi opacity. */}
-      {page === 1 && !q && !kategori && !status && !layanan && !tahun && (
-        <FeaturedProjectsStrip />
-      )}
+      {noFilters && <FeaturedProjectsStrip />}
       <Container className="py-14">
         <Reveal as="section" aria-label="Filter proyek" delay={120}>
-          <ProjectFilterBar facets={facets} meta={meta} shown={rows.length} page={page} limit={LIMIT} />
+          <ProjectFilterBar facets={facets} meta={meta} shown={rows.length} page={1} limit={LIMIT} />
         </Reveal>
 
         {/* Hasil: Grid / Daftar / Peta */}
@@ -198,22 +217,25 @@ export function ProjectsPage() {
               <p className="max-w-sm text-sm text-ink-light">Coba ubah kata kunci, layanan, tahun, status, atau kategori — atau mulai lagi tanpa filter.</p>
               <PillButton variant="dark" onClick={resetFilters}>Reset Filter</PillButton>
             </div>
-          ) : tampilan === "daftar" ? (
-            <div className={`mt-8 space-y-4 transition-opacity ${isFetching ? "opacity-60" : ""}`}>
-              {rows.map((p) => <ProjectListItem key={p.id} project={p} />)}
-            </div>
           ) : (
-            <div className={`mt-10 grid grid-cols-2 gap-6 transition-opacity md:grid-cols-3 lg:grid-cols-4 ${isFetching ? "opacity-60" : ""}`}>
-              {rows.map((p) => <ProjectCardV2 key={p.id} project={p} />)}
-            </div>
+            <ProjectsVirtualResults rows={rows} mode={tampilan} dimmed={isFetching && !isFetchingNextPage} />
           )}
         </div>
         </Reveal>
 
-        {tampilan !== "peta" && meta && meta.total > LIMIT && (
-          <Reveal as="div" className="mt-12" delay={200}>
-            <Pagination page={page} totalPages={meta.totalPages} onChange={setPage} label="Paginasi proyek" />
-          </Reveal>
+        {/* Sentinel infinite scroll — diganti teks saat semua proyek tampil */}
+        {tampilan !== "peta" && rows.length > 0 && (
+          <div ref={sentinelRef} className="mt-10 flex justify-center">
+            {isFetchingNextPage ? (
+              <span className="inline-flex items-center gap-2 text-sm font-semibold text-ink-soft">
+                <Loader2 size={16} className="animate-spin" /> Memuat proyek lainnya…
+              </span>
+            ) : !hasNextPage ? (
+              <p className="text-xs text-ink-light">Semua {meta?.total ?? rows.length} proyek sudah ditampilkan.</p>
+            ) : (
+              <span className="h-6" aria-hidden />
+            )}
+          </div>
         )}
       </Container>
       <Reveal as="div" delay={100}>
@@ -266,7 +288,7 @@ function Lightbox({ images, index, onClose, onMove }) {
         }}
         className="max-w-4xl touch-pan-y select-none"
       >
-        <img src={img(current.url)} alt={current.caption ?? ""} className="max-h-[80vh] w-full rounded-xl object-contain" />
+        <img src={img(current.url)} {...imageProps(current.url, { width: 1200, priority: true })} alt={current.caption ?? ""} className="max-h-[80vh] w-full rounded-xl object-contain" />
         {current.caption && <figcaption className="mt-2 text-center text-sm text-white/70">{current.caption}</figcaption>}
       </figure>
     </div>
@@ -316,7 +338,7 @@ function ProjectHero({ image, title, location, category, status, onClickImage })
   if (landscape) {
     return (
       <button type="button" onClick={onClickImage} className="group relative mt-4 block w-full overflow-hidden rounded-3xl shadow-soft-lg" aria-label="Perbesar gambar hero">
-        <img src={image} alt={title} loading="eager" fetchPriority="high" onLoad={handleLoad} className="block h-full w-full transition-transform duration-300 group-hover:scale-[1.02]" style={{ aspectRatio: ratio }} />
+        <img src={image} {...imageProps(image, { width: 1200, priority: true })} alt={title} onLoad={handleLoad} className="block h-full w-full transition-transform duration-300 group-hover:scale-[1.02]" style={{ aspectRatio: ratio }} />
         <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,.8) 0%, rgba(0,0,0,.35) 40%, transparent 55%)" }} />
         <div className="absolute inset-x-0 bottom-0 z-10 p-5 md:p-8">{overlay}</div>
       </button>
@@ -328,7 +350,7 @@ function ProjectHero({ image, title, location, category, status, onClickImage })
     <div className="mt-4 overflow-hidden rounded-3xl shadow-soft-lg">
       {/* Mobile: overlay di atas gambar */}
       <button type="button" onClick={onClickImage} className="group relative block w-full md:hidden" aria-label="Perbesar gambar hero">
-        <img src={image} alt={title} loading="eager" fetchPriority="high" onLoad={handleLoad} className="block h-full w-full" style={{ aspectRatio: ratio }} />
+        <img src={image} {...imageProps(image, { width: 900, priority: true })} alt={title} onLoad={handleLoad} className="block h-full w-full" style={{ aspectRatio: ratio }} />
         <div aria-hidden className="pointer-events-none absolute inset-0" style={{ background: "linear-gradient(to top, rgba(0,0,0,.85) 0%, rgba(0,0,0,.4) 45%, transparent 65%)" }} />
         <div className="absolute inset-x-0 bottom-0 z-10 p-5">{overlay}</div>
       </button>
@@ -336,7 +358,7 @@ function ProjectHero({ image, title, location, category, status, onClickImage })
       <div className="hidden bg-ink md:grid md:grid-cols-[minmax(0,1fr)_auto]">
         <div className="flex flex-col items-start justify-end p-10">{overlay}</div>
         <button type="button" onClick={onClickImage} className="group block" aria-label="Perbesar gambar hero">
-          <img src={image} alt={title} loading="eager" fetchPriority="high" onLoad={handleLoad} className="block h-full max-h-[70vh] w-auto transition-transform duration-300 group-hover:scale-[1.02]" style={{ aspectRatio: ratio }} />
+          <img src={image} {...imageProps(image, { width: 900, priority: true })} alt={title} onLoad={handleLoad} className="block h-full max-h-[70vh] w-auto transition-transform duration-300 group-hover:scale-[1.02]" style={{ aspectRatio: ratio }} />
         </button>
       </div>
     </div>
@@ -590,6 +612,7 @@ export function ProjectDetailPage() {
   const { data: project, isLoading, isError, error } = useQuery({
     queryKey: ["public-project", slug],
     queryFn: async () => (await api.get(`/public/projects/${slug}`)).data.data,
+    staleTime: 5 * 60_000,
     retry: false,
   });
 

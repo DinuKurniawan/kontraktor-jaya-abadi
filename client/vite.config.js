@@ -24,6 +24,8 @@ export default defineConfig(({ mode }) => {
   const imagePreconnect = IMAGE_ORIGINS
     .map((o) => `    <link rel="preconnect" href="${o}" crossorigin />\n`)
     .join("");
+  // Preload gambar LCP hero lokal agar diunduh paralel sejak awal dokumen.
+  const heroPreload = `    <link rel="preload" as="image" href="/hero-default.webp" type="image/webp" fetchpriority="high" />\n`;
 
   // ---- ARD (Agentic Resource Discovery) manifest ----
   // URL publik situs: VITE_SITE_URL → domain produksi Vercel → localhost.
@@ -112,8 +114,8 @@ export default defineConfig(({ mode }) => {
         transformIndexHtml(html) {
           const apiSource = apiOrigin ? ` ${apiOrigin}` : "";
           const preconnect = apiOrigin && !/localhost|127\.0\.0\.1/.test(apiOrigin)
-            ? `    <link rel="preconnect" href="${apiOrigin}" crossorigin />\n${imagePreconnect}`
-            : imagePreconnect;
+            ? `    <link rel="preconnect" href="${apiOrigin}" crossorigin />\n${imagePreconnect}${heroPreload}`
+            : imagePreconnect + heroPreload;
           // Catatan: frame-ancestors TIDAK valid di <meta>, hanya valid di header HTTP.
           const csp = `    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://picsum.photos https://fastly.picsum.photos https://*.picsum.photos https://images.unsplash.com https://*.tile.openstreetmap.org https://i.ytimg.com${apiSource}; font-src 'self' data:; connect-src 'self'${apiSource} https://nominatim.openstreetmap.org; frame-src https://www.google.com https://www.youtube.com https://www.youtube-nocookie.com; base-uri 'self'; form-action 'self'; object-src 'none'" />\n`;
           // Penemuan ARD eksplisit: <link rel="ard"> di setiap halaman.
@@ -135,13 +137,7 @@ export default defineConfig(({ mode }) => {
             `${JSON.stringify(ardManifest, null, 2)}\n`,
             "utf8",
           );
-          // robots.txt: origin mengikuti VITE_SITE_URL, bukan localhost hard-code.
-          // Agentmap = sinyal penemuan ARD prioritas tertinggi (§5.1).
-          fs.writeFileSync(
-            path.join(outDir, "robots.txt"),
-            `User-agent: *\nAllow: /\nAgentmap: ${siteOrigin}/.well-known/ard.json\n`,
-            "utf8",
-          );
+          // robots.txt tidak lagi ditulis di sini; lihat client/public/robots.txt.
         },
       },
     ],

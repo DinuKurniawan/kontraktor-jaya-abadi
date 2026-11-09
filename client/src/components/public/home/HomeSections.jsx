@@ -14,6 +14,7 @@ import { SERVICE_ICONS } from "../../../lib/service-icons.jsx";
 import { toast } from "../../ui/Toast.jsx";
 import { useSiteSettings } from "./HeroSection.jsx";
 import AspectImage from "../../ui/AspectImage.jsx";
+import { imageProps } from "../../../lib/image.js";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
@@ -176,8 +177,7 @@ function BentoProjectCard({ p }) {
       to={`/proyek/${p.slug}`}
       className="group relative block h-[18.75rem] overflow-hidden rounded-2xl shadow-soft focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand"
     >
-      <img src={img(p.coverImage)} alt={p.title} width={520} height={600}
-        loading="lazy"
+      <img {...imageProps(p.coverImage, { width: 520, height: 600 })} alt={p.title}
         className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" />
       <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/30 to-transparent transition group-hover:from-ink/95" />
       {p.status && (
@@ -346,7 +346,7 @@ export function TestimonialHighlight() {
             </div>
             <figcaption className="mt-5 flex items-center gap-3 pl-4 sm:pl-6">
               {t.avatar ? (
-                <img src={img(t.avatar)} alt={t.name} width={48} height={48} className="h-12 w-12 rounded-full object-cover" />
+                <img {...imageProps(t.avatar, { width: 48, height: 48 })} alt={t.name} className="h-12 w-12 rounded-full object-cover" />
               ) : (
                 <span aria-hidden className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-soft font-jakarta text-lg font-bold text-brand-dark">
                   {(t.name?.[0] ?? "★").toUpperCase()}
@@ -392,7 +392,7 @@ export function TestimonialHighlight() {
           {cur && (
             <div className="hidden lg:col-span-2 lg:block">
               <div className="overflow-hidden rounded-2xl shadow-soft-lg">
-                <img key={cur.id} src={img(cur.coverImage)} alt={cur.title} loading="lazy"
+                <img key={cur.id} {...imageProps(cur.coverImage, { width: 640, height: 800 })} alt={cur.title}
                   className="aspect-[4/5] w-full animate-fade-in object-cover" />
               </div>
               <p className="mt-2 text-center text-xs text-ink-light">Proyek: {cur.title}</p>
@@ -460,7 +460,7 @@ export function LatestArticles() {
             <div className="flex flex-col gap-4">
               {rest.map((p) => (
                 <Link key={p.id} to={`/artikel/${p.slug}`} className="group flex flex-1 gap-4 rounded-2xl bg-white p-3 shadow-soft transition hover:shadow-soft-lg">
-                  <img src={img(p.coverImage)} alt={p.title} width={112} height={80} loading="lazy" className="h-20 w-28 shrink-0 rounded-xl object-cover" />
+                  <img {...imageProps(p.coverImage, { width: 112, height: 80 })} alt={p.title} className="h-20 w-28 shrink-0 rounded-xl object-cover" />
                   <div className="min-w-0">
                     {p.category?.name && <span className="text-[11px] font-semibold uppercase text-brand">{p.category.name}</span>}
                     <h3 className="line-clamp-2 font-jakarta font-bold leading-snug text-ink group-hover:text-brand">{p.title}</h3>
@@ -542,7 +542,7 @@ export function CtaBanner() {
 
   return (
     <section className="relative overflow-hidden">
-      <img src={bg ? img(bg) : "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1600&q=60"} alt="" className="absolute inset-0 h-full w-full object-cover" />
+      <img src={bg ? img(bg) : "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1600&q=60&auto=format"} alt="" className="absolute inset-0 h-full w-full object-cover" />
       <div className="absolute inset-0 bg-ink/85" />
       <Container className="relative grid items-center gap-10 py-16 sm:py-20 lg:grid-cols-2">
         {/* Kiri: jaminan + telepon besar */}

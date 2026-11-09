@@ -81,6 +81,7 @@ export default function ProjectsMap({ q = "", layanan = "", tahun = "", kategori
   const { data, isLoading, isError } = useQuery({
     // Tidak memakai page/limit: peta selalu mengambil seluruh titik hasil filter.
     queryKey: ["public-projects-map", { q, layanan, tahun, kategori, status }],
+    staleTime: 60_000,
     queryFn: async () => (await api.get("/public/projects/map", {
       params: {
         search: q || undefined,
