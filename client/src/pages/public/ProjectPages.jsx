@@ -163,13 +163,23 @@ export function ProjectsPage() {
 
   return (
     <div className="overflow-x-clip">
-      <Seo path="/proyek" title="Proyek" description="Portofolio bangunan yang kami selesaikan dan yang sedang berjalan." />
+      <Seo
+        path="/proyek"
+        title="Portofolio Proyek Konstruksi & Renovasi"
+        description="Daftar portofolio proyek konstruksi rumah tinggal, gedung komersial, dan renovasi bangunan terpercaya oleh Jaya Abadi."
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "Portofolio Proyek Jaya Abadi",
+          description: "Daftar portofolio proyek konstruksi rumah tinggal, gedung komersial, dan renovasi bangunan terpercaya oleh Jaya Abadi.",
+        }}
+      />
       <ProjectsBanner />
       {/* Proyek unggulan hanya tanpa filter aktif.
           Tanpa Reveal: elemen LCP di atas lipatan tidak boleh menunggu animasi opacity. */}
       {noFilters && <FeaturedProjectsStrip />}
       <Container className="py-14">
-        <Reveal as="section" aria-label="Filter proyek" delay={120}>
+        <Reveal as="section" aria-label="Filter proyek halaman" delay={120}>
           <ProjectFilterBar facets={facets} meta={meta} shown={rows.length} page={1} limit={LIMIT} />
         </Reveal>
 

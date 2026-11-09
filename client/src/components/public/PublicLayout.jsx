@@ -104,8 +104,14 @@ function Navbar() {
   // Transparan di atas, putih shadow setelah scroll
   useEffect(() => subscribeScroll((y) => setScrolled(y > 24)), []);
 
-  // Tutup drawer mobile saat pindah halaman
+  // Tutup drawer mobile saat pindah halaman atau tekan Escape
   useEffect(() => setOpen(false), [location.pathname]);
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKeyDown = (e) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open]);
 
   const linkCls = ({ isActive }) =>
     `rounded-full px-3.5 py-2 text-sm font-semibold transition ${
@@ -113,7 +119,7 @@ function Navbar() {
     }`;
 
   return (
-    <header
+    <div
       className={`fixed inset-x-0 top-0 z-40 transition-colors duration-300 ${
         scrolled || open ? "bg-cream/90 shadow-[0_6px_24px_rgba(28,25,23,0.06)] backdrop-blur-md" : "bg-transparent"
       }`}
@@ -140,6 +146,7 @@ function Navbar() {
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
+          aria-controls="mobile-nav"
           aria-label={open ? "Tutup menu" : "Buka menu"}
           className="rounded-lg p-2 text-ink transition hover:bg-ink/5 lg:hidden"
         >
@@ -149,7 +156,7 @@ function Navbar() {
 
       {/* Drawer mobile */}
       {open && (
-        <nav className="border-t border-ink/5 bg-cream px-5 pb-5 pt-2 lg:hidden" aria-label="Menu seluler">
+        <nav id="mobile-nav" className="border-t border-ink/5 bg-cream px-5 pb-5 pt-2 lg:hidden" aria-label="Menu seluler">
           {MENU.map((m) => (
             <NavLink key={m.to} to={m.to} end={m.to === "/"} className={({ isActive }) =>
               `block rounded-xl px-3 py-2.5 text-sm font-semibold ${isActive ? "bg-brand-soft text-brand-dark" : "text-ink"}`
@@ -162,7 +169,7 @@ function Navbar() {
           </PillButton>
         </nav>
       )}
-    </header>
+    </div>
   );
 }
 

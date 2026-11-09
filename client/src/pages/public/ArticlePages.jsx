@@ -25,6 +25,7 @@ import Skeleton from "../../components/ui/Skeleton.jsx";
 import { toast } from "../../components/ui/Toast.jsx";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
+const SITE = (import.meta.env.VITE_SITE_URL || window.location.origin).replace(/\/$/, "");
 const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
 const fmt = (d) => d && new Date(d).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 const initials = (name = "Jaya Abadi") => name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "JA";
@@ -117,8 +118,8 @@ export function ArticlesPage() {
     <>
       <Seo
         path="/artikel"
-        title="Artikel"
-        description="Tips, panduan, dan kabar terbaru seputar konstruksi."
+        title="Artikel & Wawasan Konstruksi"
+        description="Tips membangun rumah, panduan membaca RAB, regulasi PBG/SLF, dan wawasan konstruksi dari tim Jaya Abadi."
         noindex={Boolean(search || category || tag || sort !== "terbaru" || page > 1)}
         jsonLd={rows.length ? {
           "@context": "https://schema.org",
@@ -128,7 +129,7 @@ export function ArticlesPage() {
             "@type": "ListItem",
             position: index + 1,
             name: post.title,
-            url: `/artikel/${post.slug}`,
+            url: new URL(`/artikel/${post.slug}`, `${SITE}/`).href,
           })),
         } : undefined}
       />
@@ -160,13 +161,13 @@ export function ArticlesPage() {
 
         <div className="mt-10 grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_18rem]">
           <div className="sr-only" aria-live="polite" aria-atomic="true">{resultLabel}</div>
-          <Reveal as="main" className="min-w-0">
+          <Reveal className="min-w-0">
             {isLoading ? (
               <div className="grid gap-6 sm:grid-cols-2">
                 {Array.from({ length: 6 }, (_, index) => <div key={index} className="overflow-hidden rounded-2xl bg-white p-3 shadow-soft"><Skeleton className="h-[250px] w-full bg-cream-deep" rounded="rounded-xl" /><div className="mt-4 space-y-3"><Skeleton className="h-3 w-1/3 bg-cream-deep" /><Skeleton className="h-5 w-full bg-cream-deep" /><Skeleton className="h-4 w-4/5 bg-cream-deep" /></div></div>)}
               </div>
             ) : isError ? (
-              <p className="rounded-2xl border border-danger/20 bg-danger/5 px-5 py-10 text-center text-sm text-danger">Gagal memuat artikel. Coba muat ulang halaman.</p>
+              <p className="rounded-2xl border border-danger/20 bg-danger/5 px-5 py-10 text-center text-sm text-ink">Gagal memuat artikel. Coba muat ulang halaman.</p>
             ) : rows.length === 0 ? (
               <EmptyState categories={popularCategories} onCategoryChange={setParam("kategori")} onReset={resetFilters} />
             ) : (
@@ -259,6 +260,7 @@ export function ArticleDetailPage() {
           headline: post.title,
           description: post.excerpt,
           image: post.coverImage ? [img(post.coverImage)] : undefined,
+          url,
           datePublished: post.publishedAt,
           dateModified: post.updatedAt || post.publishedAt,
           author: { "@type": "Person", name: authorName },
@@ -271,12 +273,12 @@ export function ArticleDetailPage() {
       />
       <Container className="max-w-6xl pt-12">
         <header className="max-w-4xl">
-          {post.category?.name && <Link to={`/artikel?kategori=${post.category.slug}`} className="text-xs font-bold uppercase tracking-[0.16em] text-brand hover:underline">{post.category.name}</Link>}
+          {post.category?.name && <Link to={`/artikel?kategori=${post.category.slug}`} className="text-xs font-bold uppercase tracking-[0.16em] text-brand-strong hover:underline">{post.category.name}</Link>}
           <h1 className="mt-3 font-jakarta text-3xl font-extrabold leading-tight text-ink sm:text-5xl">{post.title}</h1>
           <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-4">
             <div className="flex items-center gap-2.5">
               {post.author?.photo ? <img src={img(post.author.photo)} alt="" width={40} height={40} className="h-10 w-10 rounded-full object-cover" /> : <span aria-hidden className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-soft text-xs font-extrabold text-brand">{initials(authorName)}</span>}
-              <div><p className="text-sm font-bold text-ink">{authorName}</p><p className="text-xs text-ink-light">{post.author?.position || "Jaya Abadi"}</p></div>
+              <div><p className="text-sm font-bold text-ink">{authorName}</p><p className="text-xs text-ink-soft">{post.author?.position || "Jaya Abadi"}</p></div>
             </div>
             <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-ink-light">
               <span className="inline-flex items-center gap-1.5"><CalendarDays size={14} /> Terbit {fmt(post.publishedAt)}</span>
@@ -293,13 +295,13 @@ export function ArticleDetailPage() {
         <div className="mt-6"><ShareButtons url={url} title={post.title} copied={copied} onCopy={copyLink} /></div>
 
         <div className="mt-10 grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_16rem]">
-          <main className="min-w-0" aria-busy={isLoading}>
+          <div className="min-w-0" aria-busy={isLoading}>
             <article className="prose-jaya text-[1rem] sm:text-[1.05rem]" dangerouslySetInnerHTML={{ __html: preparedContent.html }} />
             {(post.tags ?? []).length > 0 && <div role="group" className="mt-8 flex flex-wrap items-center gap-2 border-t border-ink/10 pt-5" aria-label="Tag artikel"><span className="mr-1 text-xs font-bold text-ink-light">Tag:</span>{post.tags.map((tag) => <Link key={tag.id ?? tag.slug} to={`/artikel?tag=${tag.slug}`} className="rounded-full bg-cream-deep px-3 py-1.5 text-xs font-semibold text-ink-soft transition hover:bg-brand-soft hover:text-brand">#{tag.name}</Link>)}</div>}
             <AuthorBox author={post.author} />
             <ArticleNavigation previous={post.previous} next={post.next} />
             <ArticleNewsletter />
-          </main>
+          </div>
           <ArticleToc headings={preparedContent.headings} />
         </div>
       </Container>

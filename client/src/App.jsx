@@ -1,5 +1,5 @@
 // Peta rute — semua halaman di React.lazy (code-split per halaman, Suspense skeleton)
-import { Suspense, lazy } from "react";
+import { Component, Suspense, lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import AdminLayout from "./components/admin/AdminLayout.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
@@ -58,17 +58,27 @@ const PlaceholderPage = L(() => import("./components/admin/PlaceholderPage.jsx")
 
 // Fallback loading skeleton
 const Loading = (
-  <div className="flex min-h-[60vh] items-center justify-center bg-cream lg:bg-surface">
+  <div className="flex min-h-[60vh] items-center justify-center bg-cream lg:bg-surface" role="status" aria-live="polite" aria-label="Memuat halaman">
     <Skeleton className="h-10 w-56" rounded="rounded-full" />
   </div>
 );
+
+class PublicErrorBoundary extends Component {
+  constructor(props) { super(props); this.state = { hasError: false }; }
+  static getDerivedStateFromError() { return { hasError: true }; }
+  render() {
+    if (this.state.hasError) return <main className="mx-auto flex min-h-[60vh] max-w-2xl flex-col items-start justify-center gap-4 px-5"><h1 className="font-jakarta text-3xl font-extrabold">Halaman belum dapat dimuat</h1><p>Coba muat ulang halaman beberapa saat lagi.</p><button type="button" onClick={() => window.location.reload()} className="rounded-full bg-brand px-5 py-3 font-bold text-white">Muat ulang</button></main>;
+    return this.props.children;
+  }
+}
 
 export default function App() {
   // Pasang listener SSE real-time untuk otomatis me-refresh data tanpa reload
   useRealtime();
 
   return (
-    <Suspense fallback={Loading}>
+    <PublicErrorBoundary>
+      <Suspense fallback={Loading}>
       <Routes>
         {/* Halaman publik ber-layout */}
         <Route element={<PublicLayout />}>
@@ -145,6 +155,7 @@ export default function App() {
 
         <Route path="*" element={<Navigate to="/admin/login" replace />} />
       </Routes>
-    </Suspense>
+      </Suspense>
+    </PublicErrorBoundary>
   );
 }

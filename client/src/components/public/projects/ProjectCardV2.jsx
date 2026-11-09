@@ -31,7 +31,7 @@ export default function ProjectCardV2({ project }) {
         {coverImage ? (
           <ImageWithFallback
             src={img(coverImage)}
-            {...imageProps(coverImage, { width: 400, height: 300 })}
+            {...imageProps(coverImage, { width: 400, height: 300, sizes: "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" })}
             alt={title}
             className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
           />

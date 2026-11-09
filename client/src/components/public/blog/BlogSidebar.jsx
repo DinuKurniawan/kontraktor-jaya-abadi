@@ -61,7 +61,7 @@ export default function BlogSidebar({ categories = [], tags = [], activeTag = ""
             ))}
           </div>
         )}
-        <Link to="/artikel?urutan=terpopuler" className="mt-5 inline-flex items-center gap-1.5 text-xs font-bold text-brand hover:text-brand-dark">Lihat semua populer <ArrowRight size={14} /></Link>
+        <Link to="/artikel?urutan=terpopuler" className="mt-5 inline-flex items-center gap-1.5 text-xs font-bold text-brand-strong hover:text-brand-dark">Lihat semua populer <ArrowRight size={14} /></Link>
       </section>
 
       {categoryList.length > 0 && (
@@ -100,13 +100,13 @@ export default function BlogSidebar({ categories = [], tags = [], activeTag = ""
       )}
 
       <section className="rounded-2xl bg-ink p-5 text-cream shadow-soft-lg">
-        <div className="flex items-center gap-2 text-brand-soft">
+        <div className="flex items-center gap-2 text-brand-light">
           <Mail size={18} />
-          <h2 className="font-jakarta text-lg font-extrabold">Tips konstruksi</h2>
+          <h2 className="font-jakarta text-lg font-extrabold text-white">Tips konstruksi</h2>
         </div>
-        <p className="mt-2 text-sm leading-relaxed text-cream/70">Dapatkan wawasan dan inspirasi terbaru langsung di inbox Anda.</p>
+        <p className="mt-2 text-sm leading-relaxed text-white/80">Dapatkan wawasan dan inspirasi terbaru langsung di inbox Anda.</p>
         {subscribed ? (
-          <p className="mt-4 text-sm font-semibold text-brand-soft">Terima kasih! Email Anda sudah terdaftar.</p>
+          <p className="mt-4 text-sm font-semibold text-brand-light">Terima kasih! Email Anda sudah terdaftar.</p>
         ) : (
           <form className="mt-4 space-y-2" onSubmit={(event) => { event.preventDefault(); subscribe.mutate(); }}>
             <label htmlFor="sidebar-newsletter-email" className="sr-only">Email newsletter</label>
@@ -119,8 +119,8 @@ export default function BlogSidebar({ categories = [], tags = [], activeTag = ""
       <section className="rounded-2xl bg-brand p-5 text-white shadow-soft-lg">
         <MessageCircle size={22} className="text-white/80" />
         <h2 className="mt-3 font-jakarta text-lg font-extrabold">Punya rencana proyek?</h2>
-        <p className="mt-2 text-sm leading-relaxed text-white/90">Ceritakan kebutuhan Anda. Tim Jaya Abadi siap membantu memberi arahan.</p>
-        <a href={waUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-brand transition hover:bg-cream">Konsultasi via WhatsApp <ArrowRight size={15} /></a>
+        <p className="mt-2 text-sm leading-relaxed text-white">Ceritakan kebutuhan Anda. Tim Jaya Abadi siap membantu memberi arahan.</p>
+        <a href={waUrl} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-brand transition hover:bg-cream text-ink">Konsultasi via WhatsApp <ArrowRight size={15} /></a>
       </section>
     </aside>
   );

@@ -1,6 +1,8 @@
 User-agent: *
 Allow: /
+Allow: /api/public/
+Allow: /.well-known/
 Disallow: /admin/
 Disallow: /api/
 
-Sitemap: /sitemap.xml
+Sitemap: https://jayaabadi.com/sitemap.xml

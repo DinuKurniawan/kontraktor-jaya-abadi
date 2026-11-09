@@ -102,7 +102,7 @@ export function ShareButtons({ url, title, copied, onCopy }) {
   const encodedTitle = encodeURIComponent(title);
   return (
     <div role="group" className="flex flex-wrap items-center gap-2" aria-label="Bagikan artikel">
-      <span className="mr-1 text-xs font-bold text-ink-light">Bagikan:</span>
+      <span className="mr-1 text-xs font-bold text-ink-soft">Bagikan:</span>
       <a href={`https://wa.me/?text=${encodedTitle}%20${encodedUrl}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-full bg-[#25D366]/12 px-3.5 py-2 text-xs font-bold text-[#128C4A] transition hover:bg-[#25D366]/25"><MessageCircle size={14} /> WhatsApp</a>
       <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`} target="_blank" rel="noreferrer" className="rounded-full bg-[#1877F2]/12 px-3.5 py-2 text-xs font-bold text-[#1877F2] transition hover:bg-[#1877F2]/25">Facebook</a>
       <a href={`https://twitter.com/intent/tweet?text=${encodedTitle}&url=${encodedUrl}`} target="_blank" rel="noreferrer" className="rounded-full bg-ink/5 px-3.5 py-2 text-xs font-bold text-ink transition hover:bg-ink hover:text-cream">X</a>
@@ -115,8 +115,8 @@ export function ArticleNavigation({ previous, next }) {
   if (!previous && !next) return null;
   return (
     <nav className="mt-10 grid gap-3 border-y border-ink/10 py-5 sm:grid-cols-2" aria-label="Navigasi artikel">
-      {previous ? <Link to={`/artikel/${previous.slug}`} className="group rounded-xl p-3 transition hover:bg-cream-deep"><span className="inline-flex items-center gap-1 text-xs font-bold text-ink-light"><ChevronLeft size={14} /> Artikel sebelumnya</span><span className="mt-1 block line-clamp-2 text-sm font-bold text-ink group-hover:text-brand">{previous.title}</span></Link> : <span />}
-      {next && <Link to={`/artikel/${next.slug}`} className="group rounded-xl p-3 text-left sm:text-right"><span className="inline-flex items-center gap-1 text-xs font-bold text-ink-light">Artikel berikutnya <ChevronRight size={14} /></span><span className="mt-1 block line-clamp-2 text-sm font-bold text-ink group-hover:text-brand">{next.title}</span></Link>}
+      {previous ? <Link to={`/artikel/${previous.slug}`} className="group rounded-xl p-3 transition hover:bg-cream-deep"><span className="inline-flex items-center gap-1 text-xs font-bold text-ink-soft"><ChevronLeft size={14} /> Artikel sebelumnya</span><span className="mt-1 block line-clamp-2 text-sm font-bold text-ink group-hover:text-brand">{previous.title}</span></Link> : <span />}
+      {next && <Link to={`/artikel/${next.slug}`} className="group rounded-xl p-3 text-left sm:text-right"><span className="inline-flex items-center gap-1 text-xs font-bold text-ink-soft">Artikel berikutnya <ChevronRight size={14} /></span><span className="mt-1 block line-clamp-2 text-sm font-bold text-ink group-hover:text-brand">{next.title}</span></Link>}
     </nav>
   );
 }

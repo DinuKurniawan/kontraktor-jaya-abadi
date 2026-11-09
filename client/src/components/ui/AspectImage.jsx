@@ -50,7 +50,7 @@ export default function AspectImage({
       ) : (
         <img
           ref={imgRef}
-          {...imageProps(src, { width: 640, height: ratio === "4/5" ? 800 : ratio === "1/1" ? 640 : ratio === "16/9" ? 360 : 480, priority })}
+          {...imageProps(src, { width: 640, height: ratio === "4/5" ? 800 : ratio === "1/1" ? 640 : ratio === "16/9" ? 360 : 480, priority, sizes: "(max-width: 768px) 100vw, 640px" })}
           alt={alt}
           onLoad={() => setLoaded(true)}
           onError={() => setFailed(true)}

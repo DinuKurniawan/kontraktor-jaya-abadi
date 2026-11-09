@@ -1,0 +1,36 @@
+import { chromium } from "playwright";
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
+
+const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const root = resolve(repoRoot, "client");
+const { preview } = await import(pathToFileURL(resolve(root, "node_modules/vite/dist/node/index.js")));
+const routes = ["/", "/tentang", "/layanan", "/proyek", "/artikel", "/kontak", "/404"];
+const server = await preview({ root, configFile: resolve(root, "vite.config.js"), preview: { host: "127.0.0.1", port: 4174, strictPort: true } });
+let browser;
+
+async function launchBrowser() {
+  try {
+    return await chromium.launch({ headless: true });
+  } catch {
+    return await chromium.launch({ channel: "chrome", headless: true });
+  }
+}
+
+try {
+  browser = await launchBrowser();
+  const page = await browser.newPage();
+  for (const route of routes) {
+    await page.goto(`http://127.0.0.1:4174${route}`, { waitUntil: "networkidle" });
+    const html = await page.content();
+    const target = route === "/" ? resolve(root, "dist/index.html") : resolve(root, `dist${route}/index.html`);
+    await mkdir(dirname(target), { recursive: true });
+    await writeFile(target, `<!doctype html>\n${html.slice(html.indexOf("<html"))}`, "utf8");
+  }
+} finally {
+  await browser?.close();
+  if (server.httpServer) {
+    await new Promise((res) => server.httpServer.close(res));
+  }
+}

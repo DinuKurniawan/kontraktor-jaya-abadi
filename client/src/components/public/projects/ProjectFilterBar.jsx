@@ -288,7 +288,7 @@ export default function ProjectFilterBar({ facets, meta, shown, page = 1, limit 
   return (
     <>
       {/* Desktop */}
-      <section aria-label="Filter proyek" className="hidden rounded-2xl border border-ink/10 bg-white p-5 shadow-soft lg:block">
+      <section aria-label="Filter proyek desktop" className="hidden rounded-2xl border border-ink/10 bg-white p-5 shadow-soft lg:block" id="filter-proyek">
         <div className="mb-4 flex items-center justify-between gap-3 border-b border-ink/10 pb-3">
           <p className="text-[11px] font-bold uppercase tracking-widest text-ink-light">Filter proyek</p>
           <ViewToggle value={tampilan} onChange={setView} />

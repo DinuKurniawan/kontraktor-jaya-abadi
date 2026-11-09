@@ -52,7 +52,7 @@ function Photo({ src, alt, className = "", eager = false }) {
       {!loaded && !eager && <div className="absolute inset-0 animate-pulse bg-cream-deep" aria-hidden />}
       {src && (
         <img
-          {...imageProps(src, { width: eager ? 800 : 400, height: eager ? 600 : 300, priority: eager })}
+          {...imageProps(src, { width: eager ? 800 : 400, height: eager ? 600 : 300, priority: eager, sizes: "(max-width: 768px) 100vw, 50vw" })}
           alt={alt}
           onLoad={() => setLoaded(true)}
           onError={() => setLoaded(true)}

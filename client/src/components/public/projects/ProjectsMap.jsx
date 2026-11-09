@@ -3,22 +3,45 @@
  * Data peta memakai endpoint khusus tanpa pagination agar semua titik hasil
  * filter tampil sekaligus.
  */
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 
 const ProjectsMapClient = lazy(() => import("./ProjectsMapClient.jsx"));
 
-function MapLoading() {
+function MapLoading({ visible = false }) {
   return (
-    <div className="mt-8 flex h-[420px] items-center justify-center animate-pulse rounded-2xl bg-cream-deep sm:h-[520px]">
-      <span className="text-sm font-semibold text-ink-soft">Memuat peta…</span>
+    <div
+      className="mt-8 flex h-[420px] min-h-[420px] items-center justify-center rounded-2xl bg-cream-deep sm:h-[520px] sm:min-h-[520px]"
+      aria-busy={visible}
+    >
+      <span className="text-sm font-semibold text-ink-soft">{visible ? "Memuat peta…" : "Peta proyek"}</span>
     </div>
   );
 }
 
 export default function ProjectsMap(props) {
+  const hostRef = useRef(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const node = hostRef.current;
+    if (!node) return undefined;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setVisible(true);
+        observer.disconnect();
+      }
+    }, { rootMargin: "300px" });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <Suspense fallback={<MapLoading />}>
-      <ProjectsMapClient {...props} />
-    </Suspense>
+    <div ref={hostRef} className="min-h-[452px] sm:min-h-[552px]">
+      {visible ? (
+        <Suspense fallback={<MapLoading visible />}>
+          <ProjectsMapClient {...props} />
+        </Suspense>
+      ) : <MapLoading />}
+    </div>
   );
 }

@@ -90,6 +90,58 @@ export default defineConfig(({ mode }) => {
       ],
       tags: ["artikel", "tips", "regulasi"],
     },
+    {
+      name: "branches",
+      displayName: "Kantor & Cabang Jaya Abadi",
+      description:
+        "Daftar kantor pusat, kantor cabang, alamat, koordinat, nomor telepon, dan jam operasional.",
+      path: "/public/branches",
+      queries: [
+        "alamat kantor kontraktor jaya abadi",
+        "nomor telepon kantor jaya abadi",
+        "jam operasional kontraktor",
+      ],
+      tags: ["kontak", "kantor", "cabang", "lokasi"],
+    },
+    {
+      name: "faqs",
+      displayName: "Tanya Jawab (FAQ) Jaya Abadi",
+      description:
+        "Daftar pertanyaan umum seputar biaya, alur kerja, garansi pemeliharaan, dan legalitas kontraktor.",
+      path: "/public/faqs",
+      queries: [
+        "faq kontraktor bangunan",
+        "tanya jawab renovasi rumah",
+        "garansi konstruksi jaya abadi",
+      ],
+      tags: ["faq", "bantuan", "pertanyaan"],
+    },
+    {
+      name: "settings",
+      displayName: "Profil & Kontak Resmi Jaya Abadi",
+      description:
+        "Profil perusahaan, slogan, nomor telepon, WhatsApp, email resmi, dan tautan media sosial.",
+      path: "/public/settings",
+      queries: [
+        "profil kontraktor jaya abadi",
+        "kontak resmi jaya abadi",
+        "nomor whatsapp kontraktor",
+      ],
+      tags: ["profil", "kontak", "sosial-media"],
+    },
+    {
+      name: "testimonials",
+      displayName: "Ulasan & Testimoni Klien Jaya Abadi",
+      description:
+        "Testimoni nyata dari pemilik rumah dan pengelola gedung komersial yang telah selesai dikerjakan.",
+      path: "/public/testimonials",
+      queries: [
+        "testimoni kontraktor jaya abadi",
+        "review bangun rumah",
+        "kepuasan klien kontraktor",
+      ],
+      tags: ["testimoni", "ulasan", "klien"],
+    },
   ];
 
   const ardManifest = {

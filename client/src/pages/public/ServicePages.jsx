@@ -78,8 +78,22 @@ export function ServicesPage() {
     ],
   } : null;
 
-  if (isError) return <ErrorNote message="Gagal memuat layanan. Coba muat ulang halaman." />;
-  if (isLoading) return <><Seo path="/layanan" title="Layanan" /><PageSkeleton /></>;
+  if (isError) return (
+    <>
+      <Seo path="/layanan" title="Layanan" description="Solusi konstruksi lengkap — dari desain hingga serah terima kunci." />
+      <ServicesBanner />
+      <Container className="py-16 text-center">
+        <ErrorNote message="Gagal memuat layanan. Coba muat ulang halaman." />
+      </Container>
+    </>
+  );
+  if (isLoading) return (
+    <>
+      <Seo path="/layanan" title="Layanan" description="Solusi konstruksi lengkap — dari desain hingga serah terima kunci." />
+      <ServicesBanner />
+      <PageSkeleton />
+    </>
+  );
 
   return (
     <>
@@ -251,7 +265,7 @@ export function ServiceDetailPage() {
           </Link>
         </Container>
         <Container className="mt-6 grid gap-10 lg:min-h-[calc(100vh-8rem)] lg:grid-cols-3">
-          <main className="min-w-0 space-y-12 lg:col-span-2">
+          <div className="min-w-0 space-y-12 lg:col-span-2">
             {/* Deskripsi lengkap */}
             {(service.longDescription || service.description) && (
               <section aria-label="Deskripsi layanan">
@@ -344,7 +358,7 @@ export function ServiceDetailPage() {
 
             {/* FAQ khusus layanan — reuse ServiceFaq */}
             {(service.faqs ?? []).length > 0 && <ServiceFaq services={[{ ...service }]} />}
-          </main>
+          </div>
 
           {/* ===== Sidebar sticky: menempel saat halaman di-scroll ===== */}
           <aside className="lg:sticky lg:top-24 lg:self-start">

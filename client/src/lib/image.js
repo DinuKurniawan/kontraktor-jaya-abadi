@@ -34,7 +34,7 @@ function variant(url, w, h) {
 
 // Props <img> siap sebar: width/height memakai rasio yang sama dengan gambar yang
 // dikirim, sehingga rasio intrinsik selalu cocok dengan tampilan.
-export function imageProps(src, { width = 800, height, priority = false } = {}) {
+export function imageProps(src, { width = 800, height, priority = false, sizes } = {}) {
   const url = img(src);
   if (!url) return {};
   const h = height ?? Math.round((width * 2) / 3);
@@ -48,5 +48,6 @@ export function imageProps(src, { width = 800, height, priority = false } = {}) 
     loading: priority ? "eager" : "lazy",
     fetchPriority: priority ? "high" : undefined,
     decoding: "async",
+    sizes: sizes ?? "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
   };
 }

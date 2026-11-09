@@ -5,9 +5,16 @@
   "description": "Monorepo company profile kontraktor Jaya Abadi (client + server)",
   "scripts": {
     "dev": "concurrently -n server,client -c blue,green \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
-    "install-all": "npm install && npm install --prefix server && npm install --prefix client"
+    "install-all": "npm install && npm install --prefix server && npm install --prefix client",
+    "build": "npm run build --prefix client",
+    "audit:public": "npm run build && node scripts/audit-public.mjs",
+    "prerender:public": "npm run build && node scripts/prerender-public.mjs"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "axe-core": "^4.14.0",
+    "chrome-launcher": "^1.2.3",
+    "concurrently": "^9.1.2",
+    "lighthouse": "^13.6.0",
+    "playwright": "^1.65.0"
   }
 }

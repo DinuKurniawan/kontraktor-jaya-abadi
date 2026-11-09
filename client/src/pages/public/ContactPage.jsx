@@ -35,6 +35,19 @@ export default function ContactPage() {
   const configuredResponseTime = s?.contact_response_time ?? s?.average_response_time ?? s?.response_time_minutes ?? "15 menit";
   const responseTime = /^\d+$/.test(String(configuredResponseTime)) ? `${configuredResponseTime} menit` : String(configuredResponseTime);
 
+  const SITE = (import.meta.env.VITE_SITE_URL || window.location.origin).replace(/\/$/, "");
+  const localBusiness = s ? {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: s.company_name ?? "Jaya Abadi",
+    url: SITE,
+    telephone: s.company_phone ?? undefined,
+    email: s.company_email ?? undefined,
+    address: s.company_address ? { "@type": "PostalAddress", streetAddress: s.company_address } : undefined,
+    sameAs: [s.social_instagram, s.social_linkedin, s.social_facebook, s.social_youtube].filter(Boolean),
+    openingHoursSpecification: s.company_work_hours ? [{ "@type": "OpeningHoursSpecification", opens: "08:00", closes: "17:00", dayOfWeek: "Monday-Saturday" }] : undefined,
+  } : undefined;
+
   const waNumber = (s?.company_whatsapp ?? "").replace(/\D/g, "");
   const infoItems = [
     [MapPin, "Alamat", s?.company_address, null],
@@ -47,7 +60,7 @@ export default function ContactPage() {
 
   return (
     <>
-      <Seo path="/kontak" title="Kontak Jaya Abadi" description="Hubungi Jaya Abadi untuk konsultasi konstruksi, renovasi, interior, dan pengawasan proyek di Jabodetabek." image={getContactCtaImage(s, mainBranch)} />
+      <Seo path="/kontak" title="Kontak Jaya Abadi" description="Hubungi Jaya Abadi untuk konsultasi konstruksi, renovasi, interior, dan pengawasan proyek di Jabodetabek." image={getContactCtaImage(s, mainBranch)} jsonLd={jsonLd} />
       <Reveal><ContactBanner branch={mainBranch} /></Reveal>
       <Reveal delay={60}>{contactDataLoading ? <ContactSectionSkeleton /> : <QuickChannels branch={mainBranch} settings={s} responseTime={responseTime} />}</Reveal>
 

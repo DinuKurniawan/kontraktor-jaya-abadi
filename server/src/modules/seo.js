@@ -72,9 +72,9 @@ ${items}
   res.type("application/xml").send(xml);
 }
 
-// GET /robots.txt — izinkan semua, kecuali admin & API; tunjuk sitemap
+// GET /robots.txt — izinkan semua, kecuali admin & API internal; izinkan API publik & ard
 export async function robots(_req, res) {
   res.type("text/plain").send(
-    `User-agent: *\nAllow: /\nDisallow: /admin\nDisallow: /api\n\nSitemap: ${SITE}/sitemap.xml\n`
+    `User-agent: *\nAllow: /\nAllow: /api/public/\nAllow: /.well-known/\nDisallow: /admin\nDisallow: /api\n\nSitemap: ${SITE}/sitemap.xml\n`
   );
 }
