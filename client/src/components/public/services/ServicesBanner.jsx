@@ -30,22 +30,16 @@ export default function ServicesBanner() {
   });
   const [active, setActive] = useState("layanan");
 
-  // Scroll-spy: hanya section yang benar-benar ada di halaman
+  // Scroll-spy: observe section yang sudah dirender; tanpa polling interval.
   useEffect(() => {
-    let io = null;
-    const iv = setInterval(() => {
-      if (document.getElementById("layanan")) {
-        clearInterval(iv);
-        const els = SECTIONS.map(([id]) => document.getElementById(id)).filter(Boolean);
-        if (els.length === 0) return;
-        io = new IntersectionObserver(
-          (entries) => { for (const e of entries) if (e.isIntersecting) setActive(e.target.id); },
-          { rootMargin: "-30% 0px -60% 0px" },
-        );
-        els.forEach((el) => io.observe(el));
-      }
-    }, 300);
-    return () => { clearInterval(iv); io?.disconnect(); };
+    const els = SECTIONS.map(([id]) => document.getElementById(id)).filter(Boolean);
+    if (els.length === 0) return undefined;
+    const io = new IntersectionObserver(
+      (entries) => { for (const e of entries) if (e.isIntersecting) setActive(e.target.id); },
+      { rootMargin: "-30% 0px -60% 0px" },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
   }, []);
 
   const jump = (id) => (e) => {

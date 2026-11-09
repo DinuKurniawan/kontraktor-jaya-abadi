@@ -73,13 +73,13 @@ export default function RelatedProjects({ services, tone = "white" }) {
             <h2 className="mt-2 font-jakarta text-3xl font-extrabold text-ink sm:text-4xl">Proyek <span className="text-brand">terkait layanan</span></h2>
           </div>
           {/* Tab layanan — sisip di kanan judul, geser di mobile */}
-          <div role="tablist" aria-label="Filter proyek per layanan" className="-mx-5 flex gap-2 overflow-x-auto px-5 sm:mx-0 sm:flex-wrap sm:px-0">
-            <button type="button" role="tab" aria-selected={tab === ""} onClick={() => changeTab("")}
+          <div role="group" aria-label="Filter proyek per layanan" className="-mx-5 flex gap-2 overflow-x-auto px-5 sm:mx-0 sm:flex-wrap sm:px-0">
+            <button type="button" aria-pressed={tab === ""} onClick={() => changeTab("")}
               className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition ${tab === "" ? "bg-ink text-cream" : "bg-cream-deep text-ink-soft hover:text-brand"}`}>
               Semua
             </button>
             {visibleServices.map((s) => (
-              <button key={s.id} type="button" role="tab" aria-selected={tab === s.slug} onClick={() => changeTab(s.slug)}
+              <button key={s.id} type="button" aria-pressed={tab === s.slug} onClick={() => changeTab(s.slug)}
                 className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition ${tab === s.slug ? "bg-ink text-cream" : "bg-cream-deep text-ink-soft hover:text-brand"}`}>
                 {s.title}
               </button>

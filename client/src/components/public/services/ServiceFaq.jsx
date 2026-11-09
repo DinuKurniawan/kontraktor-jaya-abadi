@@ -10,12 +10,14 @@ import { Helmet } from "react-helmet-async";
 import { ChevronDown, MessageCircle } from "lucide-react";
 import api from "../../../lib/axios.js";
 import Container from "../Container.jsx";
+import { useSiteSettings } from "../home/HeroSection.jsx";
 
 const SITE = import.meta.env.VITE_SITE_URL || "http://localhost:5173";
-const WA = "6281234567890"; // ponytail: nomor WA hardcode — ganti ke site_settings saat admin form tersedia
 
 export default function ServiceFaq({ services, tone = "white" }) {
   const [open, setOpen] = useState(null); // index FAQ terbuka
+  const { data: settings } = useSiteSettings();
+  const wa = (settings?.company_whatsapp ?? "").replace(/\D/g, "");
 
   const { data, isLoading } = useQuery({
     queryKey: ["public-faqs", "all"],
@@ -48,8 +50,8 @@ export default function ServiceFaq({ services, tone = "white" }) {
 
         <div className="mt-10 grid gap-8 lg:grid-cols-3">
           {/* Filter FAQ: hanya tampilkan semua layanan */}
-          <div role="tablist" aria-label="Pilih layanan untuk FAQ" className="flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
-            <button type="button" role="tab" aria-selected="true" className="shrink-0 rounded-full bg-ink px-4 py-2.5 text-left text-sm font-semibold text-cream lg:w-full lg:rounded-2xl">
+          <div role="group" aria-label="Filter FAQ" className="flex gap-2 overflow-x-auto pb-2 lg:flex-col lg:overflow-visible lg:pb-0">
+            <button type="button" aria-pressed="true" className="shrink-0 rounded-full bg-ink px-4 py-2.5 text-left text-sm font-semibold text-cream lg:w-full lg:rounded-2xl">
               Semua Layanan
             </button>
           </div>
@@ -90,10 +92,12 @@ export default function ServiceFaq({ services, tone = "white" }) {
                 <p className="font-jakarta text-sm font-bold text-cream">Pertanyaan Anda belum terjawab?</p>
                 <p className="mt-0.5 text-xs text-cream/70">Tanya langsung ke tim kami — gratis, tanpa komitmen.</p>
               </div>
-              <a href={`https://wa.me/${WA}`} target="_blank" rel="noopener noreferrer"
-                className="inline-flex shrink-0 items-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-bold text-white transition hover:bg-brand-dark">
-                <MessageCircle size={15} /> Tanya via WhatsApp
-              </a>
+              {wa ? (
+                <a href={`https://wa.me/${wa}`} target="_blank" rel="noopener noreferrer"
+                  className="inline-flex shrink-0 items-center gap-2 rounded-full bg-brand px-5 py-2.5 text-sm font-bold text-white transition hover:bg-brand-dark">
+                  <MessageCircle size={15} /> Tanya via WhatsApp
+                </a>
+              ) : null}
             </div>
           </div>
         </div>

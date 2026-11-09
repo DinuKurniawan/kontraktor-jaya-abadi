@@ -94,13 +94,13 @@ export default function ServiceGrid({ services: initialServices, isLoading: init
            </div>
          ) : showChips ? (
            <div className="relative min-w-0 sm:max-w-[calc(100%-19rem)]">
-             <div className="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:justify-end sm:overflow-visible" role="tablist" aria-label="Filter layanan">
-               <button type="button" role="tab" aria-selected={activeCategory === ""} onClick={() => updateParam("kategori", "")}
+             <div className="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:justify-end sm:overflow-visible" role="group" aria-label="Filter layanan">
+               <button type="button" aria-pressed={activeCategory === ""} onClick={() => updateParam("kategori", "")}
                  className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition ${activeCategory === "" ? "bg-ink text-cream" : "bg-white text-ink-soft hover:text-brand"}`}>
                  Semua ({facetData?.data?.totalServiceCount ?? 0})
                </button>
                {categories.map((category) => (
-                 <button key={category.id} type="button" role="tab" aria-selected={activeCategory === category.slug} onClick={() => updateParam("kategori", category.slug)}
+                 <button key={category.id} type="button" aria-pressed={activeCategory === category.slug} onClick={() => updateParam("kategori", category.slug)}
                    className={`shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition ${activeCategory === category.slug ? "bg-ink text-cream" : "bg-white text-ink-soft hover:text-brand"}`}>
                    {category.name} ({category.serviceCount})
                  </button>

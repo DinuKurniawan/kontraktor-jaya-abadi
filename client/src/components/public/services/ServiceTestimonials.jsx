@@ -73,8 +73,8 @@ export default function ServiceTestimonials({ services, tone = "cream" }) {
         </div>
 
         {/* Filter testimoni: hanya tampilkan semua */}
-        <div className="mt-8 flex flex-wrap justify-center gap-2" role="tablist" aria-label="Filter testimoni per layanan">
-          <button type="button" role="tab" aria-selected="true" className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-cream">
+        <div className="mt-8 flex flex-wrap justify-center gap-2" role="group" aria-label="Filter testimoni per layanan">
+          <button type="button" aria-pressed="true" className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-cream">
             Semua
           </button>
         </div>

@@ -170,6 +170,27 @@ export function ServiceDetailPage() {
   const rupiahFmt = (n) => new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(Number(n) || 0);
   const imgS = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
   const otherServices = (others ?? []).filter((s) => s.slug !== slug).slice(0, 4);
+  const detailJsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Service",
+        name: service.title,
+        description: service.metaDescription || service.shortDesc || undefined,
+        url: `${SITE}/layanan/${slug}`,
+        provider: { "@type": "GeneralContractor", name: "Jaya Abadi — Kontraktor", url: SITE },
+        ...(service.startingPrice ? { offers: { "@type": "Offer", price: service.startingPrice, priceCurrency: "IDR" } } : {}),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Beranda", item: SITE },
+          { "@type": "ListItem", position: 2, name: "Layanan", item: `${SITE}/layanan` },
+          { "@type": "ListItem", position: 3, name: service.title, item: `${SITE}/layanan/${slug}` },
+        ],
+      },
+    ],
+  };
 
   return (
     <>
@@ -179,21 +200,22 @@ export function ServiceDetailPage() {
         description={service.metaDescription || service.shortDesc}
         type="article"
         image={imgS(service.heroImage || service.image) || undefined}
+        jsonLd={detailJsonLd}
       />
 
       {/* ===== Hero: gambar lebar + breadcrumb + judul + harga + CTA ===== */}
       <header className="relative bg-ink text-cream">
         <div className="absolute inset-0">
-          <AspectImage src={imgS(service.heroImage || service.image)} alt={service.title} ratio="16/9" className="h-full max-h-[36rem] w-full opacity-45" />
+          <AspectImage src={imgS(service.heroImage || service.image)} alt={service.title} ratio="16/9" priority className="h-full max-h-[36rem] w-full opacity-45" />
           <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/50 to-ink/20" />
         </div>
         <Container className="relative pb-14 pt-28 sm:pt-32">
-          <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs font-semibold text-cream/60">
-            <Link to="/" className="transition hover:text-brand">Home</Link>
-            <ChevronRight size={12} />
-            <Link to="/layanan" className="transition hover:text-brand">Layanan</Link>
-            <ChevronRight size={12} />
-            <span className="text-cream">{service.title}</span>
+          <nav aria-label="Breadcrumb">
+            <ol className="flex flex-wrap items-center gap-1.5 text-xs font-semibold text-cream/60">
+              <li><Link to="/" className="transition hover:text-brand">Home</Link></li>
+              <li aria-hidden className="flex items-center gap-1.5"><ChevronRight size={12} /><Link to="/layanan" className="transition hover:text-brand">Layanan</Link></li>
+              <li aria-current="page" className="flex items-center gap-1.5 text-cream"><ChevronRight size={12} />{service.title}</li>
+            </ol>
           </nav>
           <div className="mt-4 flex items-center gap-3">
             {(() => { const I = SERVICE_ICONS[service.icon] ?? Wrench; return <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand text-white shadow-soft-lg"><I size={22} /></span>; })()}
@@ -291,8 +313,8 @@ export function ServiceDetailPage() {
                 <div className="-mx-5 mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 pb-2 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   {service.projects.map((p) => (
                     <Link key={p.id} to={`/proyek/${p.slug}`} className="w-[75%] shrink-0 snap-start sm:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.8335rem)]">
-                      <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-cream-deep">
-                        <img src={imgS(p.coverImage)} alt={p.title} loading="lazy" className="h-full w-full object-cover transition duration-500 hover:scale-105" />
+                      <div className="relative overflow-hidden rounded-2xl bg-cream-deep">
+                        <AspectImage src={imgS(p.coverImage)} alt={p.title} ratio="4/3" className="h-full w-full transition duration-500 hover:scale-105" />
                         <span className="absolute inset-x-3 bottom-3 rounded-full bg-ink/70 px-3 py-1 text-[11px] font-medium text-cream backdrop-blur">{[p.location, p.year].filter(Boolean).join(" · ")}</span>
                       </div>
                       <p className="mt-2.5 font-jakarta font-bold text-ink transition hover:text-brand">{p.title}</p>
