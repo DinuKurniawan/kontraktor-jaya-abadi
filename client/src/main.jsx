@@ -6,6 +6,11 @@ import { HelmetProvider } from "react-helmet-async";
 import { z } from "zod";
 import "./index.css";
 
+// ponytail: aktifkan stylesheet non-render-blocking via module JS agar tidak melanggar CSP script-src 'self'
+document.querySelectorAll("link[data-deferred-css]").forEach((link) => {
+  link.media = "all";
+});
+
 // CSP publik tidak mengizinkan eval. Zod 4 default JIT memakai Function().
 // shortcut: jitless global, cukup sampai CSP butuh nonce/script dinamis.
 z.config({ jitless: true });

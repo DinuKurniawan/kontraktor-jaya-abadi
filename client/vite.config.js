@@ -192,6 +192,19 @@ export default defineConfig(({ mode }) => {
           // robots.txt tidak lagi ditulis di sini; lihat client/public/robots.txt.
         },
       },
+      // Defer stylesheet render-blocking request untuk optimalisasi FCP & LCP (Lighthouse)
+      {
+        name: "defer-render-blocking-css",
+        transformIndexHtml: {
+          order: "post",
+          handler(html) {
+            return html.replace(
+              /<link rel="stylesheet" crossorigin href="([^"]+)">/g,
+              '<link rel="preload" as="style" href="$1" crossorigin>\n    <link rel="stylesheet" href="$1" crossorigin media="print" data-deferred-css>\n    <noscript><link rel="stylesheet" href="$1" crossorigin></noscript>'
+            );
+          },
+        },
+      },
     ],
     build: {
       rollupOptions: {
