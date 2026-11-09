@@ -23,6 +23,16 @@ import { listPublishedTestimonials, listPublishedTeam, listPublishedFaqs } from 
 
 const router = Router();
 
+// Cache edge (Vercel CDN) untuk semua endpoint publik GET yang bersifat baca-saja.
+// Mengurangi cold start lamba saat pengunjung berikutnya (halaman proyek memanggil
+// 4-5 endpoint publik secara paralel).
+router.use((req, res, next) => {
+  if (req.method === "GET") {
+    res.set("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+  }
+  next();
+});
+
 const plain = (handler) => asyncHandler(async (req, res) => sendSuccess(res, { data: await handler(req) }));
 
 const paged = (fn) => asyncHandler(async (req, res) => {

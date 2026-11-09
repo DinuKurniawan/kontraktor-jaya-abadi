@@ -31,6 +31,20 @@ export async function listPublishedProjects(query) {
   if (query.exclude) where.slug = { not: query.exclude };
 
   const orderBy = ORDER[query.sort] ?? defaultOrder;
+
+  // Optimasi featured strip: tidak butuh kalkulasi facets 5-tabel.
+  if (query.featured === "true") {
+    const [rows, total] = await Promise.all([
+      prisma.project.findMany({ where, select: SELECT, orderBy, skip, take: limit }),
+      prisma.project.count({ where }),
+    ]);
+    return {
+      data: rows,
+      meta: paginationMeta(total, page, limit),
+      facets: { categories: [], statuses: [], years: [] },
+    };
+  }
+
   const [rows, total, byCategory, byStatus, years] = await prisma.$transaction([
     prisma.project.findMany({ where, select: SELECT, orderBy, skip, take: limit }),
     prisma.project.count({ where }),
