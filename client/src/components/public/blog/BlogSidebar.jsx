@@ -116,7 +116,7 @@ export default function BlogSidebar({ categories = [], tags = [], activeTag = ""
         )}
       </section>
 
-      <section className="rounded-2xl bg-brand p-5 text-white shadow-soft-lg">
+      <section className="rounded-2xl bg-brand-dark p-5 text-white shadow-soft-lg">
         <MessageCircle size={22} className="text-white/80" />
         <h2 className="mt-3 font-jakarta text-lg font-extrabold">Punya rencana proyek?</h2>
         <p className="mt-2 text-sm leading-relaxed text-white">Ceritakan kebutuhan Anda. Tim Jaya Abadi siap membantu memberi arahan.</p>

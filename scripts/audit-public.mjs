@@ -1,6 +1,6 @@
 import { chromium } from "playwright";
 import lighthouse from "lighthouse";
-import { Launcher } from "chrome-launcher";
+import { launch } from "chrome-launcher";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
@@ -56,7 +56,7 @@ try {
   }
   await browser.close();
 
-  chrome = await new Launcher({ chromePath: chromiumPath(), chromeFlags: ["--headless", "--no-sandbox", "--disable-dev-shm-usage"] }).launch();
+  chrome = await launch({ chromePath: chromiumPath(), chromeFlags: ["--headless", "--no-sandbox", "--disable-dev-shm-usage"] });
   const lighthouseResults = {};
   for (const route of routes) {
     const result = await lighthouse(`${base}${route}`, {

@@ -7,7 +7,7 @@ export default function Breadcrumb({ items }) {
     <nav aria-label="Breadcrumb" className="font-jakarta text-xs">
       <ol className="flex flex-wrap items-center gap-1 text-ink-light">
         <li>
-          <Link to="/" className="transition hover:text-brand">Beranda</Link>
+          <Link to="/" className="transition hover:text-ink">Beranda</Link>
         </li>
         {items.map((item, i) => (
           <li key={i} className="flex items-center gap-1">
@@ -15,7 +15,7 @@ export default function Breadcrumb({ items }) {
             {i === items.length - 1 || !item.to ? (
               <span aria-current="page" className="font-semibold text-ink">{item.label}</span>
             ) : (
-              <Link to={item.to} className="transition hover:text-brand">{item.label}</Link>
+              <Link to={item.to} className="transition hover:text-ink">{item.label}</Link>
             )}
           </li>
         ))}

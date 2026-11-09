@@ -35,7 +35,7 @@ export default function BlogBanner({ total, value = "", onChange, suggestions = 
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-ink-soft sm:text-lg">
             Tips, panduan, dan kabar terbaru seputar konstruksi, renovasi, interior, serta cara membangun ruang yang lebih baik.
           </p>
-          <p className="mt-3 text-sm font-semibold text-ink-light">
+          <p className="mt-3 text-sm font-semibold text-ink-soft">
             {typeof total === "number" ? `${total.toLocaleString("id-ID")} artikel tersedia` : "Memuat artikel…"}
           </p>
         </div>
