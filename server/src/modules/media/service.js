@@ -1,53 +1,43 @@
 
-// Logika bisnis media: simpan record, daftar, hapus (record + file fisik)
+// Logika bisnis media: simpan record, daftar, hapus (record + file di storage)
 // Optimasi gambar: sharp → konversi WebP (maks 1600px) + thumbnail 480px
+import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 import prisma from "../../config/prisma.js";
 import ApiError from "../../utils/api-error.js";
 import { paginate, paginationMeta } from "../../utils/paginate.js";
+import { publicStorageUrl, storage, storageObjectPath } from "../../config/supabase.js";
 import { UPLOAD_DIR } from "./upload.js";
 
 const MIN_IMAGE_BYTES = 1024;
+const CACHE_CONTROL = "31536000";
 
 async function removeFile(filePath) {
   await fs.rm(filePath, { force: true, maxRetries: 3, retryDelay: 100 }).catch(() => undefined);
 }
 
 // Perkecil & konversi ke WebP; buat -thumb.webp (480px) untuk grid.
-async function optimizeImage(filePath, purpose = "generic") {
-  const parsed = path.parse(filePath);
-  const webpPath = path.join(parsed.dir, `${parsed.name}.webp`);
-  const thumbPath = webpPath.replace(/\.webp$/, "-thumb.webp");
+async function optimizeImage(buffer, purpose = "generic") {
   try {
-    // Validasi buffer sebelum menulis agar hasil kosong tidak menjadi orphan di Windows.
-    let pipeline = sharp(filePath).rotate();
+    let pipeline = sharp(buffer).rotate();
     if (purpose === "service-card") pipeline = pipeline.resize(1200, 900, { fit: "cover", position: "attention" });
     else if (purpose === "service-hero") pipeline = pipeline.resize(1600, 900, { fit: "cover", position: "attention" });
     else pipeline = pipeline.resize({ width: 1200, withoutEnlargement: true });
-    const webpBuffer = await pipeline
-      .webp({ quality: 80 })
-      .toBuffer();
+    const webpBuffer = await pipeline.webp({ quality: 80 }).toBuffer();
     if (webpBuffer.length < MIN_IMAGE_BYTES) {
       throw new ApiError(400, "Hasil konversi gambar terlalu kecil (minimal 1 KB)");
     }
-    await fs.writeFile(webpPath, webpBuffer);
-    await sharp(webpBuffer).resize({ width: 480, withoutEnlargement: true }).webp({ quality: 72 }).toFile(thumbPath);
-    try { await fs.rm(filePath, { force: true }); } catch { /* EBUSY Windows — file sementara jadi orphan */ }
-    return { webp: path.basename(webpPath), thumb: path.basename(thumbPath) };
+    const thumbBuffer = await sharp(webpBuffer).resize({ width: 480, withoutEnlargement: true }).webp({ quality: 72 }).toBuffer();
+    return { webpBuffer, thumbBuffer };
   } catch (error) {
-    await Promise.all([
-      fs.rm(filePath, { force: true }).catch(() => undefined),
-      fs.rm(webpPath, { force: true }).catch(() => undefined),
-      fs.rm(thumbPath, { force: true }).catch(() => undefined),
-    ]);
     if (error instanceof ApiError) throw error;
     throw new ApiError(400, "Gambar tidak dapat dikonversi menjadi WebP");
   }
 }
 
-// URL absolut berbasis SERVER_URL dengan pemisah URL yang konsisten.
+// URL absolut berbasis SERVER_URL dengan pemisah URL yang konsisten (aset lama di disk).
 function absoluteUrl(value) {
   const serverUrl = (process.env.SERVER_URL || "http://localhost:4000").replace(/\\+|\/+$/g, "");
   const normalized = String(value ?? "").replaceAll("\\", "/");
@@ -149,7 +139,21 @@ async function buildUsageIndex(mediaRows, sourceRows = null) {
   return index;
 }
 
+// Cek keberadaan file: object Supabase Storage atau aset lama di disk.
 async function fileStatus(media) {
+  const objectPath = storageObjectPath(media.url);
+  if (objectPath) {
+    const dir = path.posix.dirname(objectPath);
+    const name = path.posix.basename(objectPath);
+    const { data, error } = await storage().list(dir === "." ? "" : dir, { search: name, limit: 100 });
+    if (error) return { isBroken: true, brokenReason: `Storage: ${error.message}`, diskSize: null };
+    const found = (data ?? []).find((item) => item.name === name);
+    if (!found) return { isBroken: true, brokenReason: "File tidak ditemukan di storage", diskSize: null };
+    const size = found.metadata?.size ?? null;
+    if (size !== null && size < MIN_IMAGE_BYTES) return { isBroken: true, brokenReason: "Ukuran file di bawah 1 KB", diskSize: size };
+    return { isBroken: false, brokenReason: null, diskSize: size };
+  }
+
   const filename = storedFilename(media.url);
   const filePath = resolveUploadFile(filename);
   try {
@@ -170,33 +174,37 @@ async function enrichMedia(rows, usageIndex) {
   }));
 }
 
-// Simpan record Media: optimasi tiap file lalu tulis ke DB
+// Simpan record Media: optimasi tiap file lalu unggah WebP + thumbnail ke storage
 export async function saveFiles(files, { purpose = "generic" } = {}) {
   if (!files || files.length === 0) {
     throw new ApiError(400, "Tidak ada file yang diunggah");
   }
 
+  const bucket = storage();
   const created = [];
-  const generatedFiles = [];
+  const uploadedPaths = [];
   try {
     for (const file of files) {
-      const { webp, thumb } = await optimizeImage(path.join(UPLOAD_DIR, file.filename), purpose);
-      generatedFiles.push(webp, thumb);
-      const stat = await fs.stat(path.join(UPLOAD_DIR, webp));
-      if (stat.size < MIN_IMAGE_BYTES) {
-        await Promise.all([
-          removeFile(path.join(UPLOAD_DIR, webp)),
-          removeFile(path.join(UPLOAD_DIR, thumb)),
-        ]);
-        throw new ApiError(400, "Hasil konversi gambar terlalu kecil (minimal 1 KB)");
-      }
+      const { webpBuffer, thumbBuffer } = await optimizeImage(file.buffer, purpose);
+      const base = `media/${crypto.randomUUID()}`;
+      const webpPath = `${base}.webp`;
+      const thumbPath = `${base}-thumb.webp`;
+
+      const { error: webpError } = await bucket.upload(webpPath, webpBuffer, { contentType: "image/webp", cacheControl: CACHE_CONTROL, upsert: false });
+      if (webpError) throw new ApiError(502, `Gagal menyimpan gambar: ${webpError.message}`);
+      uploadedPaths.push(webpPath);
+
+      const { error: thumbError } = await bucket.upload(thumbPath, thumbBuffer, { contentType: "image/webp", cacheControl: CACHE_CONTROL, upsert: false });
+      if (thumbError) throw new ApiError(502, `Gagal menyimpan thumbnail: ${thumbError.message}`);
+      uploadedPaths.push(thumbPath);
+
       created.push(
         prisma.media.create({
           data: {
-            url: `/uploads/${webp}`,
+            url: publicStorageUrl(webpPath),
             filename: file.originalname,
             mimeType: "image/webp",
-            size: stat.size,
+            size: webpBuffer.length,
           },
         })
       );
@@ -205,11 +213,11 @@ export async function saveFiles(files, { purpose = "generic" } = {}) {
     const rows = await prisma.$transaction(created);
     return rows.map(toResponse);
   } catch (error) {
-    await Promise.all(generatedFiles.map((name) => removeFile(path.join(UPLOAD_DIR, name))));
-    await Promise.all(files.map((file) => removeFile(path.join(UPLOAD_DIR, file.filename))));
+    if (uploadedPaths.length) {
+      try { await bucket.remove(uploadedPaths); } catch { /* best effort cleanup */ }
+    }
     throw error;
   }
-
 }
 
 // Daftar media dengan paginasi + pencarian nama file asli
@@ -241,8 +249,19 @@ export async function getMediaUsageById(id) {
 }
 
 async function removePhysicalFiles(media) {
+  const objectPath = storageObjectPath(media.url);
+  if (objectPath) {
+    const names = [objectPath];
+    if (/\.webp$/i.test(objectPath)) names.push(objectPath.replace(/\.webp$/i, "-thumb.webp"));
+    const { error } = await storage().remove(names);
+    if (error) {
+      console.error("[media] Gagal menghapus file storage", objectPath, error.message);
+      return false;
+    }
+    return true;
+  }
+
   const filename = storedFilename(media.url);
-  const primaryPath = resolveUploadFile(filename);
   const names = [filename];
   if (/\.webp$/i.test(filename)) names.push(filename.replace(/\.webp$/i, "-thumb.webp"));
   let fileRemoved = true;
@@ -257,8 +276,6 @@ async function removePhysicalFiles(media) {
       }
     }
   }
-  // Memastikan path utama sudah divalidasi walaupun file fisiknya hilang.
-  void primaryPath;
   return fileRemoved;
 }
 

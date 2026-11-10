@@ -1,19 +1,8 @@
-// Upload lampiran pesan publik — terpisah dari folder/record Media admin.
-import crypto from "node:crypto";
-import fs from "node:fs";
-import os from "node:os";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+// Upload lampiran pesan publik — buffer di memori, file permanen di Supabase Storage.
 import multer from "multer";
 import ApiError from "../../utils/api-error.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-export const MESSAGE_UPLOAD_DIR = process.env.VERCEL
-  ? path.join(os.tmpdir(), "uploads", "messages")
-  : path.resolve(__dirname, "../../../uploads/messages");
-fs.mkdirSync(MESSAGE_UPLOAD_DIR, { recursive: true });
-
-const ALLOWED_TYPES = {
+export const ALLOWED_TYPES = {
   "image/jpeg": ".jpg",
   "image/png": ".png",
   "image/webp": ".webp",
@@ -22,10 +11,7 @@ const ALLOWED_TYPES = {
 const MAX_SIZE = 5 * 1024 * 1024;
 const MAX_FILES = 3;
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, callback) => callback(null, MESSAGE_UPLOAD_DIR),
-  filename: (_req, file, callback) => callback(null, `${crypto.randomUUID()}${ALLOWED_TYPES[file.mimetype] || ".bin"}`),
-});
+const storage = multer.memoryStorage();
 
 const fileFilter = (_req, file, callback) => {
   if (!ALLOWED_TYPES[file.mimetype]) {
@@ -40,9 +26,6 @@ const upload = multer({ storage, fileFilter, limits: { fileSize: MAX_SIZE, files
 export default function uploadMessageAttachments(req, res, next) {
   upload.array("files", MAX_FILES)(req, res, (error) => {
     if (!error) return next();
-    for (const file of req.files ?? []) {
-      try { fs.rmSync(file.path, { force: true }); } catch { /* best effort cleanup */ }
-    }
     if (error.code === "LIMIT_FILE_SIZE") return next(new ApiError(400, "Ukuran file melebihi 5 MB"));
     if (error.code === "LIMIT_FILE_COUNT") return next(new ApiError(400, "Maksimal 3 file per unggahan"));
     if (error.code === "LIMIT_UNEXPECTED_FILE") return next(new ApiError(400, "Gunakan field \"files\" untuk mengunggah"));

@@ -1,9 +1,7 @@
 // Konfigurasi multer untuk upload media (field "files", multi-file)
-import crypto from "node:crypto";
-import fs from "node:fs/promises";
+// Buffer disimpan di memori; file permanen ditulis ke Supabase Storage oleh service.
 import multer from "multer";
 import ApiError from "../../utils/api-error.js";
-import { UPLOAD_DIR } from "../../config/uploads.js";
 
 export { UPLOAD_DIR } from "../../config/uploads.js";
 
@@ -11,11 +9,7 @@ const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
 const MAX_FILES = 10;
 const isImageMime = (mimetype) => typeof mimetype === "string" && mimetype.startsWith("image/");
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, UPLOAD_DIR),
-  // Ekstensi sementara diganti menjadi .webp setelah isi file diproses sharp.
-  filename: (_req, _file, cb) => cb(null, `${crypto.randomUUID()}.source`),
-});
+const storage = multer.memoryStorage();
 
 const fileFilter = (_req, file, cb) => {
   if (!isImageMime(file.mimetype)) {
@@ -27,10 +21,6 @@ const fileFilter = (_req, file, cb) => {
 
 const upload = multer({ storage, fileFilter, limits: { fileSize: MAX_SIZE, files: MAX_FILES } });
 
-async function removeUploadedFiles(files) {
-  await Promise.all((files ?? []).map((file) => fs.rm(file.path, { force: true }).catch(() => undefined)));
-}
-
 // Wrapper middleware: terjemahkan error multer menjadi respons yang ramah
 export default function uploadMedia(req, res, next) {
   upload.array("files", MAX_FILES)(req, res, (err) => {
@@ -38,7 +28,6 @@ export default function uploadMedia(req, res, next) {
       next();
       return;
     }
-    removeUploadedFiles(req.files).catch(() => undefined);
     if (err.code === "LIMIT_FILE_SIZE") {
       next(new ApiError(400, "Ukuran file melebihi 5 MB"));
       return;

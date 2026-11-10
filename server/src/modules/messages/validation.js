@@ -17,7 +17,10 @@ export const publicCreateSchema = z.object({
   startEstimate: z.string().max(100).optional(),
   preferredContact: z.enum(["WHATSAPP", "TELEPON", "EMAIL"]).default("WHATSAPP"),
   preferredTime: z.enum(["PAGI", "SIANG", "SORE", "BEBAS"]).default("BEBAS"),
-  attachments: z.array(z.string().regex(/^\/uploads\/messages\/[A-Za-z0-9._-]+$/, "URL lampiran tidak valid")).max(3, "Maksimal 3 lampiran").default([]),
+  attachments: z.array(z.union([
+    z.string().regex(/^\/uploads\/messages\/[A-Za-z0-9._-]+$/, "URL lampiran tidak valid"),
+    z.string().url("URL lampiran tidak valid"),
+  ])).max(3, "Maksimal 3 lampiran").default([]),
   source: z.string().max(100).optional(),
   // Form lama/CTA singkat belum memiliki checkbox privasi; form konsultasi baru mengirim true.
   consent: z.boolean().refine((value) => value === true, "Anda harus menyetujui kebijakan privasi").optional(),

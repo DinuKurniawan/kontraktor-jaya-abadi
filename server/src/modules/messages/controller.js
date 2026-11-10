@@ -55,7 +55,9 @@ export const publicCreate = asyncHandler(async (req, res) => {
 
 // POST /api/public/messages/attachments — file kontak publik, tanpa record Media admin
 export const publicAttachments = asyncHandler(async (req, res) => {
-  const attachments = (req.files ?? []).map((file) => `/uploads/messages/${file.filename}`);
-  if (!attachments.length) return sendSuccess(res, { data: { attachments: [] }, status: 201 });
+  const files = req.files ?? [];
+  if (!files.length) return sendSuccess(res, { data: { attachments: [] }, status: 201 });
+
+  const attachments = await messageService.saveAttachments(files);
   sendSuccess(res, { data: { attachments }, status: 201 });
 });

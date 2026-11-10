@@ -4,6 +4,8 @@ import prisma from "../../config/prisma.js";
 import ApiError from "../../utils/api-error.js";
 import { paginate, paginationMeta } from "../../utils/paginate.js";
 import { emitChange } from "../../lib/events.js";
+import { ALLOWED_TYPES } from "./upload.js";
+import { publicStorageUrl, storage } from "../../config/supabase.js";
 
 const BUDGET_RANGE_TO_PRISMA = {
   KURANG_100JT: "KURANG_100JT",
@@ -109,6 +111,34 @@ export async function deleteMessage(id) {
   if (!message) throw new ApiError(404, "Pesan tidak ditemukan");
   await prisma.message.delete({ where: { id } });
   return { message: "Pesan berhasil dihapus" };
+}
+
+export async function saveAttachments(files) {
+  if (!files || files.length === 0) return [];
+  const bucket = storage();
+  const urls = [];
+  const uploaded = [];
+
+  try {
+    for (const file of files) {
+      const ext = ALLOWED_TYPES[file.mimetype] || ".bin";
+      const objectPath = `messages/${crypto.randomUUID()}${ext}`;
+      const { error } = await bucket.upload(objectPath, file.buffer, {
+        contentType: file.mimetype,
+        cacheControl: "31536000",
+        upsert: false,
+      });
+      if (error) throw new ApiError(502, `Gagal mengunggah lampiran: ${error.message}`);
+      uploaded.push(objectPath);
+      urls.push(publicStorageUrl(objectPath));
+    }
+    return urls;
+  } catch (error) {
+    if (uploaded.length) {
+      try { await bucket.remove(uploaded); } catch { /* best effort cleanup */ }
+    }
+    throw error;
+  }
 }
 
 // Pesan masuk dari form kontak publik (email/subject opsional dari CTA singkat)

@@ -12,6 +12,7 @@ export const img = (p) => {
 
 const PICSUM = /^(https?:\/\/(?:fastly\.)?picsum\.photos\/seed\/[^/]+)\/\d+\/\d+/;
 const UPLOAD = /\/uploads\/[^/?#]+\.webp(\?.*)?$/i;
+const SUPABASE_STORAGE = /^https?:\/\/[^/]+\/storage\/v1\/object\/public\/[^/?#]+\/.*\.webp(\?.*)?$/i;
 const UNSPLASH = /^https?:\/\/images\.unsplash\.com\//;
 
 // Satu varian gambar pada w×h. Server hanya punya -thumb.webp 480px untuk upload,
@@ -28,7 +29,7 @@ function variant(url, w, h) {
     u.searchParams.set("auto", "format");
     return u.toString();
   }
-  if (UPLOAD.test(url)) return w <= 480 ? url.replace(/\.webp(\?.*)?$/i, "-thumb.webp") : url;
+  if (UPLOAD.test(url) || SUPABASE_STORAGE.test(url)) return w <= 480 ? url.replace(/\.webp(\?.*)?$/i, "-thumb.webp") : url;
   return url;
 }
 
