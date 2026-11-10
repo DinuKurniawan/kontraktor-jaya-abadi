@@ -10,7 +10,7 @@ import Container from "../../components/public/Container.jsx";
 import PageBanner from "../../components/public/PageBanner.jsx";
 import BlogBanner from "../../components/public/blog/BlogBanner.jsx";
 import BlogFilterBar from "../../components/public/blog/BlogFilterBar.jsx";
-import FeaturedPostsHero from "../../components/public/blog/FeaturedPostsHero.jsx";
+import FeaturedPostsStrip from "../../components/public/blog/FeaturedPostsStrip.jsx";
 import BlogSidebar from "../../components/public/blog/BlogSidebar.jsx";
 import EmptyState from "../../components/public/blog/EmptyState.jsx";
 import PostCardV2 from "../../components/public/blog/PostCardV2.jsx";
@@ -139,7 +139,9 @@ export function ArticlesPage() {
         onChange={setParam("q")}
         suggestions={suggestions}
       /></Reveal>
-      {page === 1 && !search && !category && !tag && sort === "terbaru" && <Reveal><FeaturedPostsHero /></Reveal>}
+      {/* Artikel unggulan hanya tanpa filter aktif. Tanpa Reveal: elemen di atas
+          lipatan tidak boleh menunggu animasi opacity. */}
+      {page === 1 && !search && !category && !tag && sort === "terbaru" && <FeaturedPostsStrip />}
       <Container className="py-14">
         <Reveal>
           <BlogFilterBar
