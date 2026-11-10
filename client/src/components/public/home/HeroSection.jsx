@@ -35,14 +35,10 @@ const BADGES = [
   { icon: FileText, label: "Transparan RAB" },
 ];
 
-// Ambil settings sekali (dipakai kartu melayang & video)
-export function useSiteSettings() {
-  return useQuery({
-    queryKey: ["public-settings"],
-    queryFn: async () => (await api.get("/public/settings")).data.data,
-    staleTime: 600000,
-  });
-}
+// Ambil settings sekali (dipakai kartu melayang & video).
+// Re-export dari hook bersama supaya seluruh aplikasi memakai satu queryKey/queryFn.
+import { usePublicSettings as useSiteSettings } from "../../../hooks/usePublicData.js";
+export { usePublicSettings as useSiteSettings } from "../../../hooks/usePublicData.js";
 
 // Foto dengan skeleton saat memuat — object-cover, ukuran konsisten
 function Photo({ src, alt, className = "", eager = false }) {

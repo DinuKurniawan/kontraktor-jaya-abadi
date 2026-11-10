@@ -20,9 +20,9 @@ const queryClient = new QueryClient({
     queries: {
       retry: 1,
       refetchOnWindowFocus: false,
-      // ponytail: 1 menit cukup antar-navigasi; naikkan ke 5–10 menit bila
-      // masih terasa berat, atau tambahkan per-query untuk data yang jarang berubah
-      staleTime: 60 * 1000,
+      // Data publik sudah cache HTTP 5 menit; samakan cache klien agar mount ulang
+      // tidak mengirim request duplikat. Turunkan per-query bila data harus lebih segar.
+      staleTime: 5 * 60 * 1000,
     },
   },
 });

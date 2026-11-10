@@ -209,7 +209,6 @@ export default defineConfig(({ mode }) => {
     build: {
       rollupOptions: {
         output: {
-          experimentalMinChunkSize: 10000,
           manualChunks(id) {
             if (id.includes("node_modules/react/") || id.includes("node_modules/react-dom/")) return "vendor-react";
             if (id.includes("node_modules/react-router") || id.includes("node_modules/react-router-dom")) return "vendor-router";

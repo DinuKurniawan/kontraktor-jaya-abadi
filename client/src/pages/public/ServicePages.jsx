@@ -19,13 +19,14 @@ import ServiceTestimonials from "../../components/public/services/ServiceTestimo
 import ServiceFaq from "../../components/public/services/ServiceFaq.jsx";
 import ServiceCta from "../../components/public/services/ServiceCta.jsx";
 import AspectImage from "../../components/ui/AspectImage.jsx";
+import { usePublicServices, usePublicSettings } from "../../hooks/usePublicData.js";
 
 const SITE = import.meta.env.VITE_SITE_URL || "http://localhost:5173";
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
 
 function ErrorNote({ message }) {
-  return <p className="py-16 text-center text-sm text-danger">{message}</p>;
+  return <p className="py-16 text-center text-sm text-ink">{message}</p>;
 }
 
 const SKELETON_SECTIONS = [
@@ -51,10 +52,7 @@ function PageSkeleton() {
 }
 
 export function ServicesPage() {
-  const { data: services, isLoading, isError } = useQuery({
-    queryKey: ["public-services"],
-    queryFn: async () => (await api.get("/public/services")).data.data,
-  });
+  const { data: services, isLoading, isError } = usePublicServices();
   const rows = services ?? [];
   // JSON-LD: ItemList layanan + tiap Service
   const jsonLd = rows.length > 0 ? {
@@ -126,14 +124,8 @@ export function ServiceDetailPage() {
     queryFn: async () => (await api.get(`/public/services/${slug}`)).data.data,
     retry: false,
   });
-  const { data: others } = useQuery({
-    queryKey: ["public-services"],
-    queryFn: async () => (await api.get("/public/services")).data.data,
-  });
-  const { data: settings } = useQuery({
-    queryKey: ["public-settings"],
-    queryFn: async () => (await api.get("/public/settings")).data.data,
-  });
+  const { data: others } = usePublicServices();
+  const { data: settings } = usePublicSettings();
 
   if (isError) {
     const is404 = error?.response?.status === 404;

@@ -217,7 +217,7 @@ export function ProjectsPage() {
               </div>
             )
           ) : isError ? (
-            <p className="mt-10 text-center text-sm text-danger">Gagal memuat proyek. Coba muat ulang halaman.</p>
+            <p className="mt-10 text-center text-sm text-ink">Gagal memuat proyek. Coba muat ulang halaman.</p>
           ) : rows.length === 0 ? (
             <div className="mt-16 flex flex-col items-center gap-3 text-center">
               <span className="flex h-14 w-14 items-center justify-center rounded-full bg-cream-deep text-ink-light">

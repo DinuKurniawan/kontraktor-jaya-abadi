@@ -1,7 +1,7 @@
 // ConsultationForm — konsultasi publik tiga langkah dengan draft, upload, dan tiket.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { z } from "zod";
 
 // Disable Zod JIT to avoid eval() under strict CSP.
@@ -11,6 +11,7 @@ import { useForm } from "react-hook-form";
 import { AlertCircle, ArrowLeft, ArrowRight, Check, CheckCircle2, FileText, Loader2, MessageCircle, RotateCcw, Send, ShieldCheck, Upload, X } from "lucide-react";
 import api from "../../../lib/axios.js";
 import { toast } from "../../ui/Toast.jsx";
+import { usePublicServices } from "../../../hooks/usePublicData.js";
 
 const DRAFT_KEY = "jaya-abadi-consultation-draft";
 const MAX_FILES = 3;
@@ -119,10 +120,7 @@ export default function ConsultationForm({ settings, branch }) {
   const lastPayload = useRef(null);
   const sendingRef = useRef(false);
 
-  const { data: services, isLoading: servicesLoading } = useQuery({
-    queryKey: ["public-services"],
-    queryFn: async () => (await api.get("/public/services")).data.data,
-  });
+  const { data: services, isLoading: servicesLoading } = usePublicServices();
 
   const initialContext = useMemo(() => {
     const lines = [];

@@ -13,6 +13,7 @@ import WhatNext from "../../components/public/contact/WhatNext.jsx";
 import Reveal from "../../components/public/services/Reveal.jsx";
 import Seo from "../../components/public/Seo.jsx";
 import Skeleton from "../../components/ui/Skeleton.jsx";
+import { usePublicSettings } from "../../hooks/usePublicData.js";
 
 function ContactSectionSkeleton() {
   return <section className="py-10 sm:py-12" aria-busy="true" aria-label="Memuat kanal kontak"><Container><div className="mb-5"><Skeleton className="h-3 w-28" /><Skeleton className="mt-3 h-8 w-56" /></div><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{[0, 1, 2, 3].map((item) => <Skeleton key={item} className="h-40 w-full" rounded="rounded-2xl" />)}</div></Container></section>;
@@ -23,10 +24,7 @@ function ContactInfoSkeleton() {
 }
 
 export default function ContactPage() {
-  const { data: s, isLoading: settingsLoading } = useQuery({
-    queryKey: ["public-settings"],
-    queryFn: async () => (await api.get("/public/settings")).data.data,
-  });
+  const { data: s, isLoading: settingsLoading } = usePublicSettings();
   const { data: branches, isLoading: branchesLoading } = useQuery({
     queryKey: ["public-branches"],
     queryFn: async () => (await api.get("/public/branches")).data.data,

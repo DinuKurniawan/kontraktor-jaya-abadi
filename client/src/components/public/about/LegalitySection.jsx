@@ -81,7 +81,7 @@ export default function LegalitySection() {
             <div className="lg:col-span-3">
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {rows.map((c) => (
-                  <button key={c.id} type="button" onClick={() => setZoom(c)} aria-label={`Perbesar ${c.title}`}
+                  <button key={c.id} type="button" onClick={() => setZoom(c)}
                     className="group text-left">
                     <div className="overflow-hidden rounded-xl bg-white/10">
                       {c.image && <img src={img(c.image)} alt={c.title} loading="lazy" className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-105" />}

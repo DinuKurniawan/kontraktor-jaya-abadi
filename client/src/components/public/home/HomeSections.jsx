@@ -15,6 +15,7 @@ import { toast } from "../../ui/Toast.jsx";
 import { useSiteSettings } from "./HeroSection.jsx";
 import AspectImage from "../../ui/AspectImage.jsx";
 import { imageProps } from "../../../lib/image.js";
+import { usePublicServices, usePublicTestimonials } from "../../../hooks/usePublicData.js";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
@@ -101,10 +102,7 @@ export function StatsStrip() {
 // ===== Layanan — kartu gambar latar, ikon oranye, hover zoom/overlay/panah
 // Grid 4 kolom dengan kartu berukuran sama (260×300 di desktop; tinggi dipatok 300px).
 export function ServicesSection() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["public-services"],
-    queryFn: async () => (await api.get("/public/services")).data.data,
-  });
+  const { data, isLoading } = usePublicServices();
 
   const card = (s) => {
     const Icon = SERVICE_ICONS[s.icon];
@@ -282,10 +280,7 @@ export function FeaturedProjects() {
 // ===== Testimoni: kiri = ringkasan rating + kutipan besar (carousel otomatis,
 // panah, titik, swipe sentuh); kanan = foto proyek terkait berganti ikut index =====
 export function TestimonialHighlight() {
-  const { data } = useQuery({
-    queryKey: ["public-testimonials"],
-    queryFn: async () => (await api.get("/public/testimonials")).data.data,
-  });
+  const { data } = usePublicTestimonials();
   const { data: photo } = useQuery({
     queryKey: ["public-projects-featured", ""],
     queryFn: async () => (await api.get("/public/projects", { params: { featured: "true", limit: 5 } })).data,

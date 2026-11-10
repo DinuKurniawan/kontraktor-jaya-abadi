@@ -39,5 +39,5 @@ export default function OpenStatusBadge({ openingHours = [] }) {
   const [, refresh] = useState(0);
   useEffect(() => { const timer = setInterval(() => refresh((value) => value + 1), 60 * 1000); return () => clearInterval(timer); }, []);
   const status = getStatus(openingHours);
-  return <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold ${status.open ? "bg-success-soft text-success" : "bg-ink/10 text-ink-soft"}`}><span className={`h-2 w-2 rounded-full ${status.open ? "bg-success" : "bg-ink-light"}`} aria-hidden />{status.text} WIB</span>;
+  return <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold ${status.open ? "bg-success-soft text-ink-soft" : "bg-ink/10 text-ink-soft"}`}><span className={`h-2 w-2 rounded-full ${status.open ? "bg-success" : "bg-ink-light"}`} aria-hidden />{status.text} WIB</span>;
 }

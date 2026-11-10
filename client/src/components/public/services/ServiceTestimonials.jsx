@@ -5,11 +5,10 @@
  * Data: GET /api/public/testimonials?serviceId= (mapping id → label layanan di client).
  */
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Quote, Star } from "lucide-react";
-import api from "../../../lib/axios.js";
 import Container from "../Container.jsx";
 import PartnerMarquee from "../home/PartnerMarquee.jsx";
+import { usePublicTestimonials } from "../../../hooks/usePublicData.js";
 
 function Stars({ rating }) {
   return (
@@ -45,10 +44,7 @@ function TestimonialCard({ t, label, className = "" }) {
 
 export default function ServiceTestimonials({ services, tone = "cream" }) {
   const [reduced, setReduced] = useState(false);
-  const { data, isLoading } = useQuery({
-    queryKey: ["public-testimonials", "all"],
-    queryFn: async () => (await api.get("/public/testimonials")).data.data,
-  });
+  const { data, isLoading } = usePublicTestimonials();
   const rows = data ?? [];
   const labelFor = (id) => (services ?? []).find((s) => s.id === id)?.title ?? null;
   // Latar section bisa diganti agar warna antar-section tetap selang-seling

@@ -2,7 +2,6 @@
 // tombol WhatsApp melayang, scroll-to-top saat pindah route
 import { useEffect, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { ArrowUp, Clock, Mail, MapPin, Menu, MessageCircle, Phone, X } from "lucide-react";
 
 // SVG sosial media sederhana (brand icons dihapus dari lucide-react)
@@ -19,9 +18,9 @@ function SocialIcon({ name }) {
     </svg>
   );
 }
-import api from "../../lib/axios.js";
 import PillButton from "./PillButton.jsx";
 import Container from "./Container.jsx";
+import { usePublicSettings } from "../../hooks/usePublicData.js";
 
 const MENU = [
   { to: "/", label: "Beranda" },
@@ -71,15 +70,6 @@ function BackToTop() {
       <ArrowUp size={18} />
     </button>
   );
-}
-
-// Ambil settings publik (kontak, sosmed) — dipakai footer & tombol WA
-function usePublicSettings() {
-  return useQuery({
-    queryKey: ["public-settings"],
-    queryFn: async () => (await api.get("/public/settings")).data.data,
-    staleTime: 10 * 60 * 1000,
-  });
 }
 
 // Logo teks + kotak oranye sederhana

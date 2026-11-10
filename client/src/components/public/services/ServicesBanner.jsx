@@ -6,10 +6,9 @@
  */
 import { useEffect, useState } from "react";
 import { ChevronRight, ChevronRight as Crumb, Download, MessageCircle } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import api from "../../../lib/axios.js";
 import Container from "../Container.jsx";
 import { useSiteSettings } from "../home/HeroSection.jsx";
+import { usePublicServices } from "../../../hooks/usePublicData.js";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const anchorImg = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
@@ -24,10 +23,7 @@ const SECTIONS = [
 
 export default function ServicesBanner() {
   const { data: s } = useSiteSettings();
-  const { data: services } = useQuery({
-    queryKey: ["public-services"],
-    queryFn: async () => (await api.get("/public/services")).data.data,
-  });
+  const { data: services } = usePublicServices();
   const [active, setActive] = useState("layanan");
 
   // Scroll-spy: observe section yang sudah dirender; tanpa polling interval.

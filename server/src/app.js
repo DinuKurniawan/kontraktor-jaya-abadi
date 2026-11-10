@@ -99,7 +99,7 @@ app.use(
   "/api",
   rateLimit({
     windowMs: 15 * 60 * 1000, // 15 menit
-    limit: 300, // maksimal 300 request per IP per jendela waktu
+    limit: Number(process.env.RATE_LIMIT_MAX ?? 300), // 3000 untuk audit lokal, 300 produksi
     standardHeaders: "draft-8",
     legacyHeaders: false,
     message: { success: false, message: "Terlalu banyak permintaan, coba lagi nanti", errors: null },

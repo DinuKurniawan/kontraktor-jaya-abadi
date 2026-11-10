@@ -81,7 +81,7 @@ export default function TeamSection() {
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {filtered.map((m, i) => (
-            <button key={m.id} type="button" onClick={() => setZoom(m)} className="group text-left" aria-label={`Profil ${m.name}`}>
+            <button key={m.id} type="button" onClick={() => setZoom(m)} className="group text-left">
               <div className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-cream-deep">
                 <Avatar m={m} i={i} />
                 {/* Overlay sosial saat hover */}

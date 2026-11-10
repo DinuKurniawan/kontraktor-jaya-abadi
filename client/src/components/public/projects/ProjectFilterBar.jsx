@@ -10,10 +10,9 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, LayoutGrid, List, Map as MapIcon, Search, SlidersHorizontal, X } from "lucide-react";
-import api from "../../../lib/axios.js";
 import { STATUS_LABEL } from "../../../pages/public/project-labels.js";
+import { usePublicServices } from "../../../hooks/usePublicData.js";
 
 export const SORT_OPTIONS = [
   ["terbaru", "Terbaru"],
@@ -92,11 +91,7 @@ export default function ProjectFilterBar({ facets, meta, shown, page = 1, limit 
   const rawView = params.get("tampilan");
   const tampilan = VIEW_OPTIONS.some(([v]) => v === rawView) ? rawView : "grid";
 
-  const { data: services } = useQuery({
-    queryKey: ["public-services"],
-    queryFn: async () => (await api.get("/public/services")).data.data,
-    staleTime: 5 * 60_000,
-  });
+  const { data: services } = usePublicServices();
   const serviceOptions = services ?? [];
 
   // --- Pencarian: input lokal, sinkron ke URL setelah 400 ms ---
