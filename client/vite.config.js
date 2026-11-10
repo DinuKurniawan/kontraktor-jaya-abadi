@@ -169,7 +169,7 @@ export default defineConfig(({ mode }) => {
             ? `    <link rel="preconnect" href="${apiOrigin}" crossorigin />\n${imagePreconnect}${heroPreload}`
             : imagePreconnect + heroPreload;
           // Catatan: frame-ancestors TIDAK valid di <meta>, hanya valid di header HTTP.
-          const csp = `    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://picsum.photos https://fastly.picsum.photos https://*.picsum.photos https://images.unsplash.com https://*.tile.openstreetmap.org https://i.ytimg.com${apiSource}; font-src 'self' data:; connect-src 'self'${apiSource} https://nominatim.openstreetmap.org; frame-src https://www.google.com https://www.youtube.com https://www.youtube-nocookie.com; base-uri 'self'; form-action 'self'; object-src 'none'" />\n`;
+          const csp = `    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://picsum.photos https://fastly.picsum.photos https://*.picsum.photos https://images.unsplash.com https://*.tile.openstreetmap.org https://i.ytimg.com https://*.supabase.co${apiSource}; font-src 'self' data:; connect-src 'self'${apiSource} https://nominatim.openstreetmap.org https://*.supabase.co; frame-src https://www.google.com https://www.youtube.com https://www.youtube-nocookie.com; base-uri 'self'; form-action 'self'; object-src 'none'" />\n`;
           // Penemuan ARD eksplisit: <link rel="ard"> di setiap halaman.
           const ardLink = `    <link rel="ard" href="/.well-known/ard.json" />\n`;
           return html.replace("</head>", `${preconnect}${ardLink}${csp}  </head>`);
