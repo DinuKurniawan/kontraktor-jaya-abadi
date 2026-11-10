@@ -46,7 +46,7 @@ const STEP_SCHEMAS = [
     preferredTime: z.enum(["PAGI", "SIANG", "SORE", "BEBAS"]),
   }),
   z.object({
-    serviceId: z.string().min(1, "Pilih jenis layanan"),
+    serviceId: z.string().optional(),
     projectLocation: z.string().trim().min(2, "Lokasi proyek wajib diisi").max(200, "Lokasi maksimal 200 karakter"),
     projectArea: z.preprocess((value) => value === "" ? undefined : value, z.coerce.number({ error: "Luas proyek wajib diisi" }).int("Luas harus berupa angka bulat").positive("Luas harus lebih dari 0").max(100000, "Luas terlalu besar")),
     budgetRange: z.enum(["KURANG_100JT", "100_500JT", "500JT_1M", "1M_5M", "LEBIH_5M", "BELUM_TAHU"], { error: "Pilih kisaran anggaran" }),
@@ -236,7 +236,7 @@ export default function ConsultationForm({ settings, branch }) {
     const payload = {
       name: form.name.trim(), email: form.email.trim(), phone: form.phone.trim(),
       subject: form.subject.trim() || `Konsultasi ${selectedService?.title || "proyek"}`,
-      body: form.body.trim(), serviceId: form.serviceId, budgetRange: form.budgetRange,
+      body: form.body.trim(), ...(form.serviceId ? { serviceId: form.serviceId } : {}), budgetRange: form.budgetRange,
       projectLocation: form.projectLocation.trim(), projectArea: form.projectArea,
       startEstimate: form.startEstimate, preferredContact: form.preferredContact,
       preferredTime: form.preferredTime, attachments: form.attachments || [],

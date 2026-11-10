@@ -5,4 +5,4 @@ Allow: /.well-known/
 Disallow: /admin/
 Disallow: /api/
 
-Sitemap: https://jayaabadi.com/sitemap.xml
+Sitemap: https://jaya.codeunchs.my.id/sitemap.xml

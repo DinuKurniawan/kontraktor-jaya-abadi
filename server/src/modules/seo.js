@@ -1,7 +1,7 @@
 // sitemap.xml, robots.txt & rss.xml digenerate dari data publik (proyek, artikel, layanan)
 import prisma from "../config/prisma.js";
 
-const SITE = process.env.SITE_URL || "http://localhost:5173";
+const SITE = process.env.SITE_URL || "https://jaya.codeunchs.my.id";
 
 const escapeXml = (s) => String(s ?? "").replace(/[<>&'"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" }[c]));
 

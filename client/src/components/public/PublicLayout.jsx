@@ -208,14 +208,14 @@ function Footer() {
           <p className="mb-4 font-jakarta text-sm font-bold text-cream">Layanan</p>
           <ul className="space-y-2.5 text-sm">
             <li><Link to="/layanan/konstruksi-bangunan" className="transition hover:text-brand">Konstruksi Bangunan</Link></li>
-            <li><Link to="/layanan/renovasi" className="transition hover:text-brand">Renovasi</Link></li>
-            <li><Link to="/layanan/desain-rab" className="transition hover:text-brand">Desain & RAB</Link></li>
-            <li><Link to="/layanan/finishing" className="transition hover:text-brand">Finishing</Link></li>
+            <li><Link to="/layanan/renovasi-bangunan" className="transition hover:text-brand">Renovasi Bangunan</Link></li>
+            <li><Link to="/layanan/desain-interior" className="transition hover:text-brand">Desain & Interior</Link></li>
+            <li><Link to="/layanan/pengawasan-proyek" className="transition hover:text-brand">Pengawasan Proyek</Link></li>
           </ul>
           <p className="mb-4 mt-6 font-jakarta text-sm font-bold text-cream">Proyek Unggulan</p>
           <ul className="space-y-2.5 text-sm">
-            <li><Link to="/proyek" className="transition hover:text-brand">Rumah Tinggal</Link></li>
-            <li><Link to="/proyek" className="transition hover:text-brand">Gedung Komersial</Link></li>
+            <li><Link to="/proyek?kategori=rumah-tinggal" className="transition hover:text-brand">Rumah Tinggal</Link></li>
+            <li><Link to="/proyek?kategori=gedung" className="transition hover:text-brand">Gedung Komersial</Link></li>
           </ul>
         </nav>
 
@@ -265,7 +265,7 @@ function Footer() {
       <div className="bg-black/40">
         <Container className="flex flex-col items-center justify-between gap-1.5 py-4 text-xs text-cream/50 sm:flex-row">
           <p>© {new Date().getFullYear()} {s?.company_name ?? "Jaya Abadi"}. Semua hak dilindungi.</p>
-          <p>Dibangun dengan integritas sejak {new Date().getFullYear()}.</p>
+          <p>Dibangun dengan integritas sejak 2006.</p>
         </Container>
       </div>
       {/* Kembali ke atas: muncul setelah scroll 600px */}
