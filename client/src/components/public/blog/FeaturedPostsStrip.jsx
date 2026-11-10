@@ -117,12 +117,17 @@ export default function FeaturedPostsStrip() {
                 aria-roledescription="slide"
                 aria-label={`${postIndex + 1} dari ${posts.length}: ${post.title}`}
                 onClick={() => !isActive && goTo(postIndex)}
-                className={`grid w-[86vw] max-w-[820px] shrink-0 snap-center overflow-hidden rounded-[2rem] bg-ink shadow-soft-lg md:snap-start md:min-h-[28rem] md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] transition-[transform,opacity,box-shadow] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transform-none motion-reduce:transition-none ${
-                  isActive
-                    ? "translate-x-0 translate-y-0 opacity-100 scale-100 shadow-2xl ring-1 ring-white/10"
-                    : `${isAhead ? "translate-x-4" : "-translate-x-4"} translate-y-8 scale-[0.97] opacity-50 cursor-pointer sm:translate-y-12`
+                className={`w-[86vw] max-w-[820px] shrink-0 snap-center transition-[transform,opacity] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transform-none motion-reduce:transition-none md:snap-start ${
+                  isActive ? "translate-y-0 opacity-100" : "translate-y-8 opacity-50 sm:translate-y-12"
                 }`}
               >
+                <div
+                  className={`grid h-full overflow-hidden rounded-[2rem] bg-ink shadow-soft-lg md:min-h-[28rem] md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] transition-[transform,box-shadow] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transform-none ${
+                    isActive
+                      ? "translate-x-0 shadow-2xl ring-1 ring-white/10"
+                      : `${isAhead ? "translate-x-3" : "-translate-x-3"} cursor-pointer`
+                  }`}
+                >
                 <div className="relative min-w-0 overflow-hidden bg-cream-deep">
                   {post.coverImage ? (
                     <img
@@ -145,7 +150,7 @@ export default function FeaturedPostsStrip() {
 
                 <div
                   className={`flex min-w-0 flex-col justify-between p-6 transition-[transform,opacity] duration-500 delay-100 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transform-none sm:p-8 lg:p-9 ${
-                    isActive ? "translate-x-0 translate-y-0 opacity-100" : `${isAhead ? "translate-x-3" : "-translate-x-3"} translate-y-4 opacity-75`
+                    isActive ? "translate-x-0 translate-y-0 opacity-100" : `${isAhead ? "-translate-x-2" : "translate-x-2"} translate-y-4 opacity-75`
                   }`}
                 >
                   <div>
@@ -186,6 +191,7 @@ export default function FeaturedPostsStrip() {
                       Baca selengkapnya <ArrowRight size={16} aria-hidden />
                     </Link>
                   </div>
+                </div>
                 </div>
               </article>
             );

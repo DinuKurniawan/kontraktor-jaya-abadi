@@ -147,12 +147,17 @@ export default function FeaturedProjectsStrip() {
                 aria-roledescription="slide"
                 aria-label={`${projectIndex + 1} dari ${rows.length}: ${project.title}`}
                 onClick={() => !isActive && goTo(projectIndex)}
-                className={`grid w-[86vw] max-w-[820px] shrink-0 snap-center md:snap-start overflow-hidden rounded-[2rem] bg-ink shadow-soft-lg md:min-h-[28rem] md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] transition-[transform,opacity,box-shadow] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transform-none motion-reduce:transition-none ${
-                  isActive
-                    ? "translate-x-0 translate-y-0 opacity-100 scale-100 shadow-2xl ring-1 ring-white/10"
-                    : `${isAhead ? "translate-x-4" : "-translate-x-4"} translate-y-8 sm:translate-y-12 opacity-50 scale-[0.97] cursor-pointer`
+                className={`w-[86vw] max-w-[820px] shrink-0 snap-center md:snap-start transition-[transform,opacity] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transform-none motion-reduce:transition-none ${
+                  isActive ? "translate-y-0 opacity-100" : "translate-y-8 opacity-50 sm:translate-y-12"
                 }`}
               >
+                <div
+                  className={`grid h-full overflow-hidden rounded-[2rem] bg-ink shadow-soft-lg md:min-h-[28rem] md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] transition-[transform,box-shadow] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transform-none ${
+                    isActive
+                      ? "translate-x-0 shadow-2xl ring-1 ring-white/10"
+                      : `${isAhead ? "translate-x-3" : "-translate-x-3"} cursor-pointer`
+                  }`}
+                >
                 <div className="relative min-w-0 overflow-hidden bg-cream-deep">
                   <img
                     src={img(project.coverImage)}
@@ -172,7 +177,7 @@ export default function FeaturedProjectsStrip() {
 
                 <div
                   className={`flex min-w-0 flex-col justify-between p-6 sm:p-8 lg:p-9 transition-[transform,opacity] duration-500 delay-100 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transform-none ${
-                    isActive ? "translate-x-0 translate-y-0 opacity-100" : `${isAhead ? "translate-x-3" : "-translate-x-3"} translate-y-4 opacity-75`
+                    isActive ? "translate-x-0 translate-y-0 opacity-100" : `${isAhead ? "-translate-x-2" : "translate-x-2"} translate-y-4 opacity-75`
                   }`}
                 >
                   <div>
@@ -199,6 +204,7 @@ export default function FeaturedProjectsStrip() {
                       Lihat detail proyek <ArrowRight size={16} aria-hidden />
                     </Link>
                   </div>
+                </div>
                 </div>
               </article>
             );
