@@ -5,7 +5,7 @@ import ApiError from "../../utils/api-error.js";
 import { paginate, paginationMeta } from "../../utils/paginate.js";
 import { emitChange } from "../../lib/events.js";
 import { ALLOWED_TYPES } from "./upload.js";
-import { ensureBucket, publicStorageUrl, storage } from "../../config/supabase.js";
+import { ensureBucket, getBucketUsage, publicStorageUrl, storage } from "../../config/supabase.js";
 
 const BUDGET_RANGE_TO_PRISMA = {
   KURANG_100JT: "KURANG_100JT",
@@ -116,6 +116,16 @@ export async function deleteMessage(id) {
 export async function saveAttachments(files) {
   if (!files || files.length === 0) return [];
   await ensureBucket();
+  const usage = await getBucketUsage();
+  const incomingBytes = files.reduce((sum, file) => sum + file.size, 0);
+  if (usage.bytes + incomingBytes > usage.limit) {
+    throw new ApiError(507, "Batas storage penuh. Lampiran tidak dapat diunggah.", {
+      code: "STORAGE_LIMIT_REACHED",
+      usedBytes: usage.bytes,
+      limitBytes: usage.limit,
+      incomingBytes,
+    });
+  }
   const bucket = storage();
   const urls = [];
   const uploaded = [];

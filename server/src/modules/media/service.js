@@ -8,7 +8,7 @@ import sharp from "sharp";
 import prisma from "../../config/prisma.js";
 import ApiError from "../../utils/api-error.js";
 import { paginate, paginationMeta } from "../../utils/paginate.js";
-import { ensureBucket, publicStorageUrl, storage, storageObjectPath } from "../../config/supabase.js";
+import { ensureBucket, getBucketUsage, publicStorageUrl, storage, storageObjectPath } from "../../config/supabase.js";
 import { UPLOAD_DIR } from "./upload.js";
 
 const MIN_IMAGE_BYTES = 1024;
@@ -181,12 +181,24 @@ export async function saveFiles(files, { purpose = "generic" } = {}) {
   }
 
   await ensureBucket();
+  const optimized = await Promise.all(files.map((file) => optimizeImage(file.buffer, purpose)));
+  const usage = await getBucketUsage();
+  const incomingBytes = optimized.reduce((sum, item) => sum + item.webpBuffer.length + item.thumbBuffer.length, 0);
+  if (usage.bytes + incomingBytes > usage.limit) {
+    throw new ApiError(507, "Batas storage penuh. Hapus gambar lama sebelum mengunggah lagi.", {
+      code: "STORAGE_LIMIT_REACHED",
+      usedBytes: usage.bytes,
+      limitBytes: usage.limit,
+      incomingBytes,
+    });
+  }
+
   const bucket = storage();
   const created = [];
   const uploadedPaths = [];
   try {
-    for (const file of files) {
-      const { webpBuffer, thumbBuffer } = await optimizeImage(file.buffer, purpose);
+    for (const [index, file] of files.entries()) {
+      const { webpBuffer, thumbBuffer } = optimized[index];
       const base = `media/${crypto.randomUUID()}`;
       const webpPath = `${base}.webp`;
       const thumbPath = `${base}-thumb.webp`;

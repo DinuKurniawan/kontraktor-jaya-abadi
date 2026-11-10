@@ -8,6 +8,7 @@ import Modal from "../ui/Modal.jsx";
 import Button from "../ui/Button.jsx";
 import ImageWithFallback from "../ui/ImageWithFallback.jsx";
 import MediaLibrary from "./MediaLibrary.jsx";
+import StorageLimitOverlay from "./StorageLimitOverlay.jsx";
 import { toast } from "../ui/Toast.jsx";
 
 // Unggah file dengan progres — dipakai ImagePicker & halaman Media
@@ -89,6 +90,7 @@ export function MediaBrowserModal({ open, onClose, selected = [], onSelect, onDe
   const queryClient = useQueryClient();
   const [tab, setTab] = useState("Pustaka");
   const [progress, setProgress] = useState(null);
+  const [storageError, setStorageError] = useState(null);
   const fileRef = useRef(null);
 
   const handleFiles = async (e) => {
@@ -103,7 +105,11 @@ export function MediaBrowserModal({ open, onClose, selected = [], onSelect, onDe
       onUploaded?.(uploaded);
       setTab("Pustaka");
     } catch (err) {
-      toast.error(err.response?.data?.message ?? "Gagal mengunggah");
+      if (err?.response?.status === 507) {
+        setStorageError(err);
+      } else {
+        toast.error(err.response?.data?.message ?? "Gagal mengunggah");
+      }
     } finally {
       setProgress(null);
     }
@@ -144,6 +150,7 @@ export function MediaBrowserModal({ open, onClose, selected = [], onSelect, onDe
           Selesai
         </Button>
       </div>
+      <StorageLimitOverlay error={storageError} onClose={() => setStorageError(null)} />
     </Modal>
   );
 }

@@ -1,6 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
 import ApiError from "../utils/api-error.js";
 
+// Default 1 GB (free tier Supabase Storage). Override via env SUPABASE_STORAGE_LIMIT_BYTES.
+export const STORAGE_LIMIT_BYTES = Number(process.env.SUPABASE_STORAGE_LIMIT_BYTES) || 1_073_741_824;
+
 function cleanEnv(value) {
   if (!value) return "";
   return String(value).trim().replace(/^["']|["']$/g, "");
@@ -56,6 +59,34 @@ export async function ensureBucket() {
     const { error: createError } = await admin.storage.createBucket(STORAGE_BUCKET, { public: true });
     if (createError) throw new ApiError(502, `Gagal membuat bucket: ${createError.message}`);
   }
+}
+
+// Sum object sizes in the bucket (recursive, paginated). Used to enforce the free-tier cap.
+export async function getBucketUsage() {
+  validConfiguration();
+  const bucket = storage();
+  let bytes = 0;
+  let objects = 0;
+  const queue = [""];
+  while (queue.length) {
+    const prefix = queue.pop();
+    let offset = 0;
+    for (;;) {
+      const { data, error } = await bucket.list(prefix, { limit: 1000, offset });
+      if (error) throw new ApiError(502, `Gagal menghitung pemakaian storage: ${error.message}`);
+      const page = data ?? [];
+      for (const item of page) {
+        if (item.id === null) queue.push(prefix ? `${prefix}/${item.name}` : item.name);
+        else {
+          objects += 1;
+          bytes += Number(item.metadata?.size ?? 0);
+        }
+      }
+      if (page.length < 1000) break;
+      offset += 1000;
+    }
+  }
+  return { bytes, objects, limit: STORAGE_LIMIT_BYTES };
 }
 
 export function publicStorageUrl(objectPath) {
