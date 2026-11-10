@@ -1,6 +1,7 @@
 /*
- * FeaturedProjectsStrip — carousel proyek unggulan.
- * Satu proyek per slide; tetap memakai scroll-snap agar gestur sentuh berjalan.
+ * FeaturedProjectsStrip — carousel kartu proyek unggulan horizontal.
+ * Gestur sentuh native (scroll-snap) & navigasi panah/titik.
+ * Kartu berikutnya mengintip dari samping dan muncul terangkat dari bawah saat digeser.
  */
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
@@ -71,9 +72,13 @@ export default function FeaturedProjectsStrip() {
       <section className="bg-cream py-14 sm:py-16" aria-labelledby="proyek-unggulan-loading" aria-busy="true">
         <Container>
           <h2 id="proyek-unggulan-loading" className="font-jakarta text-3xl font-extrabold text-ink sm:text-4xl">Proyek unggulan</h2>
-          <div className="mt-8 grid minmax-0 animate-pulse overflow-hidden rounded-[2rem] bg-ink md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-            <div className="aspect-[4/3] bg-cream-deep md:aspect-auto md:min-h-[30rem]" />
-            <div className="min-h-72 bg-ink/90" />
+          <div className="mt-8 flex gap-6 overflow-hidden pb-10 pt-4">
+            {[0, 1].map((n) => (
+              <div key={n} className="grid w-[86vw] max-w-[820px] shrink-0 animate-pulse overflow-hidden rounded-[2rem] bg-ink md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+                <div className="aspect-[16/10] bg-cream-deep md:aspect-auto md:min-h-[28rem]" />
+                <div className="min-h-72 bg-ink/90" />
+              </div>
+            ))}
           </div>
         </Container>
       </section>
@@ -86,44 +91,125 @@ export default function FeaturedProjectsStrip() {
     <section className="bg-cream py-14 sm:py-16" aria-labelledby="proyek-unggulan">
       <Container>
         <div className="flex items-end justify-between gap-4">
-          <h2 id="proyek-unggulan" className="font-jakarta text-3xl font-extrabold text-ink sm:text-4xl">Proyek unggulan</h2>
+          <div>
+            <p className="text-sm font-semibold text-brand">Pilihan Jaya Abadi</p>
+            <h2 id="proyek-unggulan" className="mt-1 font-jakarta text-3xl font-extrabold text-ink sm:text-4xl">Proyek unggulan</h2>
+          </div>
           {rows.length > 1 && (
             <div className="flex items-center gap-2">
               <span className="mr-1 text-sm font-semibold text-ink-light" aria-live="polite">{index + 1} / {rows.length}</span>
-              <button type="button" onClick={() => goTo(index - 1)} disabled={index === 0} aria-label="Proyek sebelumnya" className="rounded-full border border-ink/10 bg-white p-2.5 text-ink-soft transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-35">
+              <button
+                type="button"
+                onClick={() => goTo(index - 1)}
+                disabled={index === 0}
+                aria-label="Proyek sebelumnya"
+                className="rounded-full border border-ink/10 bg-white p-2.5 text-ink-soft transition-[border-color,color] duration-200 hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-35"
+              >
                 <ChevronLeft size={18} />
               </button>
-              <button type="button" onClick={() => goTo(index + 1)} disabled={index >= rows.length - 1} aria-label="Proyek berikutnya" className="rounded-full border border-ink/10 bg-white p-2.5 text-ink-soft transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-35">
+              <button
+                type="button"
+                onClick={() => goTo(index + 1)}
+                disabled={index >= rows.length - 1}
+                aria-label="Proyek berikutnya"
+                className="rounded-full border border-ink/10 bg-white p-2.5 text-ink-soft transition-[border-color,color] duration-200 hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-35"
+              >
                 <ChevronRight size={18} />
               </button>
             </div>
           )}
         </div>
 
-        <div ref={trackRef} onScroll={onScroll} role="region" aria-roledescription="carousel" aria-label="Proyek unggulan" className="mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {rows.map((project, projectIndex) => (
-            <article key={project.id} aria-roledescription="slide" aria-label={`${projectIndex + 1} dari ${rows.length}: ${project.title}`} className="grid min-w-full snap-start overflow-hidden rounded-[2rem] bg-ink shadow-soft-lg md:min-h-[30rem] md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-              <div className="relative min-w-0 overflow-hidden bg-cream-deep">
-                <img src={img(project.coverImage)} {...imageProps(project.coverImage, { width: 960, height: 720, priority: projectIndex === 0 })} alt={project.title} className="h-full min-h-72 w-full object-cover object-center md:absolute md:inset-0" style={project.coverImagePosition ? { objectPosition: project.coverImagePosition } : undefined} />
-                {project.category?.name && <span className="absolute left-5 top-5 rounded-full bg-cream px-3 py-1.5 text-xs font-semibold text-ink">{project.category.name}</span>}
-              </div>
+        <div
+          ref={trackRef}
+          onScroll={onScroll}
+          role="region"
+          aria-roledescription="carousel"
+          aria-label="Proyek unggulan"
+          className="mt-8 flex snap-x snap-mandatory items-end gap-6 overflow-x-auto pb-10 pt-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {rows.map((project, projectIndex) => {
+            const isActive = index === projectIndex;
+            return (
+              <article
+                key={project.id}
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`${projectIndex + 1} dari ${rows.length}: ${project.title}`}
+                onClick={() => !isActive && goTo(projectIndex)}
+                className={`grid w-[86vw] max-w-[820px] shrink-0 snap-center md:snap-start overflow-hidden rounded-[2rem] bg-ink shadow-soft-lg md:min-h-[28rem] md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] transition-[transform,opacity,box-shadow] duration-500 ease-out motion-reduce:transform-none motion-reduce:transition-none ${
+                  isActive
+                    ? "translate-y-0 opacity-100 scale-100 shadow-2xl ring-1 ring-white/10"
+                    : "translate-y-8 sm:translate-y-12 opacity-50 scale-[0.97] cursor-pointer"
+                }`}
+              >
+                <div className="relative min-w-0 overflow-hidden bg-cream-deep">
+                  <img
+                    src={img(project.coverImage)}
+                    {...imageProps(project.coverImage, { width: 960, height: 720, priority: projectIndex === 0 })}
+                    alt={project.title}
+                    className="h-full min-h-72 w-full object-cover object-center md:absolute md:inset-0"
+                    style={project.coverImagePosition ? { objectPosition: project.coverImagePosition } : undefined}
+                  />
+                  {project.category?.name && (
+                    <span className="absolute left-5 top-5 rounded-full bg-cream px-3 py-1.5 text-xs font-semibold text-ink">
+                      {project.category.name}
+                    </span>
+                  )}
+                </div>
 
-              <div className="flex min-w-0 flex-col justify-between p-6 sm:p-8 lg:p-10">
-                <div>
-                  <p className="text-sm font-semibold text-brand-light">Pilihan Jaya Abadi</p>
-                  <h3 className="mt-4 overflow-wrap-break-word font-jakarta text-3xl font-extrabold leading-[1.08] text-cream sm:text-4xl">{project.title}</h3>
-                  {project.summary && <p className="mt-5 max-w-xl text-sm leading-relaxed text-cream/75 sm:text-base">{project.summary}</p>}
+                <div
+                  className={`flex min-w-0 flex-col justify-between p-6 sm:p-8 lg:p-9 transition-[transform,opacity] duration-500 delay-75 motion-reduce:transform-none ${
+                    isActive ? "translate-y-0 opacity-100" : "translate-y-4 opacity-75"
+                  }`}
+                >
+                  <div>
+                    <p className="text-xs font-semibold text-brand-light">Pilihan Jaya Abadi</p>
+                    <h3 className="mt-3 overflow-wrap-break-word font-jakarta text-2xl font-extrabold leading-snug text-cream sm:text-3xl">
+                      {project.title}
+                    </h3>
+                    {project.summary && (
+                      <p className="mt-4 max-w-xl text-sm leading-relaxed text-cream/75 line-clamp-3">
+                        {project.summary}
+                      </p>
+                    )}
+                  </div>
+                  <div
+                    className={`mt-6 transition-[transform,opacity] duration-500 delay-150 motion-reduce:transform-none ${
+                      isActive ? "translate-y-0 opacity-100" : "translate-y-3 opacity-60"
+                    }`}
+                  >
+                    <ProjectMeta project={project} />
+                    <Link
+                      to={`/proyek/${project.slug}`}
+                      className="mt-6 inline-flex items-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-bold text-white transition-[background-color] duration-200 hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-light focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+                    >
+                      Lihat detail proyek <ArrowRight size={16} aria-hidden />
+                    </Link>
+                  </div>
                 </div>
-                <div className="mt-8">
-                  <ProjectMeta project={project} />
-                  <Link to={`/proyek/${project.slug}`} className="mt-6 inline-flex items-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-light focus-visible:ring-offset-2 focus-visible:ring-offset-ink">
-                    Lihat detail proyek <ArrowRight size={16} aria-hidden />
-                  </Link>
-                </div>
-              </div>
-            </article>
-          ))}
+              </article>
+            );
+          })}
         </div>
+
+        {rows.length > 1 && (
+          <div className="mt-2 flex justify-center gap-2" role="tablist" aria-label="Pilih proyek unggulan">
+            {rows.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                role="tab"
+                aria-selected={i === index}
+                aria-label={`Buka proyek unggulan ${i + 1}`}
+                onClick={() => goTo(i)}
+                className={`h-2 rounded-full transition-[width,background-color] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 ${
+                  i === index ? "w-8 bg-brand" : "w-2 bg-ink/20 hover:bg-ink/40"
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </Container>
     </section>
   );
