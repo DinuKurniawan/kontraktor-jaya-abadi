@@ -3,7 +3,7 @@
  * Gestur sentuh native (scroll-snap) & navigasi panah/titik.
  * Kartu berikutnya mengintip dari samping dan muncul terangkat dari bawah saat digeser.
  */
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, MapPin, Ruler } from "lucide-react";
@@ -38,12 +38,21 @@ function ProjectMeta({ project }) {
 export default function FeaturedProjectsStrip() {
   const trackRef = useRef(null);
   const [index, setIndex] = useState(0);
+  const [slideDir, setSlideDir] = useState(1); // 1 = geser ke kanan/maju, -1 = mundur
+  const prevIndexRef = useRef(0);
   const { data, isLoading, isError } = useQuery({
     queryKey: ["public-featured-projects"],
     queryFn: async () => (await api.get("/public/projects", { params: { featured: true, limit: 8 } })).data,
     staleTime: 5 * 60_000,
   });
   const rows = data?.data ?? [];
+
+  useEffect(() => {
+    if (index !== prevIndexRef.current) {
+      setSlideDir(index > prevIndexRef.current ? 1 : -1);
+      prevIndexRef.current = index;
+    }
+  }, [index]);
 
   const goTo = (nextIndex) => {
     const track = trackRef.current;
@@ -130,6 +139,7 @@ export default function FeaturedProjectsStrip() {
         >
           {rows.map((project, projectIndex) => {
             const isActive = index === projectIndex;
+            const isAhead = projectIndex > index;
             return (
               <article
                 key={project.id}
@@ -137,10 +147,10 @@ export default function FeaturedProjectsStrip() {
                 aria-roledescription="slide"
                 aria-label={`${projectIndex + 1} dari ${rows.length}: ${project.title}`}
                 onClick={() => !isActive && goTo(projectIndex)}
-                className={`grid w-[86vw] max-w-[820px] shrink-0 snap-center md:snap-start overflow-hidden rounded-[2rem] bg-ink shadow-soft-lg md:min-h-[28rem] md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] transition-[transform,opacity,box-shadow] duration-500 ease-out motion-reduce:transform-none motion-reduce:transition-none ${
+                className={`grid w-[86vw] max-w-[820px] shrink-0 snap-center md:snap-start overflow-hidden rounded-[2rem] bg-ink shadow-soft-lg md:min-h-[28rem] md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] transition-[transform,opacity,box-shadow] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transform-none motion-reduce:transition-none ${
                   isActive
-                    ? "translate-y-0 opacity-100 scale-100 shadow-2xl ring-1 ring-white/10"
-                    : "translate-y-8 sm:translate-y-12 opacity-50 scale-[0.97] cursor-pointer"
+                    ? "translate-x-0 translate-y-0 opacity-100 scale-100 shadow-2xl ring-1 ring-white/10"
+                    : `${isAhead ? "translate-x-4" : "-translate-x-4"} translate-y-8 sm:translate-y-12 opacity-50 scale-[0.97] cursor-pointer`
                 }`}
               >
                 <div className="relative min-w-0 overflow-hidden bg-cream-deep">
@@ -148,19 +158,21 @@ export default function FeaturedProjectsStrip() {
                     src={img(project.coverImage)}
                     {...imageProps(project.coverImage, { width: 960, height: 720, priority: projectIndex === 0 })}
                     alt={project.title}
-                    className="h-full min-h-72 w-full object-cover object-center md:absolute md:inset-0"
+                    className={`h-full min-h-72 w-full object-cover object-center md:absolute md:inset-0 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transform-none ${
+                      isActive ? "scale-100" : "scale-105"
+                    }`}
                     style={project.coverImagePosition ? { objectPosition: project.coverImagePosition } : undefined}
                   />
                   {project.category?.name && (
-                    <span className="absolute left-5 top-5 rounded-full bg-cream px-3 py-1.5 text-xs font-semibold text-ink">
+                    <span className="absolute left-5 top-5 rounded-full bg-cream px-3 py-1.5 text-xs font-semibold text-ink shadow-sm">
                       {project.category.name}
                     </span>
                   )}
                 </div>
 
                 <div
-                  className={`flex min-w-0 flex-col justify-between p-6 sm:p-8 lg:p-9 transition-[transform,opacity] duration-500 delay-75 motion-reduce:transform-none ${
-                    isActive ? "translate-y-0 opacity-100" : "translate-y-4 opacity-75"
+                  className={`flex min-w-0 flex-col justify-between p-6 sm:p-8 lg:p-9 transition-[transform,opacity] duration-500 delay-100 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transform-none ${
+                    isActive ? "translate-x-0 translate-y-0 opacity-100" : `${isAhead ? "translate-x-3" : "-translate-x-3"} translate-y-4 opacity-75`
                   }`}
                 >
                   <div>
@@ -175,14 +187,14 @@ export default function FeaturedProjectsStrip() {
                     )}
                   </div>
                   <div
-                    className={`mt-6 transition-[transform,opacity] duration-500 delay-150 motion-reduce:transform-none ${
+                    className={`mt-6 transition-[transform,opacity] duration-500 delay-150 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transform-none ${
                       isActive ? "translate-y-0 opacity-100" : "translate-y-3 opacity-60"
                     }`}
                   >
                     <ProjectMeta project={project} />
                     <Link
                       to={`/proyek/${project.slug}`}
-                      className="mt-6 inline-flex items-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-bold text-white transition-[background-color] duration-200 hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-light focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+                      className="mt-6 inline-flex items-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-bold text-white transition-[background-color,transform] duration-200 hover:bg-brand-dark hover:translate-x-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-light focus-visible:ring-offset-2 focus-visible:ring-offset-ink active:translate-x-0"
                     >
                       Lihat detail proyek <ArrowRight size={16} aria-hidden />
                     </Link>
