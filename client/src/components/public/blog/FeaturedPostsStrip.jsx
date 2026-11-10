@@ -52,12 +52,10 @@ export default function FeaturedPostsStrip() {
         <Container>
           <h2 id="artikel-unggulan-loading" className="font-jakarta text-3xl font-extrabold text-ink sm:text-4xl">Artikel unggulan</h2>
           <div className="mt-8 flex gap-6 overflow-hidden pb-10 pt-4">
-            {[0, 1].map((n) => (
-              <div key={n} className="grid w-[86vw] max-w-[820px] shrink-0 animate-pulse overflow-hidden rounded-[2rem] bg-ink md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-                <div className="aspect-[16/10] bg-cream-deep md:aspect-auto md:min-h-[28rem]" />
-                <div className="min-h-72 bg-ink/90" />
-              </div>
-            ))}
+            <div className="grid w-full min-w-full shrink-0 animate-pulse overflow-hidden rounded-[2rem] bg-ink md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+              <div className="aspect-[16/10] bg-cream-deep md:aspect-auto md:min-h-[30rem]" />
+              <div className="min-h-72 bg-ink/90" />
+            </div>
           </div>
         </Container>
       </section>
@@ -109,7 +107,6 @@ export default function FeaturedPostsStrip() {
         >
           {posts.map((post, postIndex) => {
             const isActive = index === postIndex;
-            const isAhead = postIndex > index;
             return (
               <article
                 key={post.id}
@@ -117,15 +114,13 @@ export default function FeaturedPostsStrip() {
                 aria-roledescription="slide"
                 aria-label={`${postIndex + 1} dari ${posts.length}: ${post.title}`}
                 onClick={() => !isActive && goTo(postIndex)}
-                className={`w-[86vw] max-w-[820px] shrink-0 snap-center transition-[transform,opacity] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transform-none motion-reduce:transition-none md:snap-start ${
+                className={`w-full min-w-full shrink-0 snap-center transition-[transform,opacity] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transform-none motion-reduce:transition-none ${
                   isActive ? "translate-y-0 opacity-100" : "translate-y-8 opacity-50 sm:translate-y-12"
                 }`}
               >
                 <div
-                  className={`grid h-full overflow-hidden rounded-[2rem] bg-ink shadow-soft-lg md:min-h-[28rem] md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] transition-[transform,box-shadow] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transform-none ${
-                    isActive
-                      ? "translate-x-0 shadow-2xl ring-1 ring-white/10"
-                      : `${isAhead ? "translate-x-3" : "-translate-x-3"} cursor-pointer`
+                  className={`grid h-full overflow-hidden rounded-[2rem] bg-ink shadow-soft-lg md:min-h-[30rem] md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] transition-[box-shadow] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+                    isActive ? "shadow-2xl ring-1 ring-white/10" : "cursor-pointer"
                   }`}
                 >
                 <div className="relative min-w-0 overflow-hidden bg-cream-deep">
@@ -150,7 +145,7 @@ export default function FeaturedPostsStrip() {
 
                 <div
                   className={`flex min-w-0 flex-col justify-between p-6 transition-[transform,opacity] duration-500 delay-100 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transform-none sm:p-8 lg:p-9 ${
-                    isActive ? "translate-x-0 translate-y-0 opacity-100" : `${isAhead ? "-translate-x-2" : "translate-x-2"} translate-y-4 opacity-75`
+                    isActive ? "translate-x-0 translate-y-0 opacity-100" : "translate-y-4 opacity-75"
                   }`}
                 >
                   <div>
