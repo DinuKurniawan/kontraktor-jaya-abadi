@@ -1,9 +1,15 @@
 import { createClient } from "@supabase/supabase-js";
 import ApiError from "../utils/api-error.js";
 
-const url = process.env.SUPABASE_URL;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-export const STORAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || "uploads";
+function cleanEnv(value) {
+  if (!value) return "";
+  return String(value).trim().replace(/^["']|["']$/g, "");
+}
+
+const rawUrl = cleanEnv(process.env.SUPABASE_URL);
+const url = rawUrl.replace(/\/+$/, "");
+const serviceRoleKey = cleanEnv(process.env.SUPABASE_SERVICE_ROLE_KEY);
+export const STORAGE_BUCKET = cleanEnv(process.env.SUPABASE_STORAGE_BUCKET || "uploads").replace(/^\/+|\/+$/g, "");
 
 let client;
 
@@ -11,13 +17,16 @@ export function storage() {
   if (!url || !serviceRoleKey) {
     throw new ApiError(503, "Penyimpanan gambar belum dikonfigurasi");
   }
-  client ??= createClient(url, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  client ??= createClient(url, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
   return client.storage.from(STORAGE_BUCKET);
 }
 
 export function publicStorageUrl(objectPath) {
   if (!url) return null;
-  return `${url.replace(/\/$/, "")}/storage/v1/object/public/${encodeURIComponent(STORAGE_BUCKET)}/${objectPath.split("/").map(encodeURIComponent).join("/")}`;
+  const cleanPath = String(objectPath).replace(/^\/+/, "");
+  return `${url}/storage/v1/object/public/${STORAGE_BUCKET}/${cleanPath}`;
 }
 
 export function storageObjectPath(value) {

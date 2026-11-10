@@ -190,11 +190,11 @@ export async function saveFiles(files, { purpose = "generic" } = {}) {
       const webpPath = `${base}.webp`;
       const thumbPath = `${base}-thumb.webp`;
 
-      const { error: webpError } = await bucket.upload(webpPath, webpBuffer, { contentType: "image/webp", cacheControl: CACHE_CONTROL, upsert: false });
+      const { error: webpError } = await bucket.upload(webpPath, webpBuffer, { contentType: "image/webp", cacheControl: CACHE_CONTROL, upsert: true });
       if (webpError) throw new ApiError(502, `Gagal menyimpan gambar: ${webpError.message}`);
       uploadedPaths.push(webpPath);
 
-      const { error: thumbError } = await bucket.upload(thumbPath, thumbBuffer, { contentType: "image/webp", cacheControl: CACHE_CONTROL, upsert: false });
+      const { error: thumbError } = await bucket.upload(thumbPath, thumbBuffer, { contentType: "image/webp", cacheControl: CACHE_CONTROL, upsert: true });
       if (thumbError) throw new ApiError(502, `Gagal menyimpan thumbnail: ${thumbError.message}`);
       uploadedPaths.push(thumbPath);
 
