@@ -203,8 +203,8 @@ export default function FeaturedProjectsStrip() {
                 aria-selected={i === index}
                 aria-label={`Buka proyek unggulan ${i + 1}`}
                 onClick={() => goTo(i)}
-                className={`h-2 rounded-full transition-[width,background-color] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 ${
-                  i === index ? "w-8 bg-brand" : "w-2 bg-ink/20 hover:bg-ink/40"
+                className={`h-2 w-8 rounded-full transition-[transform,background-color] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 ${
+                  i === index ? "scale-x-100 bg-brand" : "scale-x-[0.25] bg-ink/20 hover:bg-ink/40"
                 }`}
               />
             ))}
