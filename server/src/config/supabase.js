@@ -6,26 +6,35 @@ function cleanEnv(value) {
   return String(value).trim().replace(/^["']|["']$/g, "");
 }
 
+function normalizeProjectUrl(raw) {
+  if (!raw) return "";
+  try {
+    const withProto = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+    const parsed = new URL(withProto);
+    return parsed.origin; // selalu menghasilkan "https://xxxx.supabase.co" tanpa path /storage/v1 dll
+  } catch {
+    return raw.replace(/\/+$/, "");
+  }
+}
+
+function normalizeBucketName(raw) {
+  const cleaned = cleanEnv(raw || "uploads").replace(/^\/+|\/+$/g, "");
+  // Jika pengguna memasukkan path seperti "storage/v1/object/public/uploads"
+  const segments = cleaned.split("/").filter(Boolean);
+  return segments.pop() || "uploads";
+}
+
 const rawUrl = cleanEnv(process.env.SUPABASE_URL);
-const url = rawUrl.replace(/\/+$/, "");
+const url = normalizeProjectUrl(rawUrl);
 const serviceRoleKey = cleanEnv(process.env.SUPABASE_SERVICE_ROLE_KEY);
-export const STORAGE_BUCKET = cleanEnv(process.env.SUPABASE_STORAGE_BUCKET || "uploads").replace(/^\/+|\/+$/g, "");
+export const STORAGE_BUCKET = normalizeBucketName(process.env.SUPABASE_STORAGE_BUCKET);
 
 let client;
 
 function validConfiguration() {
   if (!url || !serviceRoleKey) throw new ApiError(503, "Penyimpanan gambar belum dikonfigurasi");
-  try {
-    const parsed = new URL(url);
-    if (parsed.pathname !== "" && parsed.pathname !== "/") {
-      throw new ApiError(503, "SUPABASE_URL harus Project URL saja, tanpa /storage/v1 atau path lain");
-    }
-  } catch (error) {
-    if (error instanceof ApiError) throw error;
+  if (!/^https:\/\/[a-z0-9-]+\.supabase\.co/i.test(url) && !url.startsWith("http")) {
     throw new ApiError(503, "SUPABASE_URL tidak valid");
-  }
-  if (!/^[a-z0-9][a-z0-9._-]{0,62}$/i.test(STORAGE_BUCKET)) {
-    throw new ApiError(503, "SUPABASE_STORAGE_BUCKET harus nama bucket saja, misalnya uploads");
   }
 }
 
