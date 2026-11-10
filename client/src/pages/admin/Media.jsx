@@ -5,7 +5,6 @@ import { ImagePlus } from "lucide-react";
 import Card from "../../components/ui/Card.jsx";
 import MediaLibrary from "../../components/admin/MediaLibrary.jsx";
 import { uploadImages } from "../../components/admin/ImagePicker.jsx";
-import StorageLimitOverlay from "../../components/admin/StorageLimitOverlay.jsx";
 import { toast } from "../../components/ui/Toast.jsx";
 
 export default function Media() {
@@ -13,7 +12,6 @@ export default function Media() {
   const fileRef = useRef(null);
   const [progress, setProgress] = useState(null);
   const [dragOver, setDragOver] = useState(false);
-  const [storageError, setStorageError] = useState(null);
 
   const handleFiles = async (files) => {
     if (!files?.length) return;
@@ -23,11 +21,7 @@ export default function Media() {
       queryClient.invalidateQueries({ queryKey: ["media"] });
       toast.success(`${files.length} gambar berhasil diunggah`);
     } catch (error) {
-      if (error?.response?.status === 507) {
-        setStorageError(error);
-      } else {
-        toast.error(error.response?.data?.message ?? "Gagal mengunggah");
-      }
+      if (error?.response?.status !== 507) toast.error(error.response?.data?.message ?? "Gagal mengunggah");
     } finally {
       setProgress(null);
     }
@@ -67,7 +61,6 @@ export default function Media() {
       </Card>
 
       <MediaLibrary showDetails showCleanup />
-      <StorageLimitOverlay error={storageError} onClose={() => setStorageError(null)} />
     </div>
   );
 }

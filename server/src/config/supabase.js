@@ -1,8 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
 import ApiError from "../utils/api-error.js";
 
-// Default 1 GB (free tier Supabase Storage). Override via env SUPABASE_STORAGE_LIMIT_BYTES.
-export const STORAGE_LIMIT_BYTES = Number(process.env.SUPABASE_STORAGE_LIMIT_BYTES) || 1_073_741_824;
+// 900 MiB default leaves headroom below Supabase free tier. Override via SUPABASE_STORAGE_LIMIT_BYTES.
+export const STORAGE_LIMIT_BYTES = Number(process.env.SUPABASE_STORAGE_LIMIT_BYTES) || 900 * 1024 * 1024;
+
+export function wouldExceedStorageLimit(usedBytes, incomingBytes) {
+  return usedBytes + incomingBytes > STORAGE_LIMIT_BYTES;
+}
 
 function cleanEnv(value) {
   if (!value) return "";

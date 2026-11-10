@@ -8,7 +8,6 @@ import Modal from "../ui/Modal.jsx";
 import Button from "../ui/Button.jsx";
 import ImageWithFallback from "../ui/ImageWithFallback.jsx";
 import MediaLibrary from "./MediaLibrary.jsx";
-import StorageLimitOverlay from "./StorageLimitOverlay.jsx";
 import { toast } from "../ui/Toast.jsx";
 
 // Unggah file dengan progres — dipakai ImagePicker & halaman Media
@@ -16,8 +15,13 @@ export async function uploadImages(files, onProgress, purpose = "generic") {
   const fd = new FormData();
   for (const f of files) fd.append("files", f);
   fd.append("purpose", purpose);
-  const res = await api.post("/media/upload", fd, { onUploadProgress: (e) => onProgress?.(e.total ? Math.round((e.loaded / e.total) * 100) : 0) });
-  return res.data.data;
+  try {
+    const res = await api.post("/media/upload", fd, { onUploadProgress: (e) => onProgress?.(e.total ? Math.round((e.loaded / e.total) * 100) : 0) });
+    return res.data.data;
+  } catch (error) {
+    if (error?.response?.status === 507) window.dispatchEvent(new CustomEvent("storage-limit-reached", { detail: error }));
+    throw error;
+  }
 }
 
 // Tombol pembuka + preview kecil (meniru ImageUploader agar form tidak berubah banyak)
@@ -90,7 +94,6 @@ export function MediaBrowserModal({ open, onClose, selected = [], onSelect, onDe
   const queryClient = useQueryClient();
   const [tab, setTab] = useState("Pustaka");
   const [progress, setProgress] = useState(null);
-  const [storageError, setStorageError] = useState(null);
   const fileRef = useRef(null);
 
   const handleFiles = async (e) => {
@@ -105,11 +108,7 @@ export function MediaBrowserModal({ open, onClose, selected = [], onSelect, onDe
       onUploaded?.(uploaded);
       setTab("Pustaka");
     } catch (err) {
-      if (err?.response?.status === 507) {
-        setStorageError(err);
-      } else {
-        toast.error(err.response?.data?.message ?? "Gagal mengunggah");
-      }
+      if (err?.response?.status !== 507) toast.error(err.response?.data?.message ?? "Gagal mengunggah");
     } finally {
       setProgress(null);
     }
@@ -150,7 +149,6 @@ export function MediaBrowserModal({ open, onClose, selected = [], onSelect, onDe
           Selesai
         </Button>
       </div>
-      <StorageLimitOverlay error={storageError} onClose={() => setStorageError(null)} />
     </Modal>
   );
 }

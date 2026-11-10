@@ -1,11 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import AdminSidebar from "./AdminSidebar.jsx";
 import AdminTopbar from "./AdminTopbar.jsx";
+import StorageLimitOverlay from "./StorageLimitOverlay.jsx";
 
 // Kerangka halaman admin: sidebar tetap di desktop, drawer di mobile
 export default function AdminLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [storageError, setStorageError] = useState(null);
+
+  useEffect(() => {
+    const showLimit = (event) => setStorageError(event.detail);
+    window.addEventListener("storage-limit-reached", showLimit);
+    return () => window.removeEventListener("storage-limit-reached", showLimit);
+  }, []);
 
   return (
     <div className="min-h-screen bg-surface">
@@ -16,6 +24,7 @@ export default function AdminLayout() {
           <Outlet />
         </main>
       </div>
+      <StorageLimitOverlay error={storageError} onClose={() => setStorageError(null)} />
     </div>
   );
 }
