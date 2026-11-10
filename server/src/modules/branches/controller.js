@@ -5,6 +5,7 @@ import * as adminBranchService from "./admin-service.js";
 import * as branchService from "./service.js";
 
 export const publicList = asyncHandler(async (_req, res) => {
+  res.set("Cache-Control", "public, s-maxage=300, stale-while-revalidate=900");
   sendSuccess(res, { data: await branchService.listPublicBranches() });
 });
 

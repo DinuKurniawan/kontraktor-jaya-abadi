@@ -15,7 +15,7 @@ const UPLOAD = /\/uploads\/[^/?#]+\.webp(\?.*)?$/i;
 const UNSPLASH = /^https?:\/\/images\.unsplash\.com\//;
 
 // Satu varian gambar pada w×h. Server hanya punya -thumb.webp 480px untuk upload,
-// jadi lebar di bawah itu memakai thumbnail, sisanya file asli (maks 1600px).
+// jadi lebar di bawah itu memakai thumbnail, sisanya file WebP utama (maks 1200px).
 function variant(url, w, h) {
   const n = (v) => Math.max(1, Math.round(v));
   if (PICSUM.test(url)) return `${url.match(PICSUM)[1]}/${n(w)}/${n(h)}.webp`;
@@ -46,7 +46,7 @@ export function imageProps(src, { width = 800, height, priority = false, sizes }
     width: Math.round(width),
     height: Math.round(h),
     loading: priority ? "eager" : "lazy",
-    fetchPriority: priority ? "high" : undefined,
+    fetchPriority: priority ? "high" : "auto",
     decoding: "async",
     sizes: sizes ?? "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
   };

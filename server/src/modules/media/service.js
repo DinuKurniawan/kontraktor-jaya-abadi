@@ -24,8 +24,8 @@ async function optimizeImage(filePath, purpose = "generic") {
     // Validasi buffer sebelum menulis agar hasil kosong tidak menjadi orphan di Windows.
     let pipeline = sharp(filePath).rotate();
     if (purpose === "service-card") pipeline = pipeline.resize(1200, 900, { fit: "cover", position: "attention" });
-    else if (purpose === "service-hero") pipeline = pipeline.resize(1920, 1080, { fit: "cover", position: "attention" });
-    else pipeline = pipeline.resize({ width: 1600, withoutEnlargement: true });
+    else if (purpose === "service-hero") pipeline = pipeline.resize(1600, 900, { fit: "cover", position: "attention" });
+    else pipeline = pipeline.resize({ width: 1200, withoutEnlargement: true });
     const webpBuffer = await pipeline
       .webp({ quality: 80 })
       .toBuffer();

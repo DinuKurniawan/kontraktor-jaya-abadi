@@ -12,15 +12,19 @@ const CostEstimator = lazy(() => import("../../components/public/home/CostEstima
 const FaqSection = lazy(() => import("../../components/public/home/FaqSection.jsx"));
 const CertificateSection = lazy(() => import("../../components/public/home/CertificateSection.jsx"));
 const ProcessSection = lazy(() => import("../../components/public/home/ProcessSection.jsx"));
-// Bundle artinya: untuk pengguna biasa lazy di 200px sebelum viewport,
-// selain itu tetap muncul saat SSR/mount agar Lighthouse/axe bisa audit.
+
+// Lazy-load di bawah lipatan: tunda chunk dan request API hingga 200px sebelum viewport.
 const BelowFold = ({ height, children }) => {
   const ref = useRef(null);
-  const [show, setShow] = useState(true);
+  const [show, setShow] = useState(false);
   useEffect(() => {
     if (show) return;
     const el = ref.current;
     if (!el) return;
+    if (typeof window === "undefined" || !("IntersectionObserver" in window)) {
+      setShow(true);
+      return;
+    }
     const io = new IntersectionObserver(([e]) => {
       if (!e.isIntersecting) return;
       setShow(true);

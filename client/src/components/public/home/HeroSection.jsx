@@ -194,12 +194,12 @@ export default function HeroSection() {
               )}
             </div>
 
-            {/* Kartu kecil melayang — posisi absolut pada bounding box tetap */}
-            <div className="animate-float absolute -left-3 top-8 rounded-2xl bg-white/95 px-4 py-3 shadow-soft-lg backdrop-blur sm:-left-8">
+            {/* Kartu kecil melayang — posisi absolut pada bounding box tetap & min-w/min-h stabil */}
+            <div className="animate-float pointer-events-none absolute -left-3 top-8 min-h-[68px] min-w-[135px] rounded-2xl bg-white/95 px-4 py-3 shadow-soft-lg backdrop-blur sm:-left-8">
               <p className="font-jakarta text-2xl font-extrabold text-brand tabular-nums">{years}+</p>
               <p className="text-xs font-semibold text-ink-soft">tahun pengalaman</p>
             </div>
-            <div className="animate-float [animation-delay:1.6s] absolute -bottom-5 right-2 rounded-2xl bg-white/95 px-4 py-3 shadow-soft-lg backdrop-blur sm:-right-4">
+            <div className="animate-float [animation-delay:1.6s] pointer-events-none absolute -bottom-5 right-2 min-h-[68px] min-w-[135px] rounded-2xl bg-white/95 px-4 py-3 shadow-soft-lg backdrop-blur sm:-right-4">
               <p className="font-jakarta text-2xl font-extrabold text-ink tabular-nums">{projects}+</p>
               <p className="text-xs font-semibold text-ink-soft">proyek selesai</p>
             </div>

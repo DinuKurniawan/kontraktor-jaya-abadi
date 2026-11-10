@@ -4,7 +4,6 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 import RoleRoute from "./routes/RoleRoute.jsx";
 import Skeleton from "./components/ui/Skeleton.jsx";
-import { useRealtime } from "./hooks/useRealtime.js";
 
 const L = (importer) => lazy(importer);
 const AdminLayout = L(() => import("./components/admin/AdminLayout.jsx"));
@@ -73,9 +72,6 @@ class PublicErrorBoundary extends Component {
 }
 
 export default function App() {
-  // Pasang listener SSE real-time untuk otomatis me-refresh data tanpa reload
-  useRealtime();
-
   return (
     <PublicErrorBoundary>
       <Suspense fallback={Loading}>

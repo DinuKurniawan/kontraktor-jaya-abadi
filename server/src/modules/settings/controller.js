@@ -17,5 +17,6 @@ export const upsert = asyncHandler(async (req, res) => {
 export const publicList = asyncHandler(async (_req, res) => {
   const all = await settingsService.getAllSettings();
   delete all.smtp_password; // ponytail: filter manual — tambahkan key sensitif lain di sini saat ada
+  res.set("Cache-Control", "public, s-maxage=300, stale-while-revalidate=900");
   sendSuccess(res, { data: all });
 });
