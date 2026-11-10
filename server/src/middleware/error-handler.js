@@ -66,7 +66,11 @@ export function errorHandler(err, _req, res, _next) {
       { code: err?.code, name: err?.name, message: err?.message }
     );
     if (!isProd) console.error(err);
-    if (isProd) message = PRISMA_CONNECTION_CODES.has(err?.code) ? message : "Terjadi kesalahan pada server";
+    if (isProd) {
+      message = (PRISMA_CONNECTION_CODES.has(err?.code) || (err instanceof ApiError && err.statusCode < 505))
+        ? message
+        : "Terjadi kesalahan pada server";
+    }
   }
 
   res.status(statusCode).json({ success: false, message, errors });
