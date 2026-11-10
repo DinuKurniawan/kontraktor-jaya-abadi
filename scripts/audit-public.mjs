@@ -5,10 +5,29 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { startMockPublicApi } from "./mock-public-api.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const root = resolve(repoRoot, "client");
 const { preview } = await import(pathToFileURL(resolve(root, "node_modules/vite/dist/node/index.js")));
+
+// API yang dipanggang ke bundle saat build: env shell > client/.env > default axios.
+async function resolveApiBase() {
+  if (process.env.VITE_API_URL) return process.env.VITE_API_URL;
+  try {
+    const env = await readFile(resolve(root, ".env"), "utf8");
+    const line = env.split(/\r?\n/).find((l) => /^\s*VITE_API_URL\s*=/.test(l));
+    if (line) return line.split("=").slice(1).join("=").trim().replace(/^["']|["']$/g, "");
+  } catch {
+    // CI tidak punya client/.env — pakai default axios.
+  }
+  return "http://localhost:4000/api";
+}
+
+const apiBase = await resolveApiBase();
+// Audit mengukur frontend, bukan backend: sediakan API mock bila origin lokal
+// belum listen (mis. runner CI tanpa database) agar tidak ada api-request-failed.
+const mockApi = await startMockPublicApi(apiBase);
 const routes = ["/", "/tentang", "/layanan", "/proyek", "/artikel", "/kontak", "/404"];
 const lighthouseConfig = {
   throttlingMethod: "simulate",
@@ -169,4 +188,5 @@ try {
   if (server.httpServer) {
     await new Promise((res) => server.httpServer.close(res));
   }
+  if (mockApi) await mockApi.close();
 }
