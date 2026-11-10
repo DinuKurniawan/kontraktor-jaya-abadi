@@ -13,10 +13,24 @@ export const STORAGE_BUCKET = cleanEnv(process.env.SUPABASE_STORAGE_BUCKET || "u
 
 let client;
 
-export function storage() {
-  if (!url || !serviceRoleKey) {
-    throw new ApiError(503, "Penyimpanan gambar belum dikonfigurasi");
+function validConfiguration() {
+  if (!url || !serviceRoleKey) throw new ApiError(503, "Penyimpanan gambar belum dikonfigurasi");
+  try {
+    const parsed = new URL(url);
+    if (parsed.pathname !== "" && parsed.pathname !== "/") {
+      throw new ApiError(503, "SUPABASE_URL harus Project URL saja, tanpa /storage/v1 atau path lain");
+    }
+  } catch (error) {
+    if (error instanceof ApiError) throw error;
+    throw new ApiError(503, "SUPABASE_URL tidak valid");
   }
+  if (!/^[a-z0-9][a-z0-9._-]{0,62}$/i.test(STORAGE_BUCKET)) {
+    throw new ApiError(503, "SUPABASE_STORAGE_BUCKET harus nama bucket saja, misalnya uploads");
+  }
+}
+
+export function storage() {
+  validConfiguration();
   client ??= createClient(url, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
