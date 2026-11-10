@@ -1,9 +1,6 @@
 /*
- * FeaturedProjectsStrip — carousel besar proyek unggulan (1 slide per layar).
- * Slide: foto + judul, lokasi, luas, durasi, tombol "Lihat proyek".
- * Navigasi: panah, titik, dan geser sentuh (scroll-snap horizontal native).
- * Data: GET /api/public/projects?featured=true.
- * Komponen menyembunyikan diri bila tidak ada proyek unggulan.
+ * FeaturedProjectsStrip — carousel proyek unggulan.
+ * Satu proyek per slide; tetap memakai scroll-snap agar gestur sentuh berjalan.
  */
 import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
@@ -17,206 +14,116 @@ const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").rep
 const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
 const num = (v) => Number(v).toLocaleString("id-ID");
 
+function ProjectMeta({ project }) {
+  const items = [
+    project.location && [MapPin, project.location],
+    project.area && [Ruler, `${num(project.area)} m²`],
+    project.durationMonths && [CalendarDays, `${num(project.durationMonths)} bulan`],
+  ].filter(Boolean);
+
+  if (!items.length) return null;
+  return (
+    <dl className="grid minmax-0 grid-cols-1 gap-3 border-y border-cream/15 py-4 sm:grid-cols-3">
+      {items.map(([Icon, value]) => (
+        <div key={value} className="flex min-w-0 items-center gap-2 text-sm text-cream/80">
+          <Icon size={16} className="shrink-0 text-brand-light" aria-hidden />
+          <dd className="truncate">{value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 export default function FeaturedProjectsStrip() {
   const trackRef = useRef(null);
   const [index, setIndex] = useState(0);
-
   const { data, isLoading, isError } = useQuery({
     queryKey: ["public-featured-projects"],
     queryFn: async () => (await api.get("/public/projects", { params: { featured: true, limit: 8 } })).data,
     staleTime: 5 * 60_000,
   });
-
   const rows = data?.data ?? [];
+
+  const goTo = (nextIndex) => {
+    const track = trackRef.current;
+    if (!track || !track.children.length) return;
+    const target = Math.max(0, Math.min(rows.length - 1, nextIndex));
+    const firstOffset = track.children[0].offsetLeft;
+    const card = track.children[target];
+    if (card) track.scrollTo({ left: card.offsetLeft - firstOffset, behavior: "smooth" });
+    setIndex(target);
+  };
+
+  const onScroll = () => {
+    const track = trackRef.current;
+    if (!track || !track.children.length) return;
+    const firstOffset = track.children[0].offsetLeft;
+    const closest = [...track.children].reduce((best, card, cardIndex) => (
+      Math.abs(card.offsetLeft - firstOffset - track.scrollLeft) < best.distance
+        ? { index: cardIndex, distance: Math.abs(card.offsetLeft - firstOffset - track.scrollLeft) }
+        : best
+    ), { index: 0, distance: Infinity });
+    setIndex(closest.index);
+  };
 
   if (isLoading) {
     return (
       <section className="bg-cream py-14 sm:py-16" aria-labelledby="proyek-unggulan-loading" aria-busy="true">
         <Container>
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-brand">Pilihan kami</p>
-              <h2 id="proyek-unggulan-loading" className="mt-2 font-jakarta text-3xl font-extrabold text-ink sm:text-4xl">
-                Proyek <span className="text-brand">Unggulan</span>
-              </h2>
-            </div>
-          </div>
-          <div className="mt-8 flex gap-5 overflow-hidden pb-2">
-            {[0, 1].map((n) => (
-              <div
-                key={n}
-                className="flex h-[700px] w-[645px] max-w-[85vw] shrink-0 flex-col overflow-hidden rounded-3xl bg-white shadow-soft animate-pulse"
-              >
-                <div className="aspect-[16/10] w-full bg-cream-deep" />
-                <div className="flex flex-1 flex-col gap-3 p-6">
-                  <div className="h-3 w-24 rounded bg-ink/10" />
-                  <div className="h-6 w-3/4 rounded bg-ink/10" />
-                  <div className="h-4 w-1/2 rounded bg-ink/10" />
-                  <div className="h-10 w-full rounded bg-ink/5" />
-                  <div className="mt-auto h-9 w-32 rounded-full bg-ink/10" />
-                </div>
-              </div>
-            ))}
+          <h2 id="proyek-unggulan-loading" className="font-jakarta text-3xl font-extrabold text-ink sm:text-4xl">Proyek unggulan</h2>
+          <div className="mt-8 grid minmax-0 animate-pulse overflow-hidden rounded-[2rem] bg-ink md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+            <div className="aspect-[4/3] bg-cream-deep md:aspect-auto md:min-h-[30rem]" />
+            <div className="min-h-72 bg-ink/90" />
           </div>
         </Container>
       </section>
     );
   }
 
-  // Tidak ada unggulan (atau gagal memuat) → tidak merender apa pun
   if (isError || rows.length === 0) return null;
-
-  const goTo = (i) => {
-    const el = trackRef.current;
-    if (!el || !el.children.length) return;
-    const target = Math.max(0, Math.min(rows.length - 1, i));
-    const card = el.children[target];
-    const baseOffset = el.children[0].offsetLeft;
-    if (card) {
-      el.scrollTo({ left: card.offsetLeft - baseOffset, behavior: "smooth" });
-    }
-    setIndex(target);
-  };
-  const step = (dir) => goTo(index + dir);
-  const onScroll = () => {
-    const el = trackRef.current;
-    if (!el || !el.children.length) return;
-    const baseOffset = el.children[0].offsetLeft;
-    const scrollLeft = el.scrollLeft;
-    let closest = 0;
-    let minDiff = Infinity;
-    for (let i = 0; i < el.children.length; i++) {
-      const cardPos = el.children[i].offsetLeft - baseOffset;
-      const diff = Math.abs(cardPos - scrollLeft);
-      if (diff < minDiff) {
-        minDiff = diff;
-        closest = i;
-      }
-    }
-    setIndex(closest);
-  };
 
   return (
     <section className="bg-cream py-14 sm:py-16" aria-labelledby="proyek-unggulan">
       <Container>
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-brand">Pilihan kami</p>
-            <h2 id="proyek-unggulan" className="mt-2 font-jakarta text-3xl font-extrabold text-ink sm:text-4xl">
-              Proyek <span className="text-brand">Unggulan</span>
-            </h2>
-          </div>
-
-          {/* Panah — disembunyikan di layar sangat kecil, geser sentuh tetap tersedia */}
-          <div className="hidden items-center gap-2 sm:flex">
-            <button
-              type="button"
-              onClick={() => step(-1)}
-              disabled={index === 0}
-              aria-label="Proyek sebelumnya"
-              className="rounded-full border border-ink/10 bg-white p-2.5 text-ink-soft transition hover:border-brand hover:text-brand disabled:cursor-not-allowed disabled:opacity-35"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <button
-              type="button"
-              onClick={() => step(1)}
-              disabled={index >= rows.length - 1}
-              aria-label="Proyek berikutnya"
-              className="rounded-full border border-ink/10 bg-white p-2.5 text-ink-soft transition hover:border-brand hover:text-brand disabled:cursor-not-allowed disabled:opacity-35"
-            >
-              <ChevronRight size={18} />
-            </button>
-          </div>
+        <div className="flex items-end justify-between gap-4">
+          <h2 id="proyek-unggulan" className="font-jakarta text-3xl font-extrabold text-ink sm:text-4xl">Proyek unggulan</h2>
+          {rows.length > 1 && (
+            <div className="flex items-center gap-2">
+              <span className="mr-1 text-sm font-semibold text-ink-light" aria-live="polite">{index + 1} / {rows.length}</span>
+              <button type="button" onClick={() => goTo(index - 1)} disabled={index === 0} aria-label="Proyek sebelumnya" className="rounded-full border border-ink/10 bg-white p-2.5 text-ink-soft transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-35">
+                <ChevronLeft size={18} />
+              </button>
+              <button type="button" onClick={() => goTo(index + 1)} disabled={index >= rows.length - 1} aria-label="Proyek berikutnya" className="rounded-full border border-ink/10 bg-white p-2.5 text-ink-soft transition hover:border-brand hover:text-brand focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-35">
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Track carousel */}
-        <div
-          ref={trackRef}
-          onScroll={onScroll}
-          role="region"
-          aria-roledescription="carousel"
-          aria-label="Proyek unggulan"
-          className="mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-        >
-          {rows.map((p, i) => (
-            <article
-              key={p.id}
-              aria-roledescription="slide"
-              aria-label={`${i + 1} dari ${rows.length}: ${p.title}`}
-              className="flex h-[700px] w-[645px] shrink-0 snap-start flex-col overflow-hidden rounded-3xl bg-white shadow-soft"
-            >
-              {/* Foto — memenuhi area tanpa ruang kosong */}
-              <div className="relative aspect-[16/10] w-full overflow-hidden bg-cream-deep">
-                <img
-                  src={img(p.coverImage)}
-                  {...imageProps(p.coverImage, { width: 645, height: 403, priority: i === 0 })}
-                  alt={p.title}
-                  className="w-full h-full object-cover object-center"
-                  style={p.coverImagePosition ? { objectPosition: p.coverImagePosition } : undefined}
-                />
-                {p.category?.name && (
-                  <span className="absolute left-4 top-4 rounded-full bg-cream/90 px-3 py-1 text-[11px] font-semibold text-ink backdrop-blur">
-                    {p.category.name}
-                  </span>
-                )}
+        <div ref={trackRef} onScroll={onScroll} role="region" aria-roledescription="carousel" aria-label="Proyek unggulan" className="mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {rows.map((project, projectIndex) => (
+            <article key={project.id} aria-roledescription="slide" aria-label={`${projectIndex + 1} dari ${rows.length}: ${project.title}`} className="grid min-w-full snap-start overflow-hidden rounded-[2rem] bg-ink shadow-soft-lg md:min-h-[30rem] md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+              <div className="relative min-w-0 overflow-hidden bg-cream-deep">
+                <img src={img(project.coverImage)} {...imageProps(project.coverImage, { width: 960, height: 720, priority: projectIndex === 0 })} alt={project.title} className="h-full min-h-72 w-full object-cover object-center md:absolute md:inset-0" style={project.coverImagePosition ? { objectPosition: project.coverImagePosition } : undefined} />
+                {project.category?.name && <span className="absolute left-5 top-5 rounded-full bg-cream px-3 py-1.5 text-xs font-semibold text-ink">{project.category.name}</span>}
               </div>
 
-              {/* Info di bawah gambar (bukan overlay) */}
-              <div className="flex shrink-0 flex-col gap-3 p-6">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-brand">Proyek unggulan</p>
-                <h3 className="line-clamp-2 font-jakarta text-xl font-extrabold leading-snug text-ink">
-                  {p.title}
-                </h3>
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-soft">
-                  {p.location && (
-                    <span className="inline-flex items-center gap-1">
-                      <MapPin size={13} className="text-brand" /> {p.location}
-                    </span>
-                  )}
-                  {p.area ? (
-                    <span className="inline-flex items-center gap-1">
-                      <Ruler size={13} className="text-brand" /> {num(p.area)} m²
-                    </span>
-                  ) : null}
-                  {p.durationMonths ? (
-                    <span className="inline-flex items-center gap-1">
-                      <CalendarDays size={13} className="text-brand" /> {num(p.durationMonths)} bulan
-                    </span>
-                  ) : null}
-                </div>
-                {p.summary && <p className="line-clamp-2 text-sm leading-relaxed text-ink-light">{p.summary}</p>}
+              <div className="flex min-w-0 flex-col justify-between p-6 sm:p-8 lg:p-10">
                 <div>
-                  <Link
-                    to={`/proyek/${p.slug}`}
-                    className="mt-1 inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 font-jakarta text-xs font-semibold text-cream transition-colors hover:bg-brand"
-                  >
-                    Lihat proyek <ArrowRight size={14} />
+                  <p className="text-sm font-semibold text-brand-light">Pilihan Jaya Abadi</p>
+                  <h3 className="mt-4 overflow-wrap-break-word font-jakarta text-3xl font-extrabold leading-[1.08] text-cream sm:text-4xl">{project.title}</h3>
+                  {project.summary && <p className="mt-5 max-w-xl text-sm leading-relaxed text-cream/75 sm:text-base">{project.summary}</p>}
+                </div>
+                <div className="mt-8">
+                  <ProjectMeta project={project} />
+                  <Link to={`/proyek/${project.slug}`} className="mt-6 inline-flex items-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-bold text-white transition hover:bg-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-light focus-visible:ring-offset-2 focus-visible:ring-offset-ink">
+                    Lihat detail proyek <ArrowRight size={16} aria-hidden />
                   </Link>
                 </div>
               </div>
             </article>
           ))}
         </div>
-
-        {/* Titik navigasi */}
-        {rows.length > 1 && (
-          <div className="mt-4 flex justify-center gap-1.5" role="tablist" aria-label="Posisi carousel proyek unggulan">
-            {rows.map((p, i) => (
-              <button
-                key={p.id}
-                type="button"
-                role="tab"
-                aria-selected={index === i}
-                aria-label={`Slide ${i + 1}`}
-                onClick={() => goTo(i)}
-                className="flex h-6 w-6 items-center justify-center"
-              >
-                <span className={`h-2 w-6 origin-left rounded-full transition-transform duration-300 ${index === i ? "scale-x-100 bg-brand" : "scale-x-[0.3333] bg-ink/20 hover:bg-ink/40"}`} />
-              </button>
-            ))}
-          </div>
-        )}
       </Container>
     </section>
   );
