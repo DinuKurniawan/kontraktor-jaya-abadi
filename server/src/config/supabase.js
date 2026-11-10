@@ -46,6 +46,18 @@ export function storage() {
   return client.storage.from(STORAGE_BUCKET);
 }
 
+export async function ensureBucket() {
+  const admin = createClient(url, serviceRoleKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const { data: buckets, error: listError } = await admin.storage.listBuckets();
+  if (listError) throw new ApiError(502, `Gagal memeriksa bucket: ${listError.message}`);
+  
+  const exists = buckets?.some((b) => b.name === STORAGE_BUCKET);
+  if (!exists) {
+    const { error: createError } = await admin.storage.createBucket(STORAGE_BUCKET, { public: true });
+    if (createError) throw new ApiError(502, `Gagal membuat bucket: ${createError.message}`);
+  }
+}
+
 export function publicStorageUrl(objectPath) {
   if (!url) return null;
   const cleanPath = String(objectPath).replace(/^\/+/, "");

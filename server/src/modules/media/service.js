@@ -8,7 +8,7 @@ import sharp from "sharp";
 import prisma from "../../config/prisma.js";
 import ApiError from "../../utils/api-error.js";
 import { paginate, paginationMeta } from "../../utils/paginate.js";
-import { publicStorageUrl, storage, storageObjectPath } from "../../config/supabase.js";
+import { ensureBucket, publicStorageUrl, storage, storageObjectPath } from "../../config/supabase.js";
 import { UPLOAD_DIR } from "./upload.js";
 
 const MIN_IMAGE_BYTES = 1024;
@@ -180,6 +180,7 @@ export async function saveFiles(files, { purpose = "generic" } = {}) {
     throw new ApiError(400, "Tidak ada file yang diunggah");
   }
 
+  await ensureBucket();
   const bucket = storage();
   const created = [];
   const uploadedPaths = [];
