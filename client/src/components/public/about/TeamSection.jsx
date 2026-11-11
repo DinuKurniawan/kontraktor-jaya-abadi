@@ -5,6 +5,7 @@
  * Data: GET /api/public/team (filter divisi di sisi klien).
  */
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Mail, Users, X } from "lucide-react";
 import api from "../../../lib/axios.js";
@@ -44,11 +45,20 @@ export default function TeamSection() {
   const filtered = rows.filter((m) => !divisi || m.department === divisi);
   const nDivisi = divisiSet.length;
 
+  // Tutup modal dengan Escape.
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && setZoom(null);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
+
+  // Kunci scroll body selama modal terbuka; kembalikan saat tertutup.
+  useEffect(() => {
+    if (!zoom) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, [zoom]);
 
   const Avatar = ({ m, i, big }) =>
     m.photo ? (
@@ -98,29 +108,32 @@ export default function TeamSection() {
         </div>
       </Container>
 
-      {/* Modal profil */}
-      {zoom && (
-        <div role="dialog" aria-modal="true" aria-label={`Profil ${zoom.name}`} onClick={() => setZoom(null)}
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/85 p-4 backdrop-blur-sm">
-          <div className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-soft-lg" onClick={(e) => e.stopPropagation()}>
-            <div className="aspect-[4/3] w-full overflow-hidden bg-cream-deep">
-              <div className="mx-auto h-full w-44"><Avatar m={zoom} i={0} big /></div>
-            </div>
-            <div className="p-6">
-              <h3 className="font-jakarta text-xl font-extrabold text-ink">{zoom.name}</h3>
-              <p className="text-sm font-semibold text-brand">{zoom.position}</p>
-              {zoom.bio && <p className="mt-3 leading-relaxed text-ink-soft">{zoom.bio}</p>}
-              <div className="mt-5">
-                <PillButton variant="primary" to="/kontak"><Mail size={15} /> Hubungi {zoom.name?.split(" ")[0] ?? "Kami"}</PillButton>
+      {/* Modal profil — portal ke body agar lepas dari stacking context ancestor
+          (Reveal pakai translate, membuat position: fixed mengacu ke wrapper). */}
+      {zoom &&
+        createPortal(
+          <div role="dialog" aria-modal="true" aria-label={`Profil ${zoom.name}`} onClick={() => setZoom(null)}
+            className="fixed inset-0 z-[9999] grid place-items-center bg-black/60 p-4 backdrop-blur-[4px]">
+            <div className="relative w-full max-w-lg overflow-hidden rounded-3xl bg-white shadow-soft-lg" onClick={(e) => e.stopPropagation()}>
+              <div className="aspect-[4/3] w-full overflow-hidden bg-cream-deep">
+                <div className="mx-auto h-full w-44"><Avatar m={zoom} i={0} big /></div>
               </div>
+              <div className="p-6">
+                <h3 className="font-jakarta text-xl font-extrabold text-ink">{zoom.name}</h3>
+                <p className="text-sm font-semibold text-brand">{zoom.position}</p>
+                {zoom.bio && <p className="mt-3 leading-relaxed text-ink-soft">{zoom.bio}</p>}
+                <div className="mt-5">
+                  <PillButton variant="primary" to="/kontak"><Mail size={15} /> Hubungi {zoom.name?.split(" ")[0] ?? "Kami"}</PillButton>
+                </div>
+              </div>
+              <button type="button" onClick={() => setZoom(null)} aria-label="Tutup"
+                className="absolute right-4 top-4 rounded-full bg-white/90 p-2 text-ink shadow-soft transition hover:bg-brand hover:text-white">
+                <X size={18} />
+              </button>
             </div>
-            <button type="button" onClick={() => setZoom(null)} aria-label="Tutup"
-              className="absolute right-4 top-4 rounded-full bg-white/90 p-2 text-ink shadow-soft transition hover:bg-brand hover:text-white">
-              <X size={18} />
-            </button>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </section>
   );
 }

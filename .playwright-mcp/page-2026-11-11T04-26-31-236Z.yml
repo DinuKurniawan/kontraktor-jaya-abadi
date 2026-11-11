@@ -1,0 +1,132 @@
+- generic [ref=f3e5]:
+  - link "Lewati ke konten utama" [ref=f3e6] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f3e8]:
+    - link "J Jaya Abadi" [ref=f3e9] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f3e10]: J
+      - generic [ref=f3e11]: Jaya Abadi
+    - button "Buka menu" [ref=f3e12]
+  - main [ref=f3e14]:
+    - generic [ref=f3e17]:
+      - navigation "Breadcrumb" [ref=f3e18]:
+        - list [ref=f3e19]:
+          - listitem [ref=f3e20]:
+            - link "Beranda" [ref=f3e21] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f3e22]:
+            - generic [ref=f3e25]: Artikel
+      - generic [ref=f3e26]:
+        - paragraph [ref=f3e27]: Jaya Abadi Journal
+        - heading "Artikel & Wawasan" [level=1] [ref=f3e28]
+        - paragraph [ref=f3e29]: Tips, panduan, dan kabar terbaru seputar konstruksi, renovasi, interior, serta cara membangun ruang yang lebih baik.
+        - paragraph [ref=f3e30]: Memuat artikel…
+      - searchbox "Cari artikel dan wawasan" [ref=f3e33]
+    - region "Artikel unggulan" [ref=f3e34]:
+      - heading "Artikel unggulan" [level=2] [ref=f3e36]
+    - generic [ref=f3e41]:
+      - region "Filter artikel" [ref=f3e43]:
+        - generic [ref=f3e44]:
+          - generic [ref=f3e45]:
+            - paragraph [ref=f3e46]: Kategori
+            - button "Semua" [pressed] [ref=f3e48]
+          - generic [ref=f3e49]:
+            - generic [ref=f3e50]: Urutkan
+            - combobox "Urutkan" [ref=f3e51]:
+              - option "Terbaru" [selected]
+              - option "Terpopuler"
+              - option "Terlama"
+        - searchbox "Cari di artikel" [ref=f3e53]
+        - paragraph [ref=f3e54]:
+          - strong [ref=f3e55]: 0 artikel
+          - text: ditemukan
+      - generic [ref=f3e56]:
+        - generic [ref=f3e57]: Memuat artikel
+        - complementary "Artikel tambahan" [ref=f3e97]:
+          - generic [ref=f3e98]:
+            - heading "Artikel populer" [level=2] [ref=f3e102]
+            - link "Lihat semua populer" [ref=f3e107] [cursor=pointer]:
+              - /url: /artikel?urutan=terpopuler
+          - generic [ref=f3e110]:
+            - heading "Tips konstruksi" [level=2] [ref=f3e115]
+            - paragraph [ref=f3e116]: Dapatkan wawasan dan inspirasi terbaru langsung di inbox Anda.
+            - generic [ref=f3e117]:
+              - generic [ref=f3e118]: Email newsletter
+              - textbox "Email newsletter" [ref=f3e119]:
+                - /placeholder: Email Anda
+              - button "Berlangganan" [ref=f3e120]
+          - generic [ref=f3e121]:
+            - heading "Punya rencana proyek?" [level=2] [ref=f3e124]
+            - paragraph [ref=f3e125]: Ceritakan kebutuhan Anda. Tim Jaya Abadi siap membantu memberi arahan.
+            - link "Konsultasi via WhatsApp" [ref=f3e126] [cursor=pointer]:
+              - /url: https://wa.me/6281234567890?text=Halo%20Jaya%20Abadi%2C%20saya%20ingin%20konsultasi%20proyek.
+  - contentinfo [ref=f3e129]:
+    - generic [ref=f3e130]:
+      - generic [ref=f3e131]:
+        - link "J Jaya Abadi" [ref=f3e132] [cursor=pointer]:
+          - /url: /
+          - generic [ref=f3e133]: J
+          - generic [ref=f3e134]: Jaya Abadi
+        - paragraph [ref=f3e135]: Kontraktor terpercaya untuk bangunan berkualitas — jasa konstruksi, renovasi, dan desain dengan hasil rapi dan RAB transparan.
+      - navigation "Perusahaan" [ref=f3e136]:
+        - paragraph [ref=f3e137]: Perusahaan
+        - list [ref=f3e138]:
+          - listitem [ref=f3e139]:
+            - link "Beranda" [ref=f3e140] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=f3e141]:
+            - link "Tentang" [ref=f3e142] [cursor=pointer]:
+              - /url: /tentang
+          - listitem [ref=f3e143]:
+            - link "Layanan" [ref=f3e144] [cursor=pointer]:
+              - /url: /layanan
+          - listitem [ref=f3e145]:
+            - link "Proyek" [ref=f3e146] [cursor=pointer]:
+              - /url: /proyek
+          - listitem [ref=f3e147]:
+            - link "Artikel" [ref=f3e148] [cursor=pointer]:
+              - /url: /artikel
+          - listitem [ref=f3e149]:
+            - link "Kontak" [ref=f3e150] [cursor=pointer]:
+              - /url: /kontak
+      - navigation "Layanan" [ref=f3e151]:
+        - paragraph [ref=f3e152]: Layanan
+        - list [ref=f3e153]:
+          - listitem [ref=f3e154]:
+            - link "Konstruksi Bangunan" [ref=f3e155] [cursor=pointer]:
+              - /url: /layanan/konstruksi-bangunan
+          - listitem [ref=f3e156]:
+            - link "Renovasi Bangunan" [ref=f3e157] [cursor=pointer]:
+              - /url: /layanan/renovasi-bangunan
+          - listitem [ref=f3e158]:
+            - link "Desain & Interior" [ref=f3e159] [cursor=pointer]:
+              - /url: /layanan/desain-interior
+          - listitem [ref=f3e160]:
+            - link "Pengawasan Proyek" [ref=f3e161] [cursor=pointer]:
+              - /url: /layanan/pengawasan-proyek
+        - paragraph [ref=f3e162]: Proyek Unggulan
+        - list [ref=f3e163]:
+          - listitem [ref=f3e164]:
+            - link "Rumah Tinggal" [ref=f3e165] [cursor=pointer]:
+              - /url: /proyek?kategori=rumah-tinggal
+          - listitem [ref=f3e166]:
+            - link "Gedung Komersial" [ref=f3e167] [cursor=pointer]:
+              - /url: /proyek?kategori=gedung
+      - generic [ref=f3e168]:
+        - paragraph [ref=f3e169]: Kontak
+        - list
+        - generic [ref=f3e170]:
+          - paragraph [ref=f3e171]: Jam Kerja
+          - list [ref=f3e175]:
+            - listitem [ref=f3e176]:
+              - generic [ref=f3e177]: Senin – Jumat
+              - generic [ref=f3e178]: 08.00 – 17.00
+            - listitem [ref=f3e179]:
+              - generic [ref=f3e180]: Sabtu
+              - generic [ref=f3e181]: 08.00 – 14.00
+            - listitem [ref=f3e182]:
+              - generic [ref=f3e183]: Minggu / Libur
+              - generic [ref=f3e184]: Tutup
+    - generic [ref=f3e186]:
+      - paragraph [ref=f3e187]: © 2026 Jaya Abadi. Semua hak dilindungi.
+      - paragraph [ref=f3e188]: Dibangun dengan integritas sejak 2006.

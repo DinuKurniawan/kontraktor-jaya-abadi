@@ -1,0 +1,130 @@
+- generic [ref=f1e3]:
+  - complementary [ref=f1e4]:
+    - generic [ref=f1e5]:
+      - generic [ref=f1e6]:
+        - paragraph [ref=f1e7]: Jaya Abadi
+        - paragraph [ref=f1e8]: CMS Admin
+      - button "Tutup menu" [ref=f1e9]
+    - navigation [ref=f1e13]:
+      - link "Dashboard" [ref=f1e15] [cursor=pointer]:
+        - /url: /admin
+      - link "Proyek" [ref=f1e23] [cursor=pointer]:
+        - /url: /admin/proyek
+      - link "Layanan" [ref=f1e30] [cursor=pointer]:
+        - /url: /admin/layanan
+      - link "Kategori" [ref=f1e35] [cursor=pointer]:
+        - /url: /admin/kategori
+      - link "Artikel" [ref=f1e43] [cursor=pointer]:
+        - /url: /admin/posts
+      - link "Tag Artikel" [ref=f1e49] [cursor=pointer]:
+        - /url: /admin/tags
+      - link "Testimoni" [ref=f1e56] [cursor=pointer]:
+        - /url: /admin/testimoni
+      - link "Tim" [ref=f1e63] [cursor=pointer]:
+        - /url: /admin/tim
+      - link "Pesan" [ref=f1e70] [cursor=pointer]:
+        - /url: /admin/pesan
+      - link "Cabang" [ref=f1e76] [cursor=pointer]:
+        - /url: /admin/branches
+      - link "Pelanggan" [ref=f1e82] [cursor=pointer]:
+        - /url: /admin/subscribers
+      - link "Media" [ref=f1e89] [cursor=pointer]:
+        - /url: /admin/media
+      - generic [ref=f1e95]:
+        - paragraph [ref=f1e96]: Konten Beranda
+        - link "Hero Slider" [ref=f1e97] [cursor=pointer]:
+          - /url: /admin/hero-slider
+      - link "Mitra" [ref=f1e105] [cursor=pointer]:
+        - /url: /admin/partners
+      - link "Sertifikat" [ref=f1e113] [cursor=pointer]:
+        - /url: /admin/certificates
+      - link "Keunggulan" [ref=f1e119] [cursor=pointer]:
+        - /url: /admin/features
+      - link "Alur Kerja" [ref=f1e125] [cursor=pointer]:
+        - /url: /admin/process-steps
+      - link "Before / After" [ref=f1e131] [cursor=pointer]:
+        - /url: /admin/before-after
+      - link "Harga Estimasi" [ref=f1e136] [cursor=pointer]:
+        - /url: /admin/estimate-prices
+      - link "FAQ" [ref=f1e142] [cursor=pointer]:
+        - /url: /admin/faqs
+      - generic [ref=f1e147]:
+        - paragraph [ref=f1e148]: Halaman Tentang
+        - link "Milestone" [ref=f1e149] [cursor=pointer]:
+          - /url: /admin/milestones
+      - link "Nilai Perusahaan" [ref=f1e158] [cursor=pointer]:
+        - /url: /admin/core-values
+      - link "Galeri" [ref=f1e165] [cursor=pointer]:
+        - /url: /admin/gallery
+      - link "Pengaturan Situs" [ref=f1e173] [cursor=pointer]:
+        - /url: /admin/pengaturan
+      - link "Pengguna" [ref=f1e179] [cursor=pointer]:
+        - /url: /admin/pengguna
+    - button "Keluar" [ref=f1e194]
+  - generic [ref=f1e198]:
+    - banner [ref=f1e199]:
+      - button "Buka menu" [ref=f1e200]
+      - searchbox "Pencarian" [ref=f1e203]
+      - generic [ref=f1e204]:
+        - button "Notifikasi" [ref=f1e206]
+        - button "S Super Admin Super Admin" [ref=f1e211]:
+          - generic [ref=f1e212]: S
+          - generic [ref=f1e213]:
+            - generic [ref=f1e214]: Super Admin
+            - generic [ref=f1e215]: Super Admin
+    - main [ref=f1e218]:
+      - generic [ref=f1e219]:
+        - generic [ref=f1e220]:
+          - heading "Tim" [level=1] [ref=f1e221]
+          - button "Tambah Anggota" [ref=f1e222]
+        - generic [ref=f1e226]:
+          - paragraph [ref=f1e232]: Belum ada anggota tim
+          - paragraph [ref=f1e233]: Tambahkan foto & profil tim Anda.
+        - dialog "Tambah Anggota Tim" [ref=f1e234]:
+          - generic [ref=f1e236]:
+            - generic [ref=f1e237]:
+              - heading "Tambah Anggota Tim" [level=2] [ref=f1e238]
+              - button "Tutup" [active] [ref=f1e239]
+            - generic [ref=f1e244]:
+              - generic [ref=f1e245]:
+                - generic [ref=f1e246]:
+                  - generic [ref=f1e247]: Nama
+                  - textbox "Nama" [ref=f1e248]:
+                    - /placeholder: Nama lengkap
+                - generic [ref=f1e249]:
+                  - generic [ref=f1e250]: Jabatan
+                  - textbox "Jabatan" [ref=f1e251]:
+                    - /placeholder: Site Manager
+              - generic [ref=f1e252]:
+                - generic [ref=f1e253]: Divisi
+                - combobox "Divisi" [ref=f1e255]:
+                  - option "Manajemen" [selected]
+                  - option "Teknik"
+                  - option "Arsitek & Interior"
+                  - option "Pengawas"
+                  - option "Administrasi"
+              - generic [ref=f1e256]:
+                - generic [ref=f1e257]: Bio (opsional)
+                - textbox "Bio (opsional)" [ref=f1e258]:
+                  - /placeholder: Pengalaman singkat…
+              - generic [ref=f1e259]:
+                - paragraph [ref=f1e260]: Foto
+                - button "Pilih gambar" [ref=f1e262]
+              - generic [ref=f1e268]:
+                - generic [ref=f1e269]:
+                  - generic [ref=f1e270]: Email (opsional)
+                  - textbox "Email (opsional)" [ref=f1e271]
+                - generic [ref=f1e272]:
+                  - generic [ref=f1e273]: LinkedIn (opsional)
+                  - textbox "LinkedIn (opsional)" [ref=f1e274]:
+                    - /placeholder: https://linkedin.com/in/…
+                - generic [ref=f1e275]:
+                  - generic [ref=f1e276]: Instagram (opsional)
+                  - textbox "Instagram (opsional)" [ref=f1e277]:
+                    - /placeholder: https://instagram.com/…
+              - generic [ref=f1e278]:
+                - checkbox "Tampilkan di situs publik" [checked] [ref=f1e279]
+                - text: Tampilkan di situs publik
+            - generic [ref=f1e280]:
+              - button "Batal" [ref=f1e281]
+              - button "Simpan" [ref=f1e282]

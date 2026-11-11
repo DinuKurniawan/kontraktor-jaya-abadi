@@ -7,6 +7,7 @@
  * id="galeri" (anchor AboutBanner).
  */
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft, ChevronRight, ImageOff, X } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
@@ -81,6 +82,15 @@ export default function GallerySection() {
     return () => window.removeEventListener("keydown", onKey);
   }, [zoom, rows.length]);
 
+  // Kunci scroll body selama lightbox terbuka; kembalikan saat tertutup.
+  const lightboxOpen = zoom !== null;
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = prev; };
+  }, [lightboxOpen]);
+
   return (
     <section id="galeri" className="scroll-mt-32 bg-white py-16 sm:py-20">
       <Container>
@@ -134,30 +144,34 @@ export default function GallerySection() {
         )}
       </Container>
 
-      {/* Lightbox halaman aktif: panah, swipe, Esc, penghitung */}
-      {zoom !== null && rows[zoom] && (
-        <div role="dialog" aria-modal="true" aria-label={rows[zoom].caption ?? "Foto galeri"}
-          onClick={() => setZoom(null)}
-          onTouchStart={(e) => (touchX.current = e.touches[0].clientX)}
-          onTouchEnd={(e) => {
-            if (touchX.current === null) return;
-            const dx = e.changedTouches[0].clientX - touchX.current;
-            if (Math.abs(dx) > 40) setZoom((z) => (z + (dx < 0 ? 1 : -1) + rows.length) % rows.length);
-            touchX.current = null;
-          }}
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/90 p-4 backdrop-blur-sm">
-          <ImageWithFallback src={img(rows[zoom].image)} alt={rows[zoom].caption ?? ""} className="max-h-[82vh] max-w-full rounded-2xl shadow-soft-lg" />
-          <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-sm font-semibold text-white">
-            {zoom + 1} / {rows.length}{rows[zoom].caption ? ` — ${rows[zoom].caption}` : ""}
-          </p>
-          <button type="button" aria-label="Foto sebelumnya" onClick={(e) => { e.stopPropagation(); setZoom((zoom - 1 + rows.length) % rows.length); }}
-            className="absolute left-4 rounded-full bg-white/15 p-2.5 text-white transition hover:bg-white/30"><ChevronLeft size={20} /></button>
-          <button type="button" aria-label="Foto berikutnya" onClick={(e) => { e.stopPropagation(); setZoom((zoom + 1) % rows.length); }}
-            className="absolute right-4 rounded-full bg-white/15 p-2.5 text-white transition hover:bg-white/30"><ChevronRight size={20} /></button>
-          <button type="button" onClick={() => setZoom(null)} aria-label="Tutup"
-            className="absolute right-4 top-4 rounded-full bg-white/15 p-2.5 text-white transition hover:bg-white/30"><X size={20} /></button>
-        </div>
-      )}
+      {/* Lightbox halaman aktif: panah, swipe, Esc, penghitung.
+          Portal ke body agar lepas dari stacking context ancestor (Reveal pakai
+          translate, membuat position: fixed mengacu ke wrapper section). */}
+      {zoom !== null && rows[zoom] &&
+        createPortal(
+          <div role="dialog" aria-modal="true" aria-label={rows[zoom].caption ?? "Foto galeri"}
+            onClick={() => setZoom(null)}
+            onTouchStart={(e) => (touchX.current = e.touches[0].clientX)}
+            onTouchEnd={(e) => {
+              if (touchX.current === null) return;
+              const dx = e.changedTouches[0].clientX - touchX.current;
+              if (Math.abs(dx) > 40) setZoom((z) => (z + (dx < 0 ? 1 : -1) + rows.length) % rows.length);
+              touchX.current = null;
+            }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-ink/90 p-4 backdrop-blur-sm">
+            <ImageWithFallback src={img(rows[zoom].image)} alt={rows[zoom].caption ?? ""} className="max-h-[82vh] max-w-full rounded-2xl shadow-soft-lg" />
+            <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-sm font-semibold text-white">
+              {zoom + 1} / {rows.length}{rows[zoom].caption ? ` — ${rows[zoom].caption}` : ""}
+            </p>
+            <button type="button" aria-label="Foto sebelumnya" onClick={(e) => { e.stopPropagation(); setZoom((zoom - 1 + rows.length) % rows.length); }}
+              className="absolute left-4 rounded-full bg-white/15 p-2.5 text-white transition hover:bg-white/30"><ChevronLeft size={20} /></button>
+            <button type="button" aria-label="Foto berikutnya" onClick={(e) => { e.stopPropagation(); setZoom((zoom + 1) % rows.length); }}
+              className="absolute right-4 rounded-full bg-white/15 p-2.5 text-white transition hover:bg-white/30"><ChevronRight size={20} /></button>
+            <button type="button" onClick={() => setZoom(null)} aria-label="Tutup"
+              className="absolute right-4 top-4 rounded-full bg-white/15 p-2.5 text-white transition hover:bg-white/30"><X size={20} /></button>
+          </div>,
+          document.body
+        )}
     </section>
   );
 }

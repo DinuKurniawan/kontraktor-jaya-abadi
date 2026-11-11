@@ -1,0 +1,75 @@
+- generic [ref=e26]:
+  - complementary [ref=e27]:
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - paragraph [ref=e30]: Jaya Abadi
+        - paragraph [ref=e31]: CMS Admin
+      - button "Tutup menu" [ref=e32]
+    - navigation [ref=e36]:
+      - link "Dashboard" [ref=e38] [cursor=pointer]:
+        - /url: /admin
+      - link "Proyek" [ref=e46] [cursor=pointer]:
+        - /url: /admin/proyek
+      - link "Layanan" [ref=e53] [cursor=pointer]:
+        - /url: /admin/layanan
+      - link "Kategori" [ref=e58] [cursor=pointer]:
+        - /url: /admin/kategori
+      - link "Artikel" [ref=e66] [cursor=pointer]:
+        - /url: /admin/posts
+      - link "Tag Artikel" [ref=e72] [cursor=pointer]:
+        - /url: /admin/tags
+      - link "Testimoni" [ref=e79] [cursor=pointer]:
+        - /url: /admin/testimoni
+      - link "Tim" [ref=e86] [cursor=pointer]:
+        - /url: /admin/tim
+      - link "Pesan" [ref=e93] [cursor=pointer]:
+        - /url: /admin/pesan
+      - link "Cabang" [ref=e99] [cursor=pointer]:
+        - /url: /admin/branches
+      - link "Pelanggan" [ref=e105] [cursor=pointer]:
+        - /url: /admin/subscribers
+      - link "Media" [ref=e112] [cursor=pointer]:
+        - /url: /admin/media
+      - generic [ref=e118]:
+        - paragraph [ref=e119]: Konten Beranda
+        - link "Hero Slider" [ref=e120] [cursor=pointer]:
+          - /url: /admin/hero-slider
+      - link "Mitra" [ref=e128] [cursor=pointer]:
+        - /url: /admin/partners
+      - link "Sertifikat" [ref=e136] [cursor=pointer]:
+        - /url: /admin/certificates
+      - link "Keunggulan" [ref=e142] [cursor=pointer]:
+        - /url: /admin/features
+      - link "Alur Kerja" [ref=e148] [cursor=pointer]:
+        - /url: /admin/process-steps
+      - link "Before / After" [ref=e154] [cursor=pointer]:
+        - /url: /admin/before-after
+      - link "Harga Estimasi" [ref=e159] [cursor=pointer]:
+        - /url: /admin/estimate-prices
+      - link "FAQ" [ref=e165] [cursor=pointer]:
+        - /url: /admin/faqs
+      - generic [ref=e170]:
+        - paragraph [ref=e171]: Halaman Tentang
+        - link "Milestone" [ref=e172] [cursor=pointer]:
+          - /url: /admin/milestones
+      - link "Nilai Perusahaan" [ref=e181] [cursor=pointer]:
+        - /url: /admin/core-values
+      - link "Galeri" [ref=e188] [cursor=pointer]:
+        - /url: /admin/gallery
+      - link "Pengaturan Situs" [ref=e196] [cursor=pointer]:
+        - /url: /admin/pengaturan
+      - link "Pengguna" [ref=e202] [cursor=pointer]:
+        - /url: /admin/pengguna
+    - button "Keluar" [ref=e217]
+  - generic [ref=e221]:
+    - banner [ref=e222]:
+      - button "Buka menu" [ref=e223]
+      - searchbox "Pencarian" [ref=e226]
+      - generic [ref=e227]:
+        - button "Notifikasi" [ref=e229]
+        - button "S Super Admin Super Admin" [ref=e234]:
+          - generic [ref=e235]: S
+          - generic [ref=e236]:
+            - generic [ref=e237]: Super Admin
+            - generic [ref=e238]: Super Admin
+    - main [ref=e241]

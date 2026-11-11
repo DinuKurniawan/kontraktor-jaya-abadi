@@ -1,0 +1,107 @@
+- generic [ref=f3e3]:
+  - complementary [ref=f3e4]:
+    - generic [ref=f3e5]:
+      - generic [ref=f3e6]:
+        - paragraph [ref=f3e7]: Jaya Abadi
+        - paragraph [ref=f3e8]: CMS Admin
+      - button "Tutup menu" [ref=f3e9]
+    - navigation [ref=f3e13]:
+      - link "Dashboard" [ref=f3e15] [cursor=pointer]:
+        - /url: /admin
+      - link "Proyek" [ref=f3e23] [cursor=pointer]:
+        - /url: /admin/proyek
+      - link "Layanan" [ref=f3e30] [cursor=pointer]:
+        - /url: /admin/layanan
+      - link "Kategori" [ref=f3e35] [cursor=pointer]:
+        - /url: /admin/kategori
+      - link "Artikel" [ref=f3e43] [cursor=pointer]:
+        - /url: /admin/posts
+      - link "Tag Artikel" [ref=f3e49] [cursor=pointer]:
+        - /url: /admin/tags
+      - link "Testimoni" [ref=f3e56] [cursor=pointer]:
+        - /url: /admin/testimoni
+      - link "Tim" [ref=f3e63] [cursor=pointer]:
+        - /url: /admin/tim
+      - link "Pesan" [ref=f3e70] [cursor=pointer]:
+        - /url: /admin/pesan
+      - link "Cabang" [ref=f3e76] [cursor=pointer]:
+        - /url: /admin/branches
+      - link "Pelanggan" [ref=f3e82] [cursor=pointer]:
+        - /url: /admin/subscribers
+      - link "Media" [ref=f3e89] [cursor=pointer]:
+        - /url: /admin/media
+      - generic [ref=f3e95]:
+        - paragraph [ref=f3e96]: Konten Beranda
+        - link "Hero Slider" [ref=f3e97] [cursor=pointer]:
+          - /url: /admin/hero-slider
+      - link "Mitra" [ref=f3e105] [cursor=pointer]:
+        - /url: /admin/partners
+      - link "Sertifikat" [ref=f3e113] [cursor=pointer]:
+        - /url: /admin/certificates
+      - link "Keunggulan" [ref=f3e119] [cursor=pointer]:
+        - /url: /admin/features
+      - link "Alur Kerja" [ref=f3e125] [cursor=pointer]:
+        - /url: /admin/process-steps
+      - link "Before / After" [ref=f3e131] [cursor=pointer]:
+        - /url: /admin/before-after
+      - link "Harga Estimasi" [ref=f3e136] [cursor=pointer]:
+        - /url: /admin/estimate-prices
+      - link "FAQ" [ref=f3e142] [cursor=pointer]:
+        - /url: /admin/faqs
+      - generic [ref=f3e147]:
+        - paragraph [ref=f3e148]: Halaman Tentang
+        - link "Milestone" [ref=f3e149] [cursor=pointer]:
+          - /url: /admin/milestones
+      - link "Nilai Perusahaan" [ref=f3e158] [cursor=pointer]:
+        - /url: /admin/core-values
+      - link "Galeri" [ref=f3e165] [cursor=pointer]:
+        - /url: /admin/gallery
+      - link "Pengaturan Situs" [ref=f3e173] [cursor=pointer]:
+        - /url: /admin/pengaturan
+      - link "Pengguna" [ref=f3e179] [cursor=pointer]:
+        - /url: /admin/pengguna
+    - button "Keluar" [ref=f3e194]
+  - generic [ref=f3e198]:
+    - banner [ref=f3e199]:
+      - button "Buka menu" [ref=f3e200]
+      - searchbox "Pencarian" [ref=f3e203]
+      - generic [ref=f3e204]:
+        - button "Notifikasi" [ref=f3e206]
+        - button "S Super Admin Super Admin" [ref=f3e211]:
+          - generic [ref=f3e212]: S
+          - generic [ref=f3e213]:
+            - generic [ref=f3e214]: Super Admin
+            - generic [ref=f3e215]: Super Admin
+    - main [ref=f3e218]:
+      - generic [ref=f3e219]:
+        - generic [ref=f3e220]:
+          - heading "Milestone" [level=1] [ref=f3e221]
+          - button "Tambah Milestone" [ref=f3e222]
+        - generic [ref=f3e226]:
+          - paragraph [ref=f3e234]: Belum ada milestone
+          - paragraph [ref=f3e235]: Catat momen penting perjalanan perusahaan.
+        - dialog "Tambah Milestone" [ref=f3e236]:
+          - generic [ref=f3e238]:
+            - generic [ref=f3e239]:
+              - heading "Tambah Milestone" [level=2] [ref=f3e240]
+              - button "Tutup" [active] [ref=f3e241]
+            - generic [ref=f3e246]:
+              - generic [ref=f3e247]:
+                - generic [ref=f3e248]: Tahun
+                - spinbutton "Tahun" [ref=f3e249]: "2026"
+              - generic [ref=f3e250]:
+                - generic [ref=f3e251]: Judul
+                - textbox "Judul" [ref=f3e252]:
+                  - /placeholder: 100 Proyek Rampung
+              - generic [ref=f3e253]:
+                - generic [ref=f3e254]: Deskripsi
+                - textbox "Deskripsi" [ref=f3e255]
+              - generic [ref=f3e256]:
+                - paragraph [ref=f3e257]: Gambar (opsional)
+                - button "Pilih gambar" [ref=f3e259]
+              - generic [ref=f3e265]:
+                - switch "Tampilkan di situs publik" [checked] [ref=f3e266]
+                - generic [ref=f3e268]: Tampilkan di situs publik
+            - generic [ref=f3e269]:
+              - button "Batal" [ref=f3e270]
+              - button "Simpan" [ref=f3e271]

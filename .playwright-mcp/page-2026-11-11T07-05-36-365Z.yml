@@ -1,0 +1,152 @@
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - paragraph [ref=e7]: Jaya Abadi
+        - paragraph [ref=e8]: CMS Admin
+      - button "Tutup menu" [ref=e9]
+    - navigation [ref=e13]:
+      - link "Dashboard" [ref=e15] [cursor=pointer]:
+        - /url: /admin
+      - link "Proyek" [ref=e23] [cursor=pointer]:
+        - /url: /admin/proyek
+      - link "Layanan" [ref=e30] [cursor=pointer]:
+        - /url: /admin/layanan
+      - link "Kategori" [ref=e35] [cursor=pointer]:
+        - /url: /admin/kategori
+      - link "Artikel" [ref=e43] [cursor=pointer]:
+        - /url: /admin/posts
+      - link "Tag Artikel" [ref=e49] [cursor=pointer]:
+        - /url: /admin/tags
+      - link "Testimoni" [ref=e56] [cursor=pointer]:
+        - /url: /admin/testimoni
+      - link "Tim" [ref=e63] [cursor=pointer]:
+        - /url: /admin/tim
+      - link "Pesan" [ref=e70] [cursor=pointer]:
+        - /url: /admin/pesan
+      - link "Cabang" [ref=e76] [cursor=pointer]:
+        - /url: /admin/branches
+      - link "Pelanggan" [ref=e82] [cursor=pointer]:
+        - /url: /admin/subscribers
+      - link "Media" [ref=e89] [cursor=pointer]:
+        - /url: /admin/media
+      - generic [ref=e95]:
+        - paragraph [ref=e96]: Konten Beranda
+        - link "Hero Slider" [ref=e97] [cursor=pointer]:
+          - /url: /admin/hero-slider
+      - link "Mitra" [ref=e105] [cursor=pointer]:
+        - /url: /admin/partners
+      - link "Sertifikat" [ref=e113] [cursor=pointer]:
+        - /url: /admin/certificates
+      - link "Keunggulan" [ref=e119] [cursor=pointer]:
+        - /url: /admin/features
+      - link "Alur Kerja" [ref=e125] [cursor=pointer]:
+        - /url: /admin/process-steps
+      - link "Before / After" [ref=e131] [cursor=pointer]:
+        - /url: /admin/before-after
+      - link "Harga Estimasi" [ref=e136] [cursor=pointer]:
+        - /url: /admin/estimate-prices
+      - link "FAQ" [ref=e142] [cursor=pointer]:
+        - /url: /admin/faqs
+      - generic [ref=e147]:
+        - paragraph [ref=e148]: Halaman Tentang
+        - link "Milestone" [ref=e149] [cursor=pointer]:
+          - /url: /admin/milestones
+      - link "Nilai Perusahaan" [ref=e158] [cursor=pointer]:
+        - /url: /admin/core-values
+      - link "Galeri" [ref=e165] [cursor=pointer]:
+        - /url: /admin/gallery
+      - link "Pengaturan Situs" [ref=e173] [cursor=pointer]:
+        - /url: /admin/pengaturan
+      - link "Pengguna" [ref=e179] [cursor=pointer]:
+        - /url: /admin/pengguna
+    - button "Keluar" [ref=e194]
+  - generic [ref=e198]:
+    - banner [ref=e199]:
+      - button "Buka menu" [ref=e200]
+      - searchbox "Pencarian" [ref=e203]
+      - generic [ref=e204]:
+        - button "Notifikasi" [ref=e206]
+        - button "S Super Admin Super Admin" [ref=e211]:
+          - generic [ref=e212]: S
+          - generic [ref=e213]:
+            - generic [ref=e214]: Super Admin
+            - generic [ref=e215]: Super Admin
+    - main [ref=e218]:
+      - generic [ref=e279]:
+        - generic [ref=e280]:
+          - heading "Tambah Layanan" [level=1] [ref=e281]
+          - link "Kembali ke daftar" [ref=e282] [cursor=pointer]:
+            - /url: /admin/layanan
+        - generic [ref=e285]:
+          - generic [ref=e287]:
+            - heading "Informasi Layanan" [level=3] [ref=e289]
+            - generic [ref=e291]:
+              - generic [ref=e292]:
+                - generic [ref=e293]:
+                  - generic [ref=e294]: Judul
+                  - textbox "Judul" [ref=e295]:
+                    - /placeholder: "Contoh: Renovasi Rumah"
+                - paragraph [ref=e296]:
+                  - text: "Slug otomatis:"
+                  - code [ref=e297]: otomatis-dari-judul
+              - generic [ref=e298]:
+                - generic [ref=e299]: Deskripsi Singkat
+                - textbox "Deskripsi Singkat" [ref=e300]:
+                  - /placeholder: Satu kalimat untuk kartu layanan
+              - generic [ref=e301]:
+                - generic [ref=e302]: Deskripsi Lengkap
+                - textbox "Deskripsi Lengkap" [ref=e303]:
+                  - /placeholder: Jelaskan cakupan layanan…
+              - generic [ref=e304]:
+                - generic [ref=e305]: Urutan Tampil
+                - spinbutton "Urutan Tampil" [ref=e306]: "0"
+                - paragraph [ref=e307]: Angka kecil tampil lebih dulu; urutkan juga dari tombol naik/turun
+              - generic [ref=e308]:
+                - generic [ref=e309]:
+                  - generic [ref=e310]: Kategori layanan
+                  - combobox "Kategori layanan" [ref=e312]:
+                    - option "Tanpa kategori" [selected]
+                    - option "Desain & Konsultasi"
+                    - option "Renovasi & Perawatan"
+                - button "Kategori baru" [ref=e313]
+          - generic [ref=e315]:
+            - generic [ref=e316]:
+              - heading "Ikon" [level=3] [ref=e318]
+              - generic [ref=e320]:
+                - button "Ikon Building2" [ref=e321]
+                - button "Ikon DraftingCompass" [ref=e326]
+                - button "Ikon Hammer" [ref=e333]
+                - button "Ikon HardHat" [ref=e338]
+                - button "Ikon Home" [ref=e344]
+                - button "Ikon Layers" [ref=e348]
+                - button "Ikon Lightbulb" [ref=e353]
+                - button "Ikon Paintbrush" [ref=e356]
+                - button "Ikon Ruler" [ref=e361]
+                - button "Ikon Sofa" [ref=e368]
+                - button "Ikon TreePine" [ref=e372]
+                - button "Ikon Wrench" [pressed] [ref=e375]
+            - generic [ref=e378]:
+              - heading "Gambar layanan" [level=3] [ref=e380]
+              - generic [ref=e381]:
+                - generic [ref=e382]:
+                  - paragraph [ref=e383]: Gambar kartu
+                  - generic [ref=e384]:
+                    - paragraph
+                    - button "Pilih gambar" [ref=e386]
+                  - paragraph [ref=e392]: "Gambar kartu: rasio 4:3, ideal 1200×900 px (min 800 px)."
+                  - img "Gambar tidak tersedia" [ref=e394]
+                - generic [ref=e402]:
+                  - paragraph [ref=e403]: Gambar hero
+                  - generic [ref=e404]:
+                    - paragraph
+                    - button "Pilih gambar" [ref=e406]
+                  - paragraph [ref=e412]: "Gambar hero: rasio 16:9, ideal 1920×1080 px."
+                  - img "Gambar tidak tersedia" [ref=e414]
+                - paragraph [ref=e422]: Jika gambar kartu kosong, ikon yang dipilih menjadi tampilan kartu.
+            - generic [ref=e423]:
+              - heading "Publikasi" [level=3] [ref=e425]
+              - generic [ref=e427]:
+                - switch "Tampilkan di situs publik" [ref=e428]
+                - generic [ref=e430]: Tampilkan di situs publik
+            - button "Buat Layanan" [ref=e431]

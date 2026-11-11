@@ -1,0 +1,122 @@
+- generic [ref=f5e3]:
+  - complementary [ref=f5e4]:
+    - generic [ref=f5e5]:
+      - generic [ref=f5e6]:
+        - paragraph [ref=f5e7]: Jaya Abadi
+        - paragraph [ref=f5e8]: CMS Admin
+      - button "Tutup menu" [ref=f5e9]
+    - navigation [ref=f5e13]:
+      - link "Dashboard" [ref=f5e15] [cursor=pointer]:
+        - /url: /admin
+      - link "Proyek" [ref=f5e23] [cursor=pointer]:
+        - /url: /admin/proyek
+      - link "Layanan" [ref=f5e30] [cursor=pointer]:
+        - /url: /admin/layanan
+      - link "Kategori" [ref=f5e35] [cursor=pointer]:
+        - /url: /admin/kategori
+      - link "Artikel" [ref=f5e43] [cursor=pointer]:
+        - /url: /admin/posts
+      - link "Tag Artikel" [ref=f5e49] [cursor=pointer]:
+        - /url: /admin/tags
+      - link "Testimoni" [ref=f5e56] [cursor=pointer]:
+        - /url: /admin/testimoni
+      - link "Tim" [ref=f5e63] [cursor=pointer]:
+        - /url: /admin/tim
+      - link "Pesan" [ref=f5e70] [cursor=pointer]:
+        - /url: /admin/pesan
+      - link "Cabang" [ref=f5e76] [cursor=pointer]:
+        - /url: /admin/branches
+      - link "Pelanggan" [ref=f5e82] [cursor=pointer]:
+        - /url: /admin/subscribers
+      - link "Media" [ref=f5e89] [cursor=pointer]:
+        - /url: /admin/media
+      - generic [ref=f5e95]:
+        - paragraph [ref=f5e96]: Konten Beranda
+        - link "Hero Slider" [ref=f5e97] [cursor=pointer]:
+          - /url: /admin/hero-slider
+      - link "Mitra" [ref=f5e105] [cursor=pointer]:
+        - /url: /admin/partners
+      - link "Sertifikat" [ref=f5e113] [cursor=pointer]:
+        - /url: /admin/certificates
+      - link "Keunggulan" [ref=f5e119] [cursor=pointer]:
+        - /url: /admin/features
+      - link "Alur Kerja" [ref=f5e125] [cursor=pointer]:
+        - /url: /admin/process-steps
+      - link "Before / After" [ref=f5e131] [cursor=pointer]:
+        - /url: /admin/before-after
+      - link "Harga Estimasi" [ref=f5e136] [cursor=pointer]:
+        - /url: /admin/estimate-prices
+      - link "FAQ" [ref=f5e142] [cursor=pointer]:
+        - /url: /admin/faqs
+      - generic [ref=f5e147]:
+        - paragraph [ref=f5e148]: Halaman Tentang
+        - link "Milestone" [ref=f5e149] [cursor=pointer]:
+          - /url: /admin/milestones
+      - link "Nilai Perusahaan" [ref=f5e158] [cursor=pointer]:
+        - /url: /admin/core-values
+      - link "Galeri" [ref=f5e165] [cursor=pointer]:
+        - /url: /admin/gallery
+      - link "Pengaturan Situs" [ref=f5e173] [cursor=pointer]:
+        - /url: /admin/pengaturan
+      - link "Pengguna" [ref=f5e179] [cursor=pointer]:
+        - /url: /admin/pengguna
+    - button "Keluar" [ref=f5e194]
+  - generic [ref=f5e198]:
+    - banner [ref=f5e199]:
+      - button "Buka menu" [ref=f5e200]
+      - searchbox "Pencarian" [ref=f5e203]
+      - generic [ref=f5e204]:
+        - button "Notifikasi" [ref=f5e206]
+        - button "S Super Admin Super Admin" [ref=f5e211]:
+          - generic [ref=f5e212]: S
+          - generic [ref=f5e213]:
+            - generic [ref=f5e214]: Super Admin
+            - generic [ref=f5e215]: Super Admin
+    - main [ref=f5e218]:
+      - generic [ref=f5e219]:
+        - generic [ref=f5e220]:
+          - heading "Testimoni" [level=1] [ref=f5e221]
+          - button "Tambah Testimoni" [ref=f5e222]
+        - generic [ref=f5e226]:
+          - paragraph [ref=f5e232]: Belum ada testimoni
+          - paragraph [ref=f5e233]: Tambahkan testimoni klien untuk halaman depan.
+        - dialog "Tambah Testimoni" [ref=f5e234]:
+          - generic [ref=f5e236]:
+            - generic [ref=f5e237]:
+              - heading "Tambah Testimoni" [level=2] [ref=f5e238]
+              - button "Tutup" [active] [ref=f5e239]
+            - generic [ref=f5e244]:
+              - generic [ref=f5e245]:
+                - generic [ref=f5e246]:
+                  - generic [ref=f5e247]: Nama
+                  - textbox "Nama" [ref=f5e248]:
+                    - /placeholder: Nama klien
+                - generic [ref=f5e249]:
+                  - generic [ref=f5e250]: Jabatan
+                  - textbox "Jabatan" [ref=f5e251]:
+                    - /placeholder: Direktur Operasional
+                - generic [ref=f5e252]:
+                  - generic [ref=f5e253]: Perusahaan (opsional)
+                  - textbox "Perusahaan (opsional)" [ref=f5e254]:
+                    - /placeholder: PT Maju Jaya
+                - generic [ref=f5e255]:
+                  - paragraph [ref=f5e256]: Rating
+                  - radiogroup "Rating" [ref=f5e257]:
+                    - button "1 bintang" [ref=f5e258]
+                    - button "2 bintang" [ref=f5e261]
+                    - button "3 bintang" [ref=f5e264]
+                    - button "4 bintang" [ref=f5e267]
+                    - button "5 bintang" [ref=f5e270]
+              - generic [ref=f5e273]:
+                - generic [ref=f5e274]: Isi Testimoni
+                - textbox "Isi Testimoni" [ref=f5e275]:
+                  - /placeholder: Kesan dan pesan klien…
+              - generic [ref=f5e276]:
+                - checkbox "Tampilkan di situs publik" [ref=f5e277]
+                - text: Tampilkan di situs publik
+              - generic [ref=f5e278]:
+                - paragraph [ref=f5e279]: Foto (opsional)
+                - button "Pilih gambar" [ref=f5e281]
+            - generic [ref=f5e287]:
+              - button "Batal" [ref=f5e288]
+              - button "Simpan" [ref=f5e289]
