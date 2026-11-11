@@ -187,7 +187,7 @@ async function main() {
       startDate: new Date("2025-03-01"),
       endDate: null,
       architect: "Studio Arsitek Nusantara",
-      videoUrl: "https://www.youtube.com/watch?v=jaya-tower",
+      videoUrl: "https://www.youtube.com/watch?v=ABvUTcVqfMY",
       challenge: "Lahan sempit di kawasan padat TB Simatupang dengan akses mobil biffo terbatas dan jam kerja ketat dari pengelola kawasan.",
       solution: "Metode top-down untuk basement, pengecoran malam hari di luar jam kawasan, dan Just-in-Time material agar lahan kerja tetap lega.",
       result: "Progres 60% tepat jadwal tanpa satu pun teguran keselamatan dari pengelola kawasan.",
@@ -245,7 +245,7 @@ async function main() {
       startDate: new Date("2024-01-10"),
       endDate: new Date("2024-09-20"),
       architect: null,
-      videoUrl: "https://www.youtube.com/watch?v=hotel-anggrek",
+      videoUrl: "https://www.youtube.com/watch?v=ab_2_bHt_GE",
       challenge: "Hotel tetap beroperasi: 120 kamar harus tetap bisa dijual selama renovasi berlangsung.",
       solution: "Rotasi per lantai (maks 2 lantai aktif dikerjakan), barrier akustik, dan jadwal bising di luar jam tidur tamu.",
       result: "Occupancy hanya turun 9% selama 8 bulan; hotel membuka kembali lantai executive lebih cepat dari rencana.",
@@ -802,7 +802,9 @@ async function main() {
     about_story:
       "Berawal dari tim kecil pengecoran lantai di Tangerang pada 2006, Jaya Abadi tumbuh menjadi kontraktor umum yang dipercaya mengerjakan lebih dari 200 proyek — dari rumah tinggal hingga menara perkantoran. Kami bertumbuh bukan dengan mengejar kuantitas, melainkan menjaga janji yang tertulis di kontrak: mutu yang terukur, jadwal yang ditepati, dan RAB yang bisa diaudit kapan saja.\n\nHari ini lebih dari 80 tenaga ahli dan karyawan tetap bergabung dalam tim kami, didukung sistem kontrol mutu 47 poin dan laporan progres mingguan yang kami kirim ke setiap klien.",
     about_image: IMG("ja-about-tim"),
-    about_video_url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    // Placeholder: ganti dengan video profil resmi Jaya Abadi.
+    // ID di bawah = time-lapse konstruksi resmi EarthCam (thumbnail valid).
+    about_video_url: "https://www.youtube.com/watch?v=ab_2_bHt_GE",
     director_name: "Agus Hartanto",
     director_position: "Direktur Utama",
     director_photo: IMG("ja-direktur-agus", 600, 600),

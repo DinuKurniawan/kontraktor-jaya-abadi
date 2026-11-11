@@ -40,6 +40,8 @@
     { "source": "/llms.txt", "destination": "/llms.txt" },
     { "source": "/robots.txt", "destination": "/robots.txt" },
     { "source": "/.well-known/ard.json", "destination": "/.well-known/ard.json" },
+    { "source": "/sitemap.xml", "destination": "https://server-two-zeta-88.vercel.app/sitemap.xml" },
+    { "source": "/rss.xml", "destination": "https://server-two-zeta-88.vercel.app/rss.xml" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
