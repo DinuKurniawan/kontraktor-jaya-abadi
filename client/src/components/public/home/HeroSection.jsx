@@ -85,6 +85,7 @@ export default function HeroSection() {
   const word = (slide?.title ?? DEFAULT_SLIDE.title).split(" ");
   const lastWord = word.pop();
   const years = s?.stat_years_experience ?? "20";
+  const sinceYear = new Date().getFullYear() - (Number(years) || 20);
   const projects = s?.stat_completed_projects ?? "200";
   const videoId = youtubeId(s?.profile_video);
 
@@ -101,21 +102,16 @@ export default function HeroSection() {
         }}
       />
       <div className="relative mx-auto max-w-6xl px-5">
-        <div className="grid items-center gap-12 py-14 lg:grid-cols-2 lg:py-20">
-                    {/* Ketinggian dijamin stabil oleh min-h langgeng pada h1 & subjudul;
-              jadi penghubung tataletak tidak berubah saat placeholder → data API */}
-          <div className="min-h-[560px] sm:min-h-[460px] lg:min-h-[618px]">
+        <div className="grid items-center gap-10 py-10 sm:py-14 lg:grid-cols-2 lg:gap-12 lg:py-20">
+          <div className="min-w-0 sm:min-h-[460px] lg:min-h-[618px]">
             <span className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-cream">
-              <ScrollText size={13} /> Kontraktor sejak {years}
+              <ScrollText size={13} /> Kontraktor sejak {sinceYear}
             </span>
-            {/* min-h mengecewakan perubahan jumlah baris antara teks placeholder */
-             /* (title/subtitle API, rotasi slide) — box h1/subjudul tetap, tidak
-                menggeser konten di bawahnya. Nilai = max baris aktual semua slide. */}
-            <h1 className="mt-5 min-h-[4.32em] font-jakarta text-4xl font-extrabold leading-[1.08] text-ink sm:min-h-[3.24em] sm:text-5xl lg:min-h-[5.4em] lg:text-6xl">
+            <h1 className="mt-5 font-jakarta text-3xl font-extrabold leading-[1.12] text-ink break-words sm:text-5xl lg:text-6xl">
               {word.join(" ")}{" "}
               <span className="text-brand underline decoration-brand/40 decoration-[6px] underline-offset-8">{lastWord}</span>
             </h1>
-            <p className="mt-5 min-h-[4.875em] max-w-md leading-relaxed text-ink-soft sm:min-h-[3.25em]">{slide?.subtitle ?? DEFAULT_SLIDE.subtitle}</p>
+            <p className="mt-4 max-w-md leading-relaxed text-ink-soft sm:mt-5">{slide?.subtitle ?? DEFAULT_SLIDE.subtitle}</p>
 
             {/* Lencana kepercayaan */}
             <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2" aria-label="Jaminan kami">
@@ -126,7 +122,7 @@ export default function HeroSection() {
               ))}
             </ul>
 
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            <div className="mt-7 flex flex-wrap items-center gap-3 sm:mt-8">
               <PillButton variant="primary" to="/kontak">Konsultasi Gratis</PillButton>
               <PillButton variant="outline" to="/proyek">Lihat Proyek</PillButton>
               {videoId && (
@@ -145,7 +141,7 @@ export default function HeroSection() {
 
             {/* Titik indikator slide: ukuran tombol tetap 28x24px, tidak mengubah lebar saat aktif */}
             {slides.length > 1 && (
-              <div className="mt-7 flex gap-2" role="group" aria-label="Slide hero">
+              <div className="mt-6 flex gap-2 sm:mt-7" role="group" aria-label="Slide hero">
                 {slides.map((sl, i) => (
                   <button
                     key={sl.id}
@@ -167,7 +163,7 @@ export default function HeroSection() {
           </div>
 
           {/* Kolom kolase + kartu melayang: aspect-ratio eksplisit agar tidak melompat */}
-          <div className="relative mx-auto aspect-[4/3] w-full max-w-lg sm:aspect-[4/3]">
+          <div className="relative mx-auto aspect-[4/3] w-full max-w-lg min-w-0 sm:aspect-[4/3]">
             <div className="grid h-full w-full grid-cols-5 grid-rows-2 gap-3 sm:gap-4">
               <div className="col-span-5 row-span-2 overflow-hidden rounded-3xl shadow-[0_20px_50px_rgba(28,25,23,0.18)] sm:col-span-4">
                 <Photo eager src={img(slide?.image)} alt={slide?.title ?? "Proyek Jaya Abadi"} />
@@ -186,12 +182,12 @@ export default function HeroSection() {
             </div>
 
             {/* Kartu kecil melayang — posisi absolut pada bounding box tetap & min-w/min-h stabil */}
-            <div className="animate-float pointer-events-none absolute -left-3 top-8 min-h-[68px] min-w-[135px] rounded-2xl bg-white/95 px-4 py-3 shadow-soft-lg backdrop-blur sm:-left-8">
-              <p className="font-jakarta text-2xl font-extrabold text-brand tabular-nums">{years}+</p>
+            <div className="animate-float pointer-events-none absolute -left-2 top-6 min-h-[62px] min-w-[120px] rounded-2xl bg-white/95 px-3 py-2.5 shadow-soft-lg backdrop-blur sm:-left-8 sm:min-h-[68px] sm:min-w-[135px] sm:px-4 sm:py-3">
+              <p className="font-jakarta text-xl font-extrabold text-brand tabular-nums sm:text-2xl">{years}+</p>
               <p className="text-xs font-semibold text-ink-soft">tahun pengalaman</p>
             </div>
-            <div className="animate-float [animation-delay:1.6s] pointer-events-none absolute -bottom-5 right-2 min-h-[68px] min-w-[135px] rounded-2xl bg-white/95 px-4 py-3 shadow-soft-lg backdrop-blur sm:-right-4">
-              <p className="font-jakarta text-2xl font-extrabold text-ink tabular-nums">{projects}+</p>
+            <div className="animate-float [animation-delay:1.6s] pointer-events-none absolute -bottom-5 right-2 min-h-[62px] min-w-[120px] rounded-2xl bg-white/95 px-3 py-2.5 shadow-soft-lg backdrop-blur sm:-right-4 sm:min-h-[68px] sm:min-w-[135px] sm:px-4 sm:py-3">
+              <p className="font-jakarta text-xl font-extrabold text-ink tabular-nums sm:text-2xl">{projects}+</p>
               <p className="text-xs font-semibold text-ink-soft">proyek selesai</p>
             </div>
           </div>

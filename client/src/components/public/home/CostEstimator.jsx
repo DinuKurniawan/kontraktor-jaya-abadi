@@ -125,7 +125,7 @@ export default function CostEstimator({ modal = false, onClose }) {
 
           <fieldset className="mt-6">
             <legend className="mb-2 text-sm font-semibold text-cream/80">Tingkat finishing</legend>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {FINISHING.map((f, idx) => (
                 <button key={f.label} type="button" onClick={() => setFin(idx)} aria-pressed={fin === idx}
                   className={`rounded-full px-4 py-2 text-sm font-semibold transition ${fin === idx ? "bg-brand text-white" : "bg-white/10 text-cream/80 hover:bg-white/20"}`}>
@@ -137,9 +137,9 @@ export default function CostEstimator({ modal = false, onClose }) {
         </div>
 
         {/* Kanan: hasil + form kirim */}
-        <div className="flex flex-col justify-center rounded-3xl bg-white p-7 shadow-soft-lg sm:p-9">
+        <div className="flex min-w-0 flex-col justify-center rounded-3xl bg-white p-5 shadow-soft-lg sm:p-9">
           <p className="text-sm text-ink-light">{price.label} · {area} m² · finishing {FINISHING[fin].label}</p>
-          <p className="mt-3 font-jakarta text-3xl font-extrabold leading-tight text-ink sm:text-4xl">
+          <p className="mt-3 font-jakarta text-2xl font-extrabold leading-tight text-ink break-words sm:text-4xl">
             <span className="text-brand"><AnimatedRupiah value={min} /></span>
             <span className="mx-2 text-ink/30">—</span>
             <span className="text-brand"><AnimatedRupiah value={max} /></span>

@@ -20,8 +20,8 @@ export default function WhyUsSection() {
   const rows = (data ?? []).slice(0, 6);
 
   return (
-    <section className="bg-cream py-16 sm:py-20">
-      <Container className="grid gap-6 lg:grid-cols-2">
+    <section className="bg-cream py-16 sm:py-20 overflow-hidden">
+      <Container className="grid gap-6 lg:grid-cols-2 min-w-0">
         {/* Kartu besar: pernyataan nilai utama */}
         <div className="relative flex min-h-[22rem] flex-col justify-end overflow-hidden rounded-3xl p-7 sm:p-9">
           {s?.about_image && (

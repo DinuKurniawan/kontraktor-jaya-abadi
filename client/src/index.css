@@ -80,6 +80,12 @@
 }
 
 /* Dasar halaman admin */
+html,
+body {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
 body {
   @apply bg-surface font-sans text-text antialiased;
 }

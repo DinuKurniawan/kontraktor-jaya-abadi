@@ -213,7 +213,7 @@ export function FeaturedProjects() {
   ].filter(([v]) => v);
 
   return (
-    <section className="bg-cream-deep py-16 sm:py-20">
+    <section className="bg-cream-deep py-16 sm:py-20 overflow-hidden">
       <Container>
         <SectionHeading title={<>Proyek <span className="text-brand">Unggulan</span></>} to="/proyek" actionLabel="Jelajahi semua proyek" />
 
@@ -229,7 +229,7 @@ export function FeaturedProjects() {
         )}
 
         {/* Tab kategori */}
-        <div className="-mx-5 mb-8 flex gap-2 overflow-x-auto px-5 pb-1 sm:mx-0 sm:px-0" role="tablist" aria-label="Filter kategori proyek">
+        <div className="-mx-5 mb-8 flex gap-2 overflow-x-auto px-5 pb-1 sm:mx-0 sm:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="tablist" aria-label="Filter kategori proyek">
           {FEATURED_TABS.map((t) => (
             <button
               key={t.label}
@@ -261,7 +261,7 @@ export function FeaturedProjects() {
               {rows.map((p) => <BentoProjectCard key={p.id} p={p} />)}
             </div>
             {/* Carousel geser di mobile — ukuran kartu tetap sama */}
-            <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 sm:hidden">
+            <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 sm:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {rows.map((p) => (
                 <div key={p.id} className="w-[16.25rem] shrink-0 snap-start"><BentoProjectCard p={p} /></div>
               ))}
@@ -303,13 +303,13 @@ export function TestimonialHighlight() {
   const cur = photos[i % Math.max(1, photos.length)];
 
   return (
-    <section className="bg-cream py-12 sm:py-16">
+    <section className="bg-cream py-12 sm:py-16 overflow-hidden">
       <Container>
         <SectionHeading title={<>Kata <span className="text-brand">Klien</span> Kami</>} />
-        <div className="grid items-stretch gap-8 lg:grid-cols-5">
+        <div className="grid items-stretch gap-8 lg:grid-cols-5 min-w-0">
           {/* Kiri */}
           <div
-            className="lg:col-span-3"
+            className="lg:col-span-3 min-w-0"
             // Swipe sentuh/mobile: catat titik tekan, bandingkan saat dilepas
             onPointerDown={(e) => { downX.current = e.clientX; }}
             onPointerUp={(e) => {
@@ -355,21 +355,23 @@ export function TestimonialHighlight() {
 
             {/* Navigasi: panah + titik */}
             {rows.length > 1 && (
-              <div className="mt-7 flex items-center gap-3 pl-4 sm:pl-6">
-                <button type="button" onClick={() => move(-1)} aria-label="Testimoni sebelumnya" className="rounded-full border border-ink/15 p-2.5 text-ink transition hover:bg-ink hover:text-cream">
-                  <ChevronLeft size={17} />
-                </button>
-                <button type="button" onClick={() => move(1)} aria-label="Testimoni berikutnya" className="rounded-full border border-ink/15 p-2.5 text-ink transition hover:bg-ink hover:text-cream">
-                  <ChevronRight size={17} />
-                </button>
-                <div className="ml-2 flex gap-1.5">
+              <div className="mt-7 flex flex-wrap items-center gap-3 pl-4 sm:pl-6">
+                <div className="flex shrink-0 items-center gap-2">
+                  <button type="button" onClick={() => move(-1)} aria-label="Testimoni sebelumnya" className="rounded-full border border-ink/15 p-2.5 text-ink transition hover:bg-ink hover:text-cream">
+                    <ChevronLeft size={17} />
+                  </button>
+                  <button type="button" onClick={() => move(1)} aria-label="Testimoni berikutnya" className="rounded-full border border-ink/15 p-2.5 text-ink transition hover:bg-ink hover:text-cream">
+                    <ChevronRight size={17} />
+                  </button>
+                </div>
+                <div className="flex max-w-[calc(100%-6.5rem)] items-center gap-1.5 overflow-x-auto py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   {rows.map((r, idx) => (
                     <button
                       key={r.id}
                       type="button"
                       onClick={() => setI(idx)}
                       aria-label={`Ulasan ${idx + 1}`}
-                      className="flex h-6 w-6 items-center justify-center p-0"
+                      className="flex h-6 w-6 shrink-0 items-center justify-center p-0"
                     >
                       <span
                         className={`h-2 w-full rounded-full transition-colors ${

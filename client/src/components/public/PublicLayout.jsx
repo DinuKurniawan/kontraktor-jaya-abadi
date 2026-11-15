@@ -302,7 +302,7 @@ function ScrollToTop() {
 
 export default function PublicLayout() {
   return (
-    <div className="min-h-screen bg-cream font-jakarta text-ink">
+    <div className="min-h-screen w-full overflow-x-clip bg-cream font-jakarta text-ink">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-xl focus:bg-brand focus:px-4 focus:py-2.5 focus:font-bold focus:text-white focus:shadow-soft-lg"

@@ -20,10 +20,10 @@ export default function AboutTeaser() {
   const about = s?.about_text ?? s?.about_description;
 
   return (
-    <section className="bg-cream-deep py-16 sm:py-20">
-      <Container className="grid items-center gap-12 lg:grid-cols-2">
+    <section className="bg-cream-deep py-16 sm:py-20 overflow-hidden">
+      <Container className="grid items-center gap-12 lg:grid-cols-2 min-w-0">
         {/* Kiri: komposisi foto bertumpuk + lencana bundar */}
-        <div className="animate-in-left relative mx-auto w-full max-w-md">
+        <div className="animate-in-left relative mx-auto w-full max-w-md min-w-0">
           <div className="overflow-hidden rounded-3xl shadow-soft-lg">
             {s?.about_image ? (
               <img src={img(s.about_image)} alt="Tim Jaya Abadi" width={640} height={480} loading="lazy" className="aspect-[4/3] w-full object-cover" />
