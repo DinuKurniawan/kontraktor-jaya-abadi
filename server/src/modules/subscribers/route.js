@@ -26,7 +26,8 @@ router.use(requireAuth);
 /** GET /api/admin/subscribers */
 router.get("/", async (req, res, next) => {
   try {
-    const rows = await prisma.subscriber.findMany({ orderBy: { createdAt: "desc" } });
+    // ponytail: cap 5000 baris; tambah paginasi kalau jumlah pelanggan melewati itu.
+    const rows = await prisma.subscriber.findMany({ orderBy: { createdAt: "desc" }, take: 5000 });
     res.json({ success: true, data: rows });
   } catch (e) { next(e); }
 });

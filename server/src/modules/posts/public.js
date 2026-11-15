@@ -138,18 +138,22 @@ export async function listPopularPosts(query = {}) {
 }
 
 // GET /api/public/tags — tag yang dipakai artikel terbit
+// ponytail: groupBy sekali, bukan subquery berkorelasi per baris tag.
 export async function listPublicTags() {
+  const groups = await prisma.postTag.groupBy({
+    by: ["tagId"],
+    where: { post: publishedWhere() },
+    _count: { _all: true },
+  });
+  if (!groups.length) return [];
+
   const tags = await prisma.tag.findMany({
-    where: { posts: { some: { post: publishedWhere() } } },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      _count: { select: { posts: { where: { post: publishedWhere() } } } },
-    },
+    where: { id: { in: groups.map((group) => group.tagId) } },
+    select: { id: true, name: true, slug: true },
     orderBy: { name: "asc" },
   });
-  return tags.map(({ _count, ...tag }) => ({ ...tag, count: _count.posts }));
+  const counts = new Map(groups.map((group) => [group.tagId, group._count._all]));
+  return tags.map((tag) => ({ ...tag, count: counts.get(tag.id) ?? 0 }));
 }
 
 // GET /api/public/posts/:slug — detail + penulis + tag + terkait + sebelumnya/berikutnya

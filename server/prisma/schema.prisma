@@ -163,6 +163,10 @@ model Project {
   @@index([isPublished])
   @@index([serviceId])
   @@index([year])
+  // Urutan tampil publik: isFeatured desc, year desc, createdAt desc
+  @@index([isPublished, isFeatured, year, createdAt])
+  // Navigasi prev/next: filter tahun + createdAt
+  @@index([isPublished, year, createdAt])
   @@map("projects")
 }
 
@@ -231,6 +235,8 @@ model Service {
 
   @@index([sortOrder])
   @@index([categoryId])
+  // Navigasi prev/next layanan: urutan sortOrder lalu createdAt
+  @@index([isPublished, sortOrder, createdAt])
   @@map("services")
 }
 

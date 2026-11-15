@@ -34,6 +34,7 @@ export async function getPublishedService(slug) {
       id: true, title: true, slug: true, shortDesc: true, description: true,
       icon: true, image: true, heroImage: true, longDescription: true,
       startingPrice: true, brochureUrl: true, metaTitle: true, metaDescription: true, isFeatured: true,
+      sortOrder: true, createdAt: true,
       scopes: { orderBy: { sortOrder: "asc" } },
       packages: { where: { isPublished: true }, orderBy: { sortOrder: "asc" } },
       faqs: { where: { isPublished: true }, orderBy: { sortOrder: "asc" }, take: 10 },
@@ -54,17 +55,34 @@ export async function getPublishedService(slug) {
   });
   if (!service) return null;
 
-  // Navigasi sebelum/berikutnya berdasar urutan tampil.
-  // Tanpa putar balik (wrap) agar kedua tombol tidak pernah menunjuk
-  // layanan yang sama saat jumlah layanan sedikit.
-  const siblings = await prisma.service.findMany({
-    where: { isPublished: true },
-    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-    select: { title: true, slug: true },
-  });
-  const i = siblings.findIndex((s) => s.slug === slug);
-  const prev = i > 0 ? siblings[i - 1] : null;
-  const next = i >= 0 && i < siblings.length - 1 ? siblings[i + 1] : null;
+  // ponytail: prev/next via 2x findFirst, bukan findMany semua layanan.
+  const navWhere = { isPublished: true, slug: { not: slug } };
+  const [prev, next] = await Promise.all([
+    prisma.service.findFirst({
+      where: {
+        ...navWhere,
+        OR: [
+          { sortOrder: { lt: service.sortOrder } },
+          { sortOrder: service.sortOrder, createdAt: { lt: service.createdAt } },
+        ],
+      },
+      orderBy: [{ sortOrder: "desc" }, { createdAt: "desc" }],
+      select: { title: true, slug: true },
+    }),
+    prisma.service.findFirst({
+      where: {
+        ...navWhere,
+        OR: [
+          { sortOrder: { gt: service.sortOrder } },
+          { sortOrder: service.sortOrder, createdAt: { gt: service.createdAt } },
+        ],
+      },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      select: { title: true, slug: true },
+    }),
+  ]);
 
-  return { ...service, prev: prev && prev.slug !== slug ? prev : null, next: next && next.slug !== slug ? next : null };
+  // ponytail: strip internal nav fields from response
+  const { sortOrder: _so, createdAt: _ca, ...detail } = service;
+  return { ...detail, prev: prev ?? null, next: next ?? null };
 }

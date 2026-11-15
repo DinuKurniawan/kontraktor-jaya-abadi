@@ -100,19 +100,24 @@ export async function listPublishedProjects(query) {
 }
 
 // GET /api/public/projects/stats — ringkasan statistik
+// ponytail: 5 query jadi 2 — satu count+aggregate gabungan, satu distinct location.
 export async function getPublicProjectStats() {
-  const [total, completed, ongoing, areaAgg, locations] = await prisma.$transaction([
-    prisma.project.count({ where: { isPublished: true } }),
-    prisma.project.count({ where: { isPublished: true, status: "COMPLETED" } }),
-    prisma.project.count({ where: { isPublished: true, status: "ONGOING" } }),
-    prisma.project.aggregate({ where: { isPublished: true }, _sum: { area: true } }),
+  const [agg, locations] = await Promise.all([
+    prisma.project.aggregate({
+      where: { isPublished: true },
+      _count: { _all: true },
+      _sum: { area: true },
+    }),
     prisma.project.findMany({ where: { isPublished: true }, distinct: ["location"], select: { location: true } }),
   ]);
+  // Status counts tetap murah pakai facet cache yang sudah ada.
+  const facets = await loadFacets();
+  const statusMap = Object.fromEntries(facets.statuses.map((s) => [s.status, s.count]));
   return {
-    total,
-    completed,
-    ongoing,
-    totalArea: areaAgg._sum.area ?? 0,
+    total: agg._count._all,
+    completed: statusMap.COMPLETED ?? 0,
+    ongoing: statusMap.ONGOING ?? 0,
+    totalArea: agg._sum.area ?? 0,
     cities: locations.map((l) => l.location).filter(Boolean).length,
   };
 }
@@ -156,6 +161,8 @@ export async function getPublishedProject(slug) {
       metaTitle: true, metaDescription: true,
       images: { orderBy: { sortOrder: "asc" }, select: { id: true, url: true, caption: true } },
       categoryId: true,
+      // dipakai untuk urutan prev/next (year + createdAt)
+      createdAt: true,
     },
   });
   if (!project) return null;
@@ -163,24 +170,19 @@ export async function getPublishedProject(slug) {
   // viewCount bertambah (fire-and-forget, bukan bagian respons kritis)
   prisma.project.update({ where: { id: project.id }, data: { viewCount: { increment: 1 } } }).catch(() => {});
 
-  // Proyek serupa: kategori atau layanan sama, selain proyek ini, maks 3
-  const relatedMatch = [
-    ...(project.categoryId ? [{ categoryId: project.categoryId }] : []),
-    ...(project.serviceId ? [{ serviceId: project.serviceId }] : []),
-  ];
-  const related = await prisma.project.findMany({
-    where: {
-      isPublished: true,
-      id: { not: project.id },
-      ...(relatedMatch.length ? { OR: relatedMatch } : {}),
-    },
-    select: SELECT,
-    take: 3,
-    orderBy: defaultOrder,
-  });
-
   // Ambil tetangga langsung; jangan memuat seluruh daftar proyek.
-  const [prev, next] = await Promise.all([
+  // ponytail: prev/next diparalelkan bersama related agar satu round-trip.
+  const [related, prev, next] = await Promise.all([
+    prisma.project.findMany({
+      where: {
+        isPublished: true,
+        id: { not: project.id },
+        ...(relatedMatch.length ? { OR: relatedMatch } : {}),
+      },
+      select: SELECT,
+      take: 3,
+      orderBy: defaultOrder,
+    }),
     prisma.project.findFirst({
       where: { isPublished: true, OR: [{ year: { gt: project.year } }, { year: project.year, createdAt: { gt: project.createdAt } }] },
       orderBy: defaultOrder,
