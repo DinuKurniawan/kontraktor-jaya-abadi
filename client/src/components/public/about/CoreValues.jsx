@@ -3,17 +3,13 @@
  * hover: naik + ganti latar oranye lembut; mobile: carousel snap geser.
  * Data: GET /api/public/core-values.
  */
-import { useQuery } from "@tanstack/react-query";
 import { Sparkles } from "lucide-react";
-import api from "../../../lib/axios.js";
 import Container from "../Container.jsx";
 import { SERVICE_ICONS } from "../../../lib/service-icons.jsx";
+import { usePublicCoreValues } from "../../../hooks/usePublicData.js";
 
 export default function CoreValuesSection() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["public-core-values"],
-    queryFn: async () => (await api.get("/public/core-values")).data.data,
-  });
+  const { data, isLoading } = usePublicCoreValues();
   const items = data ?? [];
 
   return (

@@ -22,7 +22,7 @@ import Pagination from "../../components/public/Pagination.jsx";
 import Seo from "../../components/public/Seo.jsx";
 import Reveal from "../../components/public/Reveal.jsx";
 import Skeleton from "../../components/ui/Skeleton.jsx";
-import { toast } from "../../components/ui/Toast.jsx";
+import { usePublicPostCategories, usePublicPostTags, usePublicPostFacets, usePublicPopularPosts } from "../../hooks/usePublicData.js";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const SITE = (import.meta.env.VITE_SITE_URL || window.location.origin).replace(/\/$/, "");
@@ -65,30 +65,16 @@ export function ArticlesPage() {
   });
 
   // Kategori artikel diambil dari admin (hanya type POST)
-  const { data: cats } = useQuery({
-    queryKey: ["public-categories-post"],
-    queryFn: async () => (await api.get("/public/categories", { params: { type: "POST" } })).data.data,
-  });
+  const { data: cats } = usePublicPostCategories();
 
   // Tag artikel diambil dari admin (hanya yang dipakai artikel terbit)
-  const { data: tags } = useQuery({
-    queryKey: ["public-tags"],
-    queryFn: async () => (await api.get("/public/tags")).data.data,
-  });
+  const { data: tags } = usePublicPostTags();
 
   // Facet kategori global (untuk sidebar & empty state)
-  const { data: globalFacetCategories = [] } = useQuery({
-    queryKey: ["public-post-category-facets"],
-    queryFn: async () => (await api.get("/public/posts", { params: { page: 1, limit: 1 } })).data.facets?.categories ?? [],
-    staleTime: 60 * 1000,
-  });
+  const { data: globalFacetCategories = [] } = usePublicPostFacets();
 
   // Saran pencarian diambil dari data yang ada: judul artikel terpopuler
-  const { data: popularPosts = [] } = useQuery({
-    queryKey: ["public-posts-suggestions"],
-    queryFn: async () => (await api.get("/public/posts/popular", { params: { limit: 8 } })).data.data,
-    staleTime: 60 * 1000,
-  });
+  const { data: popularPosts = [] } = usePublicPopularPosts();
 
   const rows = data?.data ?? [];
   const resultLabel = isLoading ? "Memuat artikel" : `${Number(data?.meta?.total ?? 0).toLocaleString("id-ID")} artikel ditemukan`;

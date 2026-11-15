@@ -5,18 +5,14 @@
  * id="sejarah" (anchor AboutBanner).
  */
 import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import api from "../../../lib/axios.js";
 import Container from "../Container.jsx";
+import { usePublicMilestones } from "../../../hooks/usePublicData.js";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
 
 export default function HistoryTimeline() {
-  const { data } = useQuery({
-    queryKey: ["public-milestones"],
-    queryFn: async () => (await api.get("/public/milestones")).data.data,
-  });
+  const { data } = usePublicMilestones();
   const rows = (data ?? []).slice().sort((a, b) => a.year - b.year);
   const wrap = useRef(null);
   const [fill, setFill] = useState(0);

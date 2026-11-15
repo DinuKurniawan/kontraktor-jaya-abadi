@@ -21,7 +21,12 @@ import { listPublishedProjects, getPublishedProject, getPublicProjectStats, getP
 import { listPublishedPosts, listFeaturedPosts, listPopularPosts, listPublicTags, getPublishedPost } from "./posts/public.js";
 import { listPublishedTestimonials, listPublishedTeam, listPublishedFaqs } from "./misc/public.js";
 import { listActiveSlides } from "./hero-slides/service.js";
-import { listPublicItems } from "./features/service.js";
+import { listPublicItems as listPublicFeatures } from "./features/service.js";
+import { listPublicItems as listPublicCoreValues } from "./core-values/service.js";
+import { listPublicItems as listPublicMilestones } from "./milestones/service.js";
+import { listPublicItems as listPublicCertificates } from "./certificates/service.js";
+import { listPublicPartners } from "./partners/service.js";
+import { listPublicCategories } from "./categories/service.js";
 import { getAllSettings } from "./settings/service.js";
 import prisma from "../config/prisma.js";
 
@@ -58,7 +63,7 @@ router.get("/home", plain(async () => {
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
       select: { id: true, title: true, slug: true, shortDesc: true, icon: true, image: true, heroImage: true },
     }),
-    listPublicItems(),
+    listPublicFeatures(),
     listPublishedTestimonials(),
     prisma.post.findMany({
       where: { isPublished: true, publishedAt: { lte: new Date() } },
@@ -72,6 +77,32 @@ router.get("/home", plain(async () => {
   ]);
   delete settings.smtp_password; // sama dengan /settings — jangan bocorkan kredensial
   return { heroSlides, settings, services, features, testimonials, posts };
+}));
+
+// GET /api/public/about — seluruh data halaman tentang (core values, timeline, mitra, sertifikat, tim).
+// 5 cold start jadi 1.
+router.get("/about", plain(async () => {
+  const [coreValues, milestones, partners, certificates, team] = await Promise.all([
+    listPublicCoreValues(),
+    listPublicMilestones(),
+    listPublicPartners(),
+    listPublicCertificates(),
+    listPublishedTeam(),
+  ]);
+  return { coreValues, milestones, partners, certificates, team };
+}));
+
+// GET /api/public/posts/init — metadata & saran pencarian untuk halaman artikel (/artikel).
+// Menghilangkan 4 query paralel terpisah saat membuka daftar artikel.
+router.get("/posts/init", plain(async () => {
+  const [categories, tags, popular, featured, facets] = await Promise.all([
+    listPublicCategories("POST"),
+    listPublicTags(),
+    listPopularPosts({ limit: 8 }),
+    listFeaturedPosts({ limit: 4 }),
+    listPublishedPosts({ page: 1, limit: 1 }).then((r) => r.facets?.categories ?? []),
+  ]);
+  return { categories, tags, popular, featured, facets };
 }));
 
 router.get("/services", plain((req) => listPublishedServices(req.query)));

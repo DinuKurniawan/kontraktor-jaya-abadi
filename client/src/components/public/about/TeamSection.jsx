@@ -6,12 +6,11 @@
  */
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { useQuery } from "@tanstack/react-query";
 import { Mail, Users, X } from "lucide-react";
-import api from "../../../lib/axios.js";
 import Container from "../Container.jsx";
 import PillButton from "../PillButton.jsx";
 import { teamDeptLabel } from "../../../lib/team.js";
+import { usePublicTeam } from "../../../hooks/usePublicData.js";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
@@ -31,10 +30,7 @@ const InIcon = () => (
 );
 
 export default function TeamSection() {
-  const { data } = useQuery({
-    queryKey: ["public-team"],
-    queryFn: async () => (await api.get("/public/team")).data.data,
-  });
+  const { data } = usePublicTeam();
   const rows = data ?? [];
   const [divisi, setDivisi] = useState("");
   const [zoom, setZoom] = useState(null);

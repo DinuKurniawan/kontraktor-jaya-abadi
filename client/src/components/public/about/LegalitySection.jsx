@@ -5,10 +5,9 @@
  * id="legalitas" (anchor AboutBanner).
  */
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { BadgeCheck, Copy, Check, X } from "lucide-react";
-import api from "../../../lib/axios.js";
 import { useSiteSettings } from "../home/HeroSection.jsx";
+import { usePublicCertificates } from "../../../hooks/usePublicData.js";
 import Container from "../Container.jsx";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
@@ -16,10 +15,7 @@ const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
 
 export default function LegalitySection() {
   const { data: s } = useSiteSettings();
-  const { data: certs } = useQuery({
-    queryKey: ["public-certificates"],
-    queryFn: async () => (await api.get("/public/certificates")).data.data,
-  });
+  const { data: certs } = usePublicCertificates();
   const [copied, setCopied] = useState("");
   const [zoom, setZoom] = useState(null);
 
