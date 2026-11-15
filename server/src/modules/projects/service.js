@@ -10,6 +10,21 @@ const INCLUDE = {
   images: { orderBy: { sortOrder: "asc" } },
 };
 
+const LIST_SELECT = {
+  id: true,
+  title: true,
+  slug: true,
+  coverImage: true,
+  year: true,
+  location: true,
+  status: true,
+  viewCount: true,
+  isPublished: true,
+  isFeatured: true,
+  createdAt: true,
+  category: { select: { name: true } },
+};
+
 // Daftar proyek (admin): paginasi + search judul/klien + filter status/kategori
 export async function listProjects(query) {
   const { page, limit, skip, where } = paginate(query, { searchFields: ["title", "clientName"] });
@@ -17,7 +32,7 @@ export async function listProjects(query) {
   if (query.categoryId) where.categoryId = query.categoryId;
 
   const [rows, total] = await prisma.$transaction([
-    prisma.project.findMany({ where, include: { category: { select: { name: true } } }, orderBy: { createdAt: "desc" }, skip, take: limit }),
+    prisma.project.findMany({ where, select: LIST_SELECT, orderBy: { createdAt: "desc" }, skip, take: limit }),
     prisma.project.count({ where }),
   ]);
 

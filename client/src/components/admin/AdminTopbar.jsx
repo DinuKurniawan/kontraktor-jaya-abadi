@@ -16,15 +16,18 @@ export default function AdminTopbar({ onMenuClick }) {
   const menuRef = useRef(null);
   const notifRef = useRef(null);
 
-  // Ambil jumlah unread & pesan terbaru untuk dropdown notifikasi
+  // Ambil jumlah unread & pesan terbaru untuk dropdown notifikasi (hanya fetch saat dibuka)
   const { data: unreadData } = useQuery({
     queryKey: ["unread-count"],
     queryFn: async () => (await api.get("/admin/messages/unread-count")).data.data,
+    staleTime: 60_000,
   });
 
   const { data: latestMessages } = useQuery({
     queryKey: ["messages", { limit: 5 }],
     queryFn: async () => (await api.get("/admin/messages", { params: { limit: 5 } })).data.data,
+    enabled: notifOpen,
+    staleTime: 60_000,
   });
 
   const unreadCount = unreadData?.count ?? 0;

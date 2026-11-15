@@ -4,6 +4,20 @@ import ApiError from "../../utils/api-error.js";
 import { slugifyUnique } from "../../utils/slugify.js";
 import { paginate, paginationMeta } from "../../utils/paginate.js";
 
+const LIST_SELECT = {
+  id: true,
+  title: true,
+  slug: true,
+  shortDesc: true,
+  icon: true,
+  image: true,
+  sortOrder: true,
+  isPublished: true,
+  categoryId: true,
+  createdAt: true,
+  category: { select: { id: true, name: true, slug: true } },
+};
+
 // Daftar layanan (admin): urutan tampil, paginasi + search judul
 export async function listServices(query) {
   const { page, limit, skip, where } = paginate(query, { searchFields: ["title"], defaultLimit: 50 });
@@ -15,7 +29,7 @@ export async function listServices(query) {
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
       skip,
       take: limit,
-      include: { category: { select: { id: true, name: true, slug: true } } },
+      select: LIST_SELECT,
     }),
     prisma.service.count({ where }),
   ]);

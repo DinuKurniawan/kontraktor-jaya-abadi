@@ -11,6 +11,22 @@ const INCLUDE = {
   tags: { select: { tag: { select: { id: true, name: true, slug: true } } } },
 };
 
+const LIST_SELECT = {
+  id: true,
+  title: true,
+  slug: true,
+  coverImage: true,
+  readTime: true,
+  viewCount: true,
+  isFeatured: true,
+  isPublished: true,
+  publishedAt: true,
+  createdAt: true,
+  author: { select: { id: true, name: true, position: true, photo: true } },
+  category: { select: { id: true, name: true, slug: true } },
+  tags: { select: { tag: { select: { id: true, name: true, slug: true } } } },
+};
+
 // Estimasi waktu baca: 200 kata per menit, minimum 1
 function computeReadTime(content) {
   const plain = String(content).replace(/<[^>]*>/g, " "); // buang tag HTML
@@ -26,7 +42,7 @@ export async function listPosts(query) {
   if (query.status === "PUBLISHED") where.isPublished = true;
 
   const [rows, total] = await prisma.$transaction([
-    prisma.post.findMany({ where, include: INCLUDE, orderBy: { createdAt: "desc" }, skip, take: limit }),
+    prisma.post.findMany({ where, select: LIST_SELECT, orderBy: { createdAt: "desc" }, skip, take: limit }),
     prisma.post.count({ where }),
   ]);
 

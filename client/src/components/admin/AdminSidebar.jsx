@@ -72,11 +72,12 @@ export default function AdminSidebar({ open, onClose }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // Jumlah pesan berstatus BARU — badge hidup, di-refresh tiap 30 detik
+  // Jumlah pesan berstatus BARU — badge hidup, di-refresh tiap 60 detik
   const { data: unreadData } = useQuery({
     queryKey: ["unread-count"],
     queryFn: async () => (await api.get("/admin/messages/unread-count")).data.data,
-    refetchInterval: 30 * 1000,
+    refetchInterval: 60 * 1000,
+    staleTime: 60 * 1000,
   });
   const unread = unreadData?.count ?? 0;
 
