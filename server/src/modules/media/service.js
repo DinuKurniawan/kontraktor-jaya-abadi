@@ -56,11 +56,13 @@ function toResponse(media) {
 }
 
 // Sumber pemakaian disusun per tabel agar pemeriksaan tidak menjadi N+1 query.
+// ponytail: exclude Text columns (description, content, challenge, solution, result, longDescription)
+// — usage scan only needs image/URL fields. Add Text fields back when rich-text image tracking needed.
 const USAGE_SOURCES = [
-  { model: "project", select: { id: true, title: true, coverImage: true, description: true, challenge: true, solution: true, result: true }, module: "Proyek", label: (row) => row.title, editUrl: (row) => `/admin/proyek/${row.id}/edit`, fields: ["coverImage", "description", "challenge", "solution", "result"] },
+  { model: "project", select: { id: true, title: true, coverImage: true }, module: "Proyek", label: (row) => row.title, editUrl: (row) => `/admin/proyek/${row.id}/edit`, fields: ["coverImage"] },
   { model: "projectImage", select: { id: true, projectId: true, url: true, project: { select: { title: true } } }, module: "Galeri proyek", label: (row) => row.project?.title ?? "Proyek", editUrl: (row) => `/admin/proyek/${row.projectId}/edit`, fields: ["url"], fieldLabels: { url: "images.url" } },
-  { model: "service", select: { id: true, title: true, image: true, heroImage: true, longDescription: true }, module: "Layanan", label: (row) => row.title, editUrl: (row) => `/admin/layanan/${row.id}/edit`, fields: ["image", "heroImage", "longDescription"] },
-  { model: "post", select: { id: true, title: true, coverImage: true, content: true }, module: "Artikel", label: (row) => row.title, editUrl: (row) => `/admin/artikel/${row.id}/edit`, fields: ["coverImage", "content"] },
+  { model: "service", select: { id: true, title: true, image: true, heroImage: true }, module: "Layanan", label: (row) => row.title, editUrl: (row) => `/admin/layanan/${row.id}/edit`, fields: ["image", "heroImage"] },
+  { model: "post", select: { id: true, title: true, coverImage: true }, module: "Artikel", label: (row) => row.title, editUrl: (row) => `/admin/artikel/${row.id}/edit`, fields: ["coverImage"] },
   { model: "testimonial", select: { id: true, name: true, avatar: true }, module: "Testimoni", label: (row) => row.name, editUrl: () => "/admin/testimoni", fields: ["avatar"] },
   { model: "teamMember", select: { id: true, name: true, photo: true }, module: "Tim", label: (row) => row.name, editUrl: () => "/admin/tim", fields: ["photo"] },
   { model: "heroSlide", select: { id: true, title: true, image: true }, module: "Hero slide", label: (row) => row.title, editUrl: () => "/admin/hero-slider", fields: ["image"] },
@@ -237,14 +239,14 @@ export async function saveFiles(files, { purpose = "generic" } = {}) {
 export async function listMedia(query) {
   const { page, limit, skip, where } = paginate(query, { searchFields: ["filename"] });
 
-  const [rows, total, allMedia, sourceRows] = await Promise.all([
+  const [rows, total, sourceRows] = await Promise.all([
     prisma.media.findMany({ where, orderBy: { createdAt: "desc" }, skip, take: limit }),
     prisma.media.count({ where }),
-    prisma.media.findMany({ select: { id: true, url: true, filename: true, size: true, mimeType: true, createdAt: true } }),
     loadUsageSources(),
   ]);
 
-  const usageIndex = await buildUsageIndex(allMedia, sourceRows);
+  // ponytail: build usage index only for current page, not all media
+  const usageIndex = await buildUsageIndex(rows, sourceRows);
   return { data: await enrichMedia(rows, usageIndex), meta: paginationMeta(total, page, limit) };
 }
 

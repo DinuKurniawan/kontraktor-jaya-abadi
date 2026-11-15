@@ -59,6 +59,34 @@ function publicLimit(value, fallback = 6) {
   return Math.min(50, Math.max(1, Number.parseInt(value, 10) || fallback));
 }
 
+// Facet tanpa filter pencarian/tag = hasil yang sama tiap request.
+// ponytail: cache memori 60s; admin edit muncul paling lambat 1 menit.
+const FACET_TTL_MS = 60_000;
+let facetCache = { at: 0, categories: null };
+
+async function computeCategoryFacets(facetWhere) {
+  const categoryGroups = await prisma.post.groupBy({ by: ["categoryId"], where: facetWhere, _count: { _all: true } });
+  const categoryIds = categoryGroups.map((item) => item.categoryId).filter(Boolean);
+  const categories = categoryIds.length
+    ? await prisma.category.findMany({ where: { id: { in: categoryIds } }, select: { id: true, name: true, slug: true } })
+    : [];
+  const categoryMap = Object.fromEntries(categories.map((category) => [category.id, category]));
+  return categoryGroups
+    .map((item) => ({
+      ...(categoryMap[item.categoryId] ?? { id: item.categoryId, name: "Lainnya", slug: null }),
+      count: item._count._all,
+    }))
+    .sort((a, b) => b.count - a.count);
+}
+
+function cachedCategoryFacets() {
+  if (facetCache.categories && Date.now() - facetCache.at < FACET_TTL_MS) return facetCache.categories;
+  return computeCategoryFacets(publishedWhere()).then((categories) => {
+    facetCache = { at: Date.now(), categories };
+    return categories;
+  });
+}
+
 // GET /api/public/posts?page=&limit=9&search=&category=<slug>&tag=<slug>&sort=terbaru|terpopuler|terlama
 export async function listPublishedPosts(query = {}) {
   const { page, limit, skip, where } = paginate(query, {
@@ -74,29 +102,16 @@ export async function listPublishedPosts(query = {}) {
   // Facet kategori mengikuti pencarian/tag aktif, tetapi tidak dikunci oleh kategori
   // agar pilihan kategori lain tetap dapat ditampilkan di filter publik.
   const facetWhere = { ...publishedWhere(), ...searchWhere(search), ...tagWhere(tag) };
-  const [rows, total, categoryGroups] = await prisma.$transaction([
+  const [rows, total, categories] = await Promise.all([
     prisma.post.findMany({ where, select: POST_SELECT, orderBy: ORDER[query.sort] ?? ORDER.terbaru, skip, take: limit }),
     prisma.post.count({ where }),
-    prisma.post.groupBy({ by: ["categoryId"], where: facetWhere, _count: { _all: true } }),
+    search || tag ? computeCategoryFacets(facetWhere) : cachedCategoryFacets(),
   ]);
-
-  const categoryIds = categoryGroups.map((item) => item.categoryId).filter(Boolean);
-  const categories = categoryIds.length
-    ? await prisma.category.findMany({ where: { id: { in: categoryIds } }, select: { id: true, name: true, slug: true } })
-    : [];
-  const categoryMap = Object.fromEntries(categories.map((category) => [category.id, category]));
 
   return {
     data: rows.map(normalizePost),
     meta: paginationMeta(total, page, limit),
-    facets: {
-      categories: categoryGroups
-        .map((item) => ({
-          ...(categoryMap[item.categoryId] ?? { id: item.categoryId, name: "Lainnya", slug: null }),
-          count: item._count._all,
-        }))
-        .sort((a, b) => b.count - a.count),
-    },
+    facets: { categories },
   };
 }
 
@@ -159,23 +174,40 @@ export async function getPublishedPost(slug) {
     OR: relatedMatches.length ? relatedMatches : [{ id: "__no_related_post__" }],
   };
 
-  const [relatedRows, siblings] = await prisma.$transaction([
+  // ponytail: prev/next via findFirst instead of loading all posts
+  const navSelect = { id: true, slug: true, title: true, coverImage: true, publishedAt: true };
+  const [relatedRows, previous, next] = await Promise.all([
     prisma.post.findMany({
       where: relatedWhere,
       select: POST_SELECT,
       take: 3,
       orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
     }),
-    prisma.post.findMany({
-      where: publishedWhere(),
+    prisma.post.findFirst({
+      where: {
+        ...publishedWhere(),
+        id: { not: post.id },
+        OR: [
+          { publishedAt: { gt: post.publishedAt } },
+          { publishedAt: post.publishedAt, createdAt: { gt: post.createdAt } },
+        ],
+      },
+      orderBy: [{ publishedAt: "asc" }, { createdAt: "asc" }],
+      select: navSelect,
+    }),
+    prisma.post.findFirst({
+      where: {
+        ...publishedWhere(),
+        id: { not: post.id },
+        OR: [
+          { publishedAt: { lt: post.publishedAt } },
+          { publishedAt: post.publishedAt, createdAt: { lt: post.createdAt } },
+        ],
+      },
       orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-      select: { id: true, slug: true, title: true, coverImage: true, publishedAt: true },
+      select: navSelect,
     }),
   ]);
-
-  const index = siblings.findIndex((item) => item.id === post.id);
-  const previous = index > 0 ? siblings[index - 1] : null;
-  const next = index >= 0 && index < siblings.length - 1 ? siblings[index + 1] : null;
   const { categoryId, ...detail } = post;
 
   return {

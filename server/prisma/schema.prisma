@@ -298,6 +298,10 @@ model Post {
   @@index([isPublished, publishedAt])
   @@index([isPublished, isFeatured])
   @@index([viewCount])
+  // Trigram GIN untuk pencarian ILIKE pada judul/ringkasan/isi artikel.
+  @@index([title(ops: raw("gin_trgm_ops"))], type: Gin, map: "posts_title_trgm_idx")
+  @@index([excerpt(ops: raw("gin_trgm_ops"))], type: Gin, map: "posts_excerpt_trgm_idx")
+  @@index([content(ops: raw("gin_trgm_ops"))], type: Gin, map: "posts_content_trgm_idx")
   @@map("posts")
 }
 

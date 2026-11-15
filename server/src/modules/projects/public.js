@@ -18,37 +18,15 @@ const ORDER = {
 };
 const defaultOrder = [{ isFeatured: "desc" }, { year: "desc" }, { createdAt: "desc" }];
 
-// GET /api/public/projects?page=&limit=12&search=&category=<slug>&status=&service=<slug>
-//   &year=2024&sort=terbaru|terlama|judul-az|terpopuler&featured=true&exclude=<slug>
-export async function listPublishedProjects(query) {
-  const { page, limit, skip, where } = paginate(query, { searchFields: ["title", "summary", "location"], defaultLimit: 12 });
-  where.isPublished = true;
-  if (query.featured === "true") where.isFeatured = true;
-  if (query.status) where.status = query.status;
-  if (query.category) where.category = { slug: query.category };
-  if (query.service) where.service = { slug: query.service };
-  if (query.year) where.year = Number(query.year);
-  if (query.exclude) where.slug = { not: query.exclude };
+// Facet seluruh proyek terbit — sama tiap request selama admin tidak mengubah data.
+// ponytail: cache memori 60s; admin edit muncul paling lambat 1 menit.
+const FACET_TTL_MS = 60_000;
+let facetCache = { at: 0, facets: null };
 
-  const orderBy = ORDER[query.sort] ?? defaultOrder;
+async function loadFacets() {
+  if (facetCache.facets && Date.now() - facetCache.at < FACET_TTL_MS) return facetCache.facets;
 
-  // Optimasi featured strip: tidak butuh kalkulasi facets 5-tabel.
-  if (query.featured === "true") {
-    const [rows, total] = await Promise.all([
-      prisma.project.findMany({ where, select: SELECT, orderBy, skip, take: limit }),
-      prisma.project.count({ where }),
-    ]);
-    return {
-      data: rows,
-      meta: paginationMeta(total, page, limit),
-      facets: { categories: [], statuses: [], years: [] },
-    };
-  }
-
-  const [rows, total, byCategory, byStatus, years] = await prisma.$transaction([
-    prisma.project.findMany({ where, select: SELECT, orderBy, skip, take: limit }),
-    prisma.project.count({ where }),
-    // Facets (di seluruh proyek terbit, tanpa filter kategori agar angka stabil)
+  const [byCategory, byStatus, years] = await Promise.all([
     prisma.project.groupBy({
       by: ["categoryId"],
       where: { isPublished: true },
@@ -79,6 +57,45 @@ export async function listPublishedProjects(query) {
     statuses: byStatus.map((s) => ({ status: s.status, count: s._count._all })),
     years: years.map((y) => y.year),
   };
+  facetCache = { at: Date.now(), facets };
+  return facets;
+}
+
+// GET /api/public/projects?page=&limit=12&search=&category=<slug>&status=&service=<slug>
+//   &year=2024&sort=terbaru|terlama|judul-az|terpopuler&featured=true&exclude=<slug>
+export async function listPublishedProjects(query) {
+  const { page, limit, skip, where } = paginate(query, { searchFields: ["title", "summary", "location"], defaultLimit: 12 });
+  where.isPublished = true;
+  if (query.featured === "true") where.isFeatured = true;
+  if (query.status) where.status = query.status;
+  if (query.category) where.category = { slug: query.category };
+  if (query.service) where.service = { slug: query.service };
+  if (query.year) where.year = Number(query.year);
+  if (query.exclude) where.slug = { not: query.exclude };
+
+  const orderBy = ORDER[query.sort] ?? defaultOrder;
+
+  // Optimasi featured strip: tidak butuh kalkulasi facets 5-tabel.
+  if (query.featured === "true") {
+    const [rows, total] = await Promise.all([
+      prisma.project.findMany({ where, select: SELECT, orderBy, skip, take: limit }),
+      prisma.project.count({ where }),
+    ]);
+    return {
+      data: rows,
+      meta: paginationMeta(total, page, limit),
+      facets: { categories: [], statuses: [], years: [] },
+    };
+  }
+
+  const [[rows, total], facets] = await Promise.all([
+    Promise.all([
+      prisma.project.findMany({ where, select: SELECT, orderBy, skip, take: limit }),
+      prisma.project.count({ where }),
+    ]),
+    loadFacets(),
+  ]);
+
   return { data: rows, meta: paginationMeta(total, page, limit), facets };
 }
 
@@ -121,6 +138,8 @@ export async function getPublicProjectMap(query = {}) {
       category: { select: { name: true, slug: true } },
     },
     orderBy: { year: "desc" },
+    // ponytail: hard cap marker peta; naikkan atau pakai clustering kalau pin mulai padat.
+    take: 500,
   });
   return rows;
 }
