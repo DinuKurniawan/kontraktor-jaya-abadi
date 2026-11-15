@@ -15,7 +15,7 @@ import { toast } from "../../ui/Toast.jsx";
 import { useSiteSettings } from "./HeroSection.jsx";
 import AspectImage from "../../ui/AspectImage.jsx";
 import { imageProps } from "../../../lib/image.js";
-import { usePublicServices, usePublicTestimonials } from "../../../hooks/usePublicData.js";
+import { usePublicServices, usePublicTestimonials, usePublicLatestPosts } from "../../../hooks/usePublicData.js";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
@@ -425,11 +425,8 @@ function NewsletterForm() {
 
 // ===== Artikel terbaru: 1 besar kiri + 3 kecil kanan (+ newsletter) =====
 export function LatestArticles() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["public-posts-latest"],
-    queryFn: async () => (await api.get("/public/posts", { params: { limit: 4 } })).data,
-  });
-  const rows = data?.data ?? [];
+  const { data: postsData, isLoading } = usePublicLatestPosts();
+  const rows = postsData?.data ?? [];
   if (!isLoading && rows.length === 0) return null;
   const [first, ...rest] = rows;
   const fmt = (d) => d && new Date(d).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });

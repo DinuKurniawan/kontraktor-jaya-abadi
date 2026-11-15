@@ -4,22 +4,18 @@
  * Kartu bergantian krem (bg-white) dan oranye lembut (bg-brand-soft).
  * Data: GET /api/public/features.
  */
-import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Wrench } from "lucide-react";
-import api from "../../../lib/axios.js";
 import Container from "../Container.jsx";
 import PillButton from "../PillButton.jsx";
 import { SERVICE_ICONS } from "../../../lib/service-icons.jsx";
 import { useSiteSettings } from "./HeroSection.jsx";
+import { usePublicFeatures } from "../../../hooks/usePublicData.js";
 
 const SERVER = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/api$/, "");
 const img = (p) => (!p ? "" : p.startsWith("http") ? p : `${SERVER}${p}`);
 
 export default function WhyUsSection() {
-  const { data } = useQuery({
-    queryKey: ["public-features"],
-    queryFn: async () => (await api.get("/public/features")).data.data,
-  });
+  const { data } = usePublicFeatures();
   const { data: s } = useSiteSettings();
   const rows = (data ?? []).slice(0, 6);
 

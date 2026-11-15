@@ -20,6 +20,9 @@ import { listPublishedServices, getPublishedService } from "./services/public.js
 import { listPublishedProjects, getPublishedProject, getPublicProjectStats, getPublicProjectMap } from "./projects/public.js";
 import { listPublishedPosts, listFeaturedPosts, listPopularPosts, listPublicTags, getPublishedPost } from "./posts/public.js";
 import { listPublishedTestimonials, listPublishedTeam, listPublishedFaqs } from "./misc/public.js";
+import { listActiveSlides } from "./hero-slides/service.js";
+import { listPublicItems } from "./features/service.js";
+import { getAllSettings } from "./settings/service.js";
 
 const router = Router();
 
@@ -40,6 +43,21 @@ const paged = (fn) => asyncHandler(async (req, res) => {
   const { data, meta, ...extra } = result;
   sendSuccess(res, { data, meta, ...extra });
 });
+
+// GET /api/public/home — seluruh data beranda dalam satu request.
+// Satu cold start Vercel (~3-4 dtk) menggantikan tujuh cold start paralel.
+router.get("/home", plain(async () => {
+  const [heroSlides, settings, services, features, testimonials, posts] = await Promise.all([
+    listActiveSlides(),
+    getAllSettings(),
+    listPublishedServices(),
+    listPublicItems(),
+    listPublishedTestimonials(),
+    listPublishedPosts({ limit: 4 }),
+  ]);
+  delete settings.smtp_password; // sama dengan /settings — jangan bocorkan kredensial
+  return { heroSlides, settings, services, features, testimonials, posts };
+}));
 
 router.get("/services", plain((req) => listPublishedServices(req.query)));
 router.get("/services/:slug", plain((req) =>

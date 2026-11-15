@@ -4,9 +4,8 @@
  * lembut; mobile: kartu bertumpuk. Data: GET /api/public/features bila ≥1 —
  * dipakai sebagai baris (title = aspek, description = nilai kami); sisanya statis.
  */
-import { useQuery } from "@tanstack/react-query";
 import { Check, X } from "lucide-react";
-import api from "../../../lib/axios.js";
+import { usePublicFeatures } from "../../../hooks/usePublicData.js";
 import Container from "../Container.jsx";
 
 const STATIC_ROWS = [
@@ -19,10 +18,7 @@ const STATIC_ROWS = [
 ];
 
 export default function ComparisonTable() {
-  const { data } = useQuery({
-    queryKey: ["public-features"],
-    queryFn: async () => (await api.get("/public/features")).data.data,
-  });
+  const { data } = usePublicFeatures();
   // Bila CMS punya features ≥6, pakai title sebagai aspek (deskripsi = kolom kami)
   const base = (data?.length ?? 0) >= 6
     ? data.slice(0, 6).map((f, i) => [f.title, f.description || STATIC_ROWS[i][1], STATIC_ROWS[i][2]])

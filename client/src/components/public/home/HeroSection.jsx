@@ -5,9 +5,7 @@
  * Latar pola blueprint garis tipis; indikator scroll di bawah.
  */
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { BadgeCheck, FileText, Play, ScrollText, ShieldCheck } from "lucide-react";
-import api from "../../../lib/axios.js";
 import Modal from "../../ui/Modal.jsx";
 import PillButton from "../PillButton.jsx";
 import { imageProps } from "../../../lib/image.js";
@@ -37,7 +35,7 @@ const BADGES = [
 
 // Ambil settings sekali (dipakai kartu melayang & video).
 // Re-export dari hook bersama supaya seluruh aplikasi memakai satu queryKey/queryFn.
-import { usePublicSettings as useSiteSettings } from "../../../hooks/usePublicData.js";
+import { usePublicSettings as useSiteSettings, usePublicHeroSlides } from "../../../hooks/usePublicData.js";
 export { usePublicSettings as useSiteSettings } from "../../../hooks/usePublicData.js";
 
 // Foto dengan skeleton saat memuat — object-cover, ukuran konsisten
@@ -69,10 +67,7 @@ const DEFAULT_SLIDE = {
 };
 
 export default function HeroSection() {
-  const { data: slides = [], isLoading } = useQuery({
-    queryKey: ["hero-slides-public"],
-    queryFn: async () => (await api.get("/public/hero-slides")).data.data,
-  });
+  const { data: slides = [] } = usePublicHeroSlides();
   const { data: s } = useSiteSettings();
   const [index, setIndex] = useState(0);
   const [videoOpen, setVideoOpen] = useState(false);
