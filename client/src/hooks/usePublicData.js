@@ -42,5 +42,5 @@ export function usePublicFeatures() {
 
 /** 4 artikel terbaru untuk beranda. */
 export function usePublicLatestPosts() {
-  return useQuery({ ...HOME_OPTS, select: (d) => d.posts });
+  return useQuery({ ...HOME_OPTS, select: (d) => (Array.isArray(d.posts) ? d.posts : d.posts?.data ?? []) });
 }

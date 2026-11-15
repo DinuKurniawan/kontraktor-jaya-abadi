@@ -23,6 +23,7 @@ import { listPublishedTestimonials, listPublishedTeam, listPublishedFaqs } from 
 import { listActiveSlides } from "./hero-slides/service.js";
 import { listPublicItems } from "./features/service.js";
 import { getAllSettings } from "./settings/service.js";
+import prisma from "../config/prisma.js";
 
 const router = Router();
 
@@ -46,14 +47,28 @@ const paged = (fn) => asyncHandler(async (req, res) => {
 
 // GET /api/public/home — seluruh data beranda dalam satu request.
 // Satu cold start Vercel (~3-4 dtk) menggantikan tujuh cold start paralel.
+// Query sengaja ramping (6, bukan 11): production memakai connection_limit=1,
+// jadi query dieksekusi serial — tiap query tambahan menambah ~290 ms.
 router.get("/home", plain(async () => {
   const [heroSlides, settings, services, features, testimonials, posts] = await Promise.all([
     listActiveSlides(),
     getAllSettings(),
-    listPublishedServices(),
+    prisma.service.findMany({
+      where: { isPublished: true },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      select: { id: true, title: true, slug: true, shortDesc: true, icon: true, image: true, heroImage: true },
+    }),
     listPublicItems(),
     listPublishedTestimonials(),
-    listPublishedPosts({ limit: 4 }),
+    prisma.post.findMany({
+      where: { isPublished: true, publishedAt: { lte: new Date() } },
+      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+      take: 4,
+      select: {
+        id: true, title: true, slug: true, coverImage: true, readTime: true, publishedAt: true,
+        category: { select: { name: true } },
+      },
+    }),
   ]);
   delete settings.smtp_password; // sama dengan /settings — jangan bocorkan kredensial
   return { heroSlides, settings, services, features, testimonials, posts };

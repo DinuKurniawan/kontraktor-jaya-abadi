@@ -24,3 +24,4 @@ Thumbs.db
 !/server/uploads/.gitkeep
 /server/uploads/messages/*
 !/server/uploads/messages/.gitkeep
+.vercel

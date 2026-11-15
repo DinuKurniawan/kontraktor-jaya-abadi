@@ -426,7 +426,7 @@ function NewsletterForm() {
 // ===== Artikel terbaru: 1 besar kiri + 3 kecil kanan (+ newsletter) =====
 export function LatestArticles() {
   const { data: postsData, isLoading } = usePublicLatestPosts();
-  const rows = postsData?.data ?? [];
+  const rows = Array.isArray(postsData) ? postsData : postsData?.data ?? [];
   if (!isLoading && rows.length === 0) return null;
   const [first, ...rest] = rows;
   const fmt = (d) => d && new Date(d).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
