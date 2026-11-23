@@ -5,4 +5,17 @@ Allow: /.well-known/
 Disallow: /admin/
 Disallow: /api/
 
+# Agen pencarian/pengambilan atas permintaan pengguna (bukan training).
+# Dinyatakan eksplisit agar allow tidak bergantung pada grup wildcard di edge.
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: Claude-User
+User-agent: Claude-SearchBot
+User-agent: PerplexityBot
+Allow: /
+Allow: /api/public/
+Allow: /.well-known/
+Disallow: /admin/
+Disallow: /api/
+
 Sitemap: https://jaya.codeunchs.my.id/sitemap.xml

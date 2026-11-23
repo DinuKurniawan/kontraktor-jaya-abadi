@@ -175,9 +175,6 @@ export function ProjectsPage() {
         }}
       />
       <ProjectsBanner />
-      {/* Proyek unggulan hanya tanpa filter aktif.
-          Tanpa Reveal: elemen LCP di atas lipatan tidak boleh menunggu animasi opacity. */}
-      {noFilters && <FeaturedProjectsStrip />}
       <Container className="py-14">
         <Reveal as="section" aria-label="Filter proyek halaman" delay={120}>
           <ProjectFilterBar facets={facets} meta={meta} shown={rows.length} page={1} limit={LIMIT} />
@@ -248,6 +245,9 @@ export function ProjectsPage() {
           </div>
         )}
       </Container>
+      {/* Proyek unggulan setelah grid agar kemunculan carousel tidak menggeser
+          konten di atasnya (CLS). */}
+      {noFilters && <FeaturedProjectsStrip />}
       <Reveal as="div" delay={100}>
         <ProjectsCta backgroundImage={rows[0]?.coverImage} />
       </Reveal>

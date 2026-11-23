@@ -4,13 +4,14 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 import RoleRoute from "./routes/RoleRoute.jsx";
 import Skeleton from "./components/ui/Skeleton.jsx";
+import PublicLayout from "./components/public/PublicLayout.jsx";
+import HomePage from "./pages/public/HomePage.jsx";
 
 const L = (importer) => lazy(importer);
 const AdminLayout = L(() => import("./components/admin/AdminLayout.jsx"));
 
-// Publik
-const PublicLayout = L(() => import("./components/public/PublicLayout.jsx"));
-const HomePage = L(() => import("./pages/public/HomePage.jsx"));
+// Publik — layout & beranda ikut bundle awal: keduanya selalu dibutuhkan pada
+// kunjungan pertama, dan rantai import dinamis menambah satu RTT ke LCP.
 const AboutPage = L(() => import("./pages/public/AboutPage.jsx"));
 const ServicesPage = L(() => import("./pages/public/ServicePages.jsx").then((m) => ({ default: m.ServicesPage })));
 const ServiceDetailPage = L(() => import("./pages/public/ServicePages.jsx").then((m) => ({ default: m.ServiceDetailPage })));

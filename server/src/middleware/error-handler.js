@@ -39,7 +39,7 @@ export function errorHandler(err, _req, res, _next) {
     message = "Data tidak ditemukan";
   }
   // Prisma/DB: masalah koneksi & pool timeout → 503 agar client tahu bisa dicoba ulang
-  else if (PRISMA_CONNECTION_CODES.has(err?.code)) {
+  else if (PRISMA_CONNECTION_CODES.has(err?.code) || err?.name === "PrismaClientInitializationError") {
     statusCode = 503;
     message = "Layanan sedang sibuk — silakan coba lagi sebentar";
   }
@@ -67,9 +67,10 @@ export function errorHandler(err, _req, res, _next) {
     );
     if (!isProd) console.error(err);
     if (isProd) {
-      message = (PRISMA_CONNECTION_CODES.has(err?.code) || (err instanceof ApiError && err.statusCode < 505))
-        ? message
-        : "Terjadi kesalahan pada server";
+      const isRetryable = PRISMA_CONNECTION_CODES.has(err?.code)
+        || err?.name === "PrismaClientInitializationError"
+        || (err instanceof ApiError && err.statusCode < 505);
+      message = isRetryable ? message : "Terjadi kesalahan pada server";
     }
   }
 

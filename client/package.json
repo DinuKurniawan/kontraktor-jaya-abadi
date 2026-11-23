@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "build:public": "vite build && node ../scripts/prerender-public.mjs",
+    "build": "vite build && node ../scripts/prerender-meta.mjs",
+    "build:public": "vite build && node ../scripts/prerender-meta.mjs && node ../scripts/prerender-public.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

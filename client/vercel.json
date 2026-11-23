@@ -48,6 +48,13 @@
     { "source": "/.well-known/ard.json", "destination": "/.well-known/ard.json" },
     { "source": "/sitemap.xml", "destination": "https://server-two-zeta-88.vercel.app/sitemap.xml" },
     { "source": "/rss.xml", "destination": "https://server-two-zeta-88.vercel.app/rss.xml" },
+    { "source": "/feed.xml", "destination": "https://server-two-zeta-88.vercel.app/feed.xml" },
+    { "source": "/tentang", "destination": "/tentang/index.html" },
+    { "source": "/layanan", "destination": "/layanan/index.html" },
+    { "source": "/proyek", "destination": "/proyek/index.html" },
+    { "source": "/artikel", "destination": "/artikel/index.html" },
+    { "source": "/kontak", "destination": "/kontak/index.html" },
+    { "source": "/404", "destination": "/404/index.html" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

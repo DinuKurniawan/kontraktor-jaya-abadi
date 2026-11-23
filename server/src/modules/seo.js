@@ -2,47 +2,71 @@
 import prisma from "../config/prisma.js";
 
 const SITE = process.env.SITE_URL || "https://jaya.codeunchs.my.id";
+const STATIC_PAGES = ["", "/tentang", "/layanan", "/proyek", "/artikel", "/kontak"];
+const CACHE_TTL = 24 * 60 * 60 * 1000;
+let lastSitemap = null;
 
 const escapeXml = (s) => String(s ?? "").replace(/[<>&'"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" }[c]));
 
-// GET /sitemap.xml — halaman statis + URL dinamis terbit
-export async function sitemap(_req, res) {
-  const [projects, posts, services] = await Promise.all([
-    prisma.project.findMany({ where: { isPublished: true }, select: { slug: true, updatedAt: true } }),
-    prisma.post.findMany({ where: { isPublished: true, publishedAt: { lte: new Date() } }, select: { slug: true, updatedAt: true } }),
-    prisma.service.findMany({ where: { isPublished: true }, select: { slug: true, updatedAt: true } }),
-  ]);
-
-  const staticPages = ["", "/tentang", "/layanan", "/proyek", "/artikel", "/kontak"];
-  const urls = [
-    ...staticPages.map((p) => ({ loc: `${SITE}${p}`, lastmod: new Date() })),
-    ...projects.map((r) => ({ loc: `${SITE}/proyek/${r.slug}`, lastmod: r.updatedAt })),
-    ...posts.map((r) => ({ loc: `${SITE}/artikel/${r.slug}`, lastmod: r.updatedAt })),
-    ...services.map((r) => ({ loc: `${SITE}/layanan/${r.slug}`, lastmod: r.updatedAt })),
-  ];
-
-  const xml = `<?xml version="1.0" encoding="UTF-8"?>
+const sitemapXml = (urls) => `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${urls.map((u) => `  <url><loc>${escapeXml(u.loc)}</loc><lastmod>${u.lastmod.toISOString()}</lastmod></url>`).join("\n")}
 </urlset>`;
-  res.type("application/xml").send(xml);
+
+// GET /sitemap.xml — halaman statis + URL dinamis terbit.
+// Bila DB gagal, sajikan cache terakhir atau halaman statis agar crawler tetap
+// punya jalur discovery dan robots.txt tidak menunjuk ke 500.
+export async function sitemap(_req, res) {
+  res.set("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400");
+  try {
+    const [projects, posts, services] = await Promise.all([
+      prisma.project.findMany({ where: { isPublished: true }, select: { slug: true, updatedAt: true } }),
+      prisma.post.findMany({ where: { isPublished: true, publishedAt: { lte: new Date() } }, select: { slug: true, updatedAt: true } }),
+      prisma.service.findMany({ where: { isPublished: true }, select: { slug: true, updatedAt: true } }),
+    ]);
+
+    const urls = [
+      ...STATIC_PAGES.map((p) => ({ loc: `${SITE}${p}`, lastmod: new Date() })),
+      ...projects.map((r) => ({ loc: `${SITE}/proyek/${r.slug}`, lastmod: r.updatedAt })),
+      ...posts.map((r) => ({ loc: `${SITE}/artikel/${r.slug}`, lastmod: r.updatedAt })),
+      ...services.map((r) => ({ loc: `${SITE}/layanan/${r.slug}`, lastmod: r.updatedAt })),
+    ];
+
+    const xml = sitemapXml(urls);
+    lastSitemap = { xml, at: Date.now() };
+    return res.type("application/xml").send(xml);
+  } catch (err) {
+    console.error("[seo] sitemap gagal, pakai fallback", { code: err?.code, message: err?.message });
+    const xml = lastSitemap && Date.now() - lastSitemap.at < CACHE_TTL
+      ? lastSitemap.xml
+      : sitemapXml(STATIC_PAGES.map((p) => ({ loc: `${SITE}${p}`, lastmod: new Date() })));
+    return res.type("application/xml").send(xml);
+  }
 }
 
-// GET /rss.xml — Feed RSS 2.0 artikel terbit untuk pembaca feed dan agentic crawlers
+// GET /rss.xml — Feed RSS 2.0 artikel terbit untuk pembaca feed dan agentic crawlers.
+// Bila DB gagal, kirim channel valid (kosong / cache terakhir) alih-alih 500.
 export async function rss(_req, res) {
-  const posts = await prisma.post.findMany({
-    where: { isPublished: true, publishedAt: { lte: new Date() } },
-    select: {
-      title: true,
-      slug: true,
-      excerpt: true,
-      publishedAt: true,
-      author: { select: { name: true } },
-      category: { select: { name: true } },
-    },
-    orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
-    take: 20,
-  });
+  res.set("Cache-Control", "public, s-maxage=3600, stale-while-revalidate=86400");
+
+  let posts = [];
+  try {
+    posts = await prisma.post.findMany({
+      where: { isPublished: true, publishedAt: { lte: new Date() } },
+      select: {
+        title: true,
+        slug: true,
+        excerpt: true,
+        publishedAt: true,
+        author: { select: { name: true } },
+        category: { select: { name: true } },
+      },
+      orderBy: [{ publishedAt: "desc" }, { createdAt: "desc" }],
+      take: 20,
+    });
+  } catch (err) {
+    console.error("[seo] rss gagal, kirim feed kosong", { code: err?.code, message: err?.message });
+  }
 
   const items = posts.map((post) => {
     const link = `${SITE}/artikel/${post.slug}`;

@@ -4,12 +4,12 @@ import { launch } from "chrome-launcher";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import { startMockPublicApi } from "./mock-public-api.mjs";
+import { startStaticPreview } from "./static-preview.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const root = resolve(repoRoot, "client");
-const { preview } = await import(pathToFileURL(resolve(root, "node_modules/vite/dist/node/index.js")));
 
 // API yang dipanggang ke bundle saat build: env shell > client/.env > default axios.
 async function resolveApiBase() {
@@ -37,7 +37,7 @@ const lighthouseConfig = {
 const port = 4173;
 // Origin harus sama dengan CLIENT_URL server (CORS) agar audit mengukur kondisi nyata.
 const base = `http://localhost:${port}`;
-const server = await preview({ root, configFile: resolve(root, "vite.config.js"), preview: { host: "localhost", port, strictPort: true } });
+const server = await startStaticPreview({ dir: resolve(root, "dist"), port });
 
 async function launchBrowser() {
   try {
@@ -163,8 +163,11 @@ try {
   // ponytail: Lighthouse mobile simulate fluktuasi ±10 poin/run; ambang 70
   // mencegah false-fail pada variasi pengukuran, bukan regressi kode.
   const thresholds = { performance: 70, accessibility: 90, "best-practices": 90, seo: 90 };
+  // ponytail: halaman /404 sengaja noindex — Lighthouse menjatuhkan skor SEO
+  // karena is-crawlable, bukan karena cacat halaman.
+  const exempt = { "/404": new Set(["seo"]) };
   const lighthouseFailures = Object.entries(lighthouseResults).flatMap(([route, scores]) => Object.entries(thresholds)
-    .filter(([category, minimum]) => scores[category] < minimum)
+    .filter(([category, minimum]) => !exempt[route]?.has(category) && scores[category] < minimum)
     .map(([category, minimum]) => ({ route, category, score: scores[category], minimum })));
 
   // Regresi jaringan yang harus menggagalkan audit.

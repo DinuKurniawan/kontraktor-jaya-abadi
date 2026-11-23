@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Container from "../../components/public/Container.jsx";
 import Breadcrumb from "../../components/public/Breadcrumb.jsx";
 import PillButton from "../../components/public/PillButton.jsx";
+import Seo from "../../components/public/Seo.jsx";
 
 export default function PublicPlaceholder({ title, crumbs = [] }) {
   return (
@@ -28,6 +29,12 @@ export default function PublicPlaceholder({ title, crumbs = [] }) {
 export function NotFound() {
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center bg-cream text-center">
+      <Seo
+        path="/404"
+        title="Halaman tidak ditemukan"
+        description="Halaman yang Anda cari tidak tersedia atau sudah dipindahkan."
+        noindex
+      />
       <p className="font-jakarta text-7xl font-extrabold text-brand">404</p>
       <h1 className="mt-2 font-jakarta text-2xl font-extrabold text-ink">Halaman tidak ditemukan</h1>
       <p className="mt-2 text-sm text-ink-soft">Tautan yang Anda buka tidak ada atau sudah dipindahkan.</p>

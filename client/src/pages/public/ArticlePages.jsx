@@ -119,15 +119,14 @@ export function ArticlesPage() {
           })),
         } : undefined}
       />
-      <Reveal><BlogBanner
+      <BlogBanner
         total={data?.meta?.total}
         value={search}
         onChange={setParam("q")}
         suggestions={suggestions}
-      /></Reveal>
-      {/* Artikel unggulan hanya tanpa filter aktif. Tanpa Reveal: elemen di atas
-          lipatan tidak boleh menunggu animasi opacity. */}
-      {page === 1 && !search && !category && !tag && sort === "terbaru" && <FeaturedPostsStrip />}
+      />
+      {/* Artikel unggulan dirender setelah grid: konten yang muncul belakangan
+          tidak boleh menggeser elemen yang sudah tampil (CLS). */}
       <Container className="py-14">
         <Reveal>
           <BlogFilterBar
@@ -173,6 +172,7 @@ export function ArticlesPage() {
           <Reveal as="div" delay={120}><BlogSidebar categories={popularCategories} tags={tags ?? []} activeTag={tag} onTagChange={setParam("tag")} /></Reveal>
         </div>
       </Container>
+      {page === 1 && !search && !category && !tag && sort === "terbaru" && <FeaturedPostsStrip />}
     </>
   );
 }

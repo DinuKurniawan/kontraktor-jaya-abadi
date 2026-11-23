@@ -46,23 +46,9 @@ export default function FeaturedPostsStrip() {
     setIndex(closest.index);
   };
 
-  if (isLoading) {
-    return (
-      <section className="bg-cream py-14 sm:py-16" aria-labelledby="artikel-unggulan-loading" aria-busy="true">
-        <Container>
-          <h2 id="artikel-unggulan-loading" className="font-jakarta text-3xl font-extrabold text-ink sm:text-4xl">Artikel unggulan</h2>
-          <div className="mt-8 flex gap-6 overflow-hidden pb-10 pt-4">
-            <div className="grid w-full min-w-full shrink-0 animate-pulse overflow-hidden rounded-[2rem] bg-ink md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-              <div className="aspect-[16/10] bg-cream-deep md:aspect-auto md:min-h-[30rem]" />
-              <div className="min-h-72 bg-ink/90" />
-            </div>
-          </div>
-        </Container>
-      </section>
-    );
-  }
-
-  if (isError || posts.length === 0) return null;
+  // Tanpa skeleton: carousel dekoratif yang bisa kosong. Skeleton yang lalu
+  // dihapus saat data kosong/error menggeser seluruh konten di bawahnya (CLS).
+  if (isLoading || isError || posts.length === 0) return null;
 
   return (
     <section className="bg-cream py-14 sm:py-16" aria-labelledby="artikel-unggulan">

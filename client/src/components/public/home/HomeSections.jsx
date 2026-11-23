@@ -9,7 +9,6 @@ import Container from "../Container.jsx";
 import SectionHeading from "../SectionHeading.jsx";
 import PillButton from "../PillButton.jsx";
 import ArticleCard from "../ArticleCard.jsx";
-import useReveal from "../../../hooks/useReveal.js";
 import { SERVICE_ICONS } from "../../../lib/service-icons.jsx";
 import { toast } from "../../ui/Toast.jsx";
 import { useSiteSettings } from "./HeroSection.jsx";

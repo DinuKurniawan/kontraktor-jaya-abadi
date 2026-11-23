@@ -43,6 +43,7 @@ import realtimeRoutes from "./modules/realtime/route.js";
 import { realtimeBroadcaster } from "./middleware/realtime-broadcaster.js";
 import { errorHandler, notFound } from "./middleware/error-handler.js";
 import { sendSuccess } from "./utils/response.js";
+import prisma from "./config/prisma.js";
 import { STATIC_UPLOAD_DIRS } from "./config/uploads.js";
 
 const app = express();
@@ -108,8 +109,15 @@ app.use(
 
 // Router dasar /api — modul fitur akan dipasang di sini, satu per satu
 const api = express.Router();
-api.get("/health", (_req, res) => {
-  sendSuccess(res, { data: { status: "ok", message: "Server Jaya Abadi berjalan" } });
+api.get("/health", async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    return sendSuccess(res, { data: { status: "ok", message: "Server Jaya Abadi berjalan" } });
+  } catch (err) {
+    // Liveness saja tidak cukup: endpoint ini dipakai monitoring untuk tahu DB siap.
+    console.error("[health] database tidak siap", { code: err?.code, message: err?.message });
+    return res.status(503).json({ success: false, message: "Database tidak siap", errors: null, data: { status: "degraded" } });
+  }
 });
 
 // SSE endpoint untuk streaming update data real-time
